@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>pl.edu.uj.tcs</groupId>
     <artifactId>ai-playground</artifactId>
     <version>0.1-SNAPSHOT</version>
 
@@ -85,7 +85,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>org.example.aiplayground.App</mainClass>
+                    <mainClass>pl.edu.uj.tcs.aiplayground.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -131,7 +131,7 @@
                             <inputSchema>public</inputSchema>
                         </database>
                         <target>
-                            <packageName>org.example.jooq</packageName>
+                            <packageName>pl.edu.uj.tcs.jooq</packageName>
                             <directory>${project.build.directory}/generated-sources/jooq</directory>
                         </target>
                     </generator>

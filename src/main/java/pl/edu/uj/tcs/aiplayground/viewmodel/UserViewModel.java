@@ -1,12 +1,12 @@
-package org.example.aiplayground.viewmodel;
+package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import org.example.aiplayground.exception.EmailAlreadyUsedException;
-import org.example.aiplayground.exception.InvalidLoginOrPasswordException;
-import org.example.aiplayground.exception.UsernameTakenException;
-import org.example.aiplayground.repository.CountryRepository;
-import org.example.aiplayground.repository.JooqFactory;
-import org.example.aiplayground.repository.UserRepository;
-import org.example.aiplayground.service.AuthService;
+import pl.edu.uj.tcs.aiplayground.exception.EmailAlreadyUsedException;
+import pl.edu.uj.tcs.aiplayground.exception.InvalidLoginOrPasswordException;
+import pl.edu.uj.tcs.aiplayground.exception.UsernameTakenException;
+import pl.edu.uj.tcs.aiplayground.repository.CountryRepository;
+import pl.edu.uj.tcs.aiplayground.repository.JooqFactory;
+import pl.edu.uj.tcs.aiplayground.repository.UserRepository;
+import pl.edu.uj.tcs.aiplayground.service.AuthService;
 import org.example.jooq.tables.records.UsersRecord;
 import org.jooq.DSLContext;
 import org.mindrot.jbcrypt.BCrypt;

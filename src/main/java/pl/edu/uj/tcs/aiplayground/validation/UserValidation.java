@@ -1,4 +1,4 @@
-package org.example.aiplayground.validation;
+package pl.edu.uj.tcs.aiplayground.validation;
 
 public class UserValidation {
     public static final int USERNAME_MIN_LENGTH = 5;

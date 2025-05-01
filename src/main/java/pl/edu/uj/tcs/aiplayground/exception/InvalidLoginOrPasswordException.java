@@ -1,4 +1,4 @@
-package org.example.aiplayground.exception;
+package pl.edu.uj.tcs.aiplayground.exception;
 
 public class InvalidLoginOrPasswordException extends Exception {
     public InvalidLoginOrPasswordException() {

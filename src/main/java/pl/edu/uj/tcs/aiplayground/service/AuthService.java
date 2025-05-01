@@ -1,13 +1,13 @@
-package org.example.aiplayground.service;
+package pl.edu.uj.tcs.aiplayground.service;
 
-import org.example.aiplayground.exception.EmailAlreadyUsedException;
-import org.example.aiplayground.exception.UsernameTakenException;
-import org.example.aiplayground.repository.CountryRepository;
-import org.example.aiplayground.repository.UserRepository;
+import pl.edu.uj.tcs.aiplayground.exception.EmailAlreadyUsedException;
+import pl.edu.uj.tcs.aiplayground.exception.UsernameTakenException;
+import pl.edu.uj.tcs.aiplayground.repository.CountryRepository;
+import pl.edu.uj.tcs.aiplayground.repository.UserRepository;
 import org.example.jooq.tables.records.UsersRecord;
 import org.mindrot.jbcrypt.BCrypt;
 
-import static org.example.aiplayground.validation.UserValidation.*;
+import static pl.edu.uj.tcs.aiplayground.validation.UserValidation.*;
 
 public class AuthService {
     private final UserRepository userRepository;

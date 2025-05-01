@@ -1,4 +1,4 @@
-package org.example.aiplayground.repository;
+package pl.edu.uj.tcs.aiplayground.repository;
 
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;

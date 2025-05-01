@@ -1,4 +1,4 @@
-package org.example.aiplayground.repository;
+package pl.edu.uj.tcs.aiplayground.repository;
 
 import org.example.jooq.tables.Users;
 import org.example.jooq.tables.records.UsersRecord;

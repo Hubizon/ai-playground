@@ -5,7 +5,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.aiplayground.view.LoginViewController"
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="pl.edu.uj.tcs.aiplayground.view.LoginViewController"
             prefWidth="400"
             prefHeight="200">
     <VBox alignment="CENTER" spacing="15.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"

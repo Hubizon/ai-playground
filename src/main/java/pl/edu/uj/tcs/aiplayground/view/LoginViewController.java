@@ -1,13 +1,12 @@
-package org.example.aiplayground.view;
+package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import jdk.jshell.spi.ExecutionControl;
-import org.example.aiplayground.exception.EmailAlreadyUsedException;
-import org.example.aiplayground.exception.InvalidLoginOrPasswordException;
-import org.example.aiplayground.exception.UsernameTakenException;
-import org.example.aiplayground.viewmodel.UserViewModel;
+import pl.edu.uj.tcs.aiplayground.exception.EmailAlreadyUsedException;
+import pl.edu.uj.tcs.aiplayground.exception.InvalidLoginOrPasswordException;
+import pl.edu.uj.tcs.aiplayground.exception.UsernameTakenException;
+import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import org.example.jooq.tables.records.UsersRecord;
 
 import java.time.LocalDate;
