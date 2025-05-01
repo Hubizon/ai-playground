@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.example.jooq.Tables.COUNTRIES;
 
-public class CountryRepository {
+public class CountryRepository implements ICountryRepository {
     private final DSLContext dsl;
 
     public CountryRepository(DSLContext dslContext) {

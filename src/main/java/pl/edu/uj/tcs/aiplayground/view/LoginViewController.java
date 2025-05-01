@@ -3,11 +3,13 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import pl.edu.uj.tcs.aiplayground.exception.EmailAlreadyUsedException;
-import pl.edu.uj.tcs.aiplayground.exception.InvalidLoginOrPasswordException;
-import pl.edu.uj.tcs.aiplayground.exception.UsernameTakenException;
+import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
+import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
+import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.time.LocalDate;
 
@@ -20,19 +22,17 @@ public class LoginViewController {
     private PasswordField passwordField;
 
     public LoginViewController() {
-        this.userViewModel = new UserViewModel();
+        this.userViewModel = ViewModelFactory.createUserViewModel();
     }
 
     @FXML
     private void onLoginClicked() {
         try {
-            UsersRecord user =  userViewModel.login(usernameField.getText(), passwordField.getText());
+            UsersRecord user =  userViewModel.login(new LoginForm(usernameField.getText(), passwordField.getText()));
+            System.out.println("Login successful, user:");
             System.out.println(user.toString());
-        } catch (InvalidLoginOrPasswordException e) {
-            System.out.println("InvalidLoginOrPasswordException: " + e.getMessage());
-        }
-        catch (IllegalArgumentException e) {
-            System.out.println("IllegalArgumentException: " + e.getMessage());
+        } catch (UserLoginException e) {
+            System.out.println("UserLoginException: " + e.getMessage());
         }
     }
 
@@ -43,15 +43,11 @@ public class LoginViewController {
         String country = "Polska";
         LocalDate birthday = LocalDate.of(2000, 1, 1);
         try {
-            userViewModel.register(usernameField.getText(), firstName, lastName, emailField.getText(),
-                    passwordField.getText(), country, birthday);
-            System.out.println("Registered successfully");
-        } catch (UsernameTakenException e) {
-            System.out.println("UsernameTakenException: " + e.getMessage());
-        } catch (EmailAlreadyUsedException e) {
-            System.out.println("EmailAlreadyUsedException: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println("IllegalArgumentException: " + e.getMessage());
+            userViewModel.register(new RegisterForm(usernameField.getText(), firstName, lastName, emailField.getText(),
+                    passwordField.getText(), country, birthday));
+            System.out.println("Registered successfully.");
+        } catch (UserRegisterException e) {
+            System.out.println("UserRegisterException: " + e.getMessage());
         }
     }
 }
