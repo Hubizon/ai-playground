@@ -19,7 +19,7 @@ public class JooqFactory {
                         "aiplayground"
                 );
                 dslContext = DSL.using(connection, SQLDialect.POSTGRES);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Can't connect to the database", e);
             }
         }

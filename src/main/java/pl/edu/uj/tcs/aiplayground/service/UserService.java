@@ -1,17 +1,20 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import org.example.jooq.tables.records.CountriesRecord;
+import org.example.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
 import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
 import pl.edu.uj.tcs.aiplayground.repository.ICountryRepository;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
-import org.example.jooq.tables.records.UsersRecord;
-import pl.edu.uj.tcs.aiplayground.util.PasswordHasher;
+import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
 import pl.edu.uj.tcs.aiplayground.validation.UserValidation;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class UserService {
     private final IUserRepository userRepository;
@@ -20,6 +23,11 @@ public class UserService {
     public UserService(IUserRepository userRepository, ICountryRepository countryRepository) {
         this.userRepository = userRepository;
         this.countryRepository = countryRepository;
+    }
+
+    public List<String> getCountryNames() {
+        List<CountriesRecord> countriesRecords = countryRepository.getCountries();
+        return countriesRecords.stream().map(CountriesRecord::getName).collect(Collectors.toList());
     }
 
     public UsersRecord login(LoginForm loginForm) throws UserLoginException {

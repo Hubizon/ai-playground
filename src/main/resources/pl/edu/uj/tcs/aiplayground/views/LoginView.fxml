@@ -16,5 +16,6 @@
         <PasswordField fx:id="passwordField" promptText="Password"/>
         <Button fx:id="loginButton" text="Log in" onAction="#onLoginClicked"/>
         <Button fx:id="registerButton" text="Register" onAction="#onRegisterClicked"/>
+        <Label fx:id="statusLabel" text="statusLabel" style="-fx-font-size: 16px;"/>
     </VBox>
 </AnchorPane>

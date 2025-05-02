@@ -14,7 +14,7 @@ public class CountryRepository implements ICountryRepository {
         this.dsl = dslContext;
     }
 
-    public List<CountriesRecord> getCountriesNames() {
+    public List<CountriesRecord> getCountries() {
         return dsl.select(COUNTRIES.NAME)
                 .from(COUNTRIES)
                 .fetchInto(CountriesRecord.class);
