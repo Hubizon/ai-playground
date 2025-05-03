@@ -15,41 +15,51 @@ public class ComputationalGraph {
         public void propagateGradient() {
             if(operation.equals("+")) {
                 for(Tensor component : components) {
-                    component.gradient += result.gradient/components.size();
+                    for(int i=0;i<component.gradient.length;i++) {
+                        component.gradient[i] += result.gradient[i]/components.size();
+                    }
                 }
             }
-            else if(operation.equals("*")) {
-                double product= 1;
-                for(Tensor component : components) {
-                    product *= component.data;
+            else if (operation.equals("*")) {
+                int length = result.data.length;
+                for (int j = 0; j < components.size(); j++) {
+                    Tensor target = components.get(j);
+                    for (int i = 0; i < length; i++) {
+                        double partial = 1.0;
+                        for (int k = 0; k < components.size(); k++) {
+                            if (k != j) {
+                                partial *= components.get(k).data[i];
+                            }
+                        }
+                        target.gradient[i] += result.gradient[i] * partial;
+                    }
                 }
-                for(Tensor component : components) {
-                    component.gradient += result.gradient * product / component.data;
+            }
+            else if (operation.equals("Sum0")) {
+                Tensor base = components.get(0);
+                int howManyTimes = base.data.length/result.data.length;
+                for (int i = 0; i < result.data.length; i++) {
+                    for (int j = 0; j < howManyTimes; j++) {
+                        base.gradient[i+j*result.data.length] += result.gradient[i]/howManyTimes;
+                    }
                 }
             }
         }
     }
 
     ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
-    ArrayList<ArrayList<Integer>> graph = new ArrayList<>();
 
-    public int addNode(Tensor result, ArrayList<Tensor> components, String operation)
+    public void addNode(Tensor result, ArrayList<Tensor> components, String operation)
     {
         nodes.add(new CompGraphNode(result, components, operation));
-        graph.add(new ArrayList<Integer>());
-        for(Tensor component : components) {
-            graph.get(graph.size() - 1).add(component.parentNode);
-        }
-        return graph.size()-1;
     }
     public void propagate() {
-        for(int i = graph.size() - 1; i >= 0; i--) {
+        for(int i = nodes.size() - 1; i >= 0; i--) {
             nodes.get(i).propagateGradient();
         }
     }
     public void clear()
     {
         nodes.clear();
-        graph.clear();
     }
 }
