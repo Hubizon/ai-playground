@@ -4,7 +4,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;

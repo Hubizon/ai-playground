@@ -1,6 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;

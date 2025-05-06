@@ -1,7 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
-import org.example.jooq.tables.records.CountriesRecord;
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.CountriesRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;

@@ -1,11 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.CountriesRecord;
+import pl.edu.uj.tcs.jooq.tables.records.CountriesRecord;
 import org.jooq.DSLContext;
 
 import java.util.List;
 
-import static org.example.jooq.Tables.COUNTRIES;
+import static pl.edu.uj.tcs.jooq.Tables.COUNTRIES;
 
 public class CountryRepository implements ICountryRepository {
     private final DSLContext dsl;

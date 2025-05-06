@@ -1,6 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 public interface IUserRepository {
     boolean existUsername(String username);

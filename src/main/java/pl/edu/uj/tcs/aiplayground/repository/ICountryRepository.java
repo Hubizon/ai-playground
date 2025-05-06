@@ -1,6 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.CountriesRecord;
+import pl.edu.uj.tcs.jooq.tables.records.CountriesRecord;
 
 import java.util.List;
 

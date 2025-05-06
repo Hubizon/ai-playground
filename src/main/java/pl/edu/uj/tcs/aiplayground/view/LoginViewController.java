@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;

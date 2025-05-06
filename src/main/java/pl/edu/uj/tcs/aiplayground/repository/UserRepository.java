@@ -1,11 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.jooq.DSLContext;
 
 import java.util.UUID;
 
-import static org.example.jooq.Tables.USERS;
+import static pl.edu.uj.tcs.jooq.Tables.USERS;
 
 public class UserRepository implements IUserRepository {
     private final DSLContext dsl;
