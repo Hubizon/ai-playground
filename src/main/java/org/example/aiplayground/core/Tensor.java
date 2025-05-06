@@ -187,4 +187,81 @@ public class Tensor {
         return result;
     }
 
+    public static Tensor matMul(Tensor a, Tensor b, ComputationalGraph graph) {
+        if (a.shape.size() != 2 || b.shape.size() != 2) {
+            throw new IllegalArgumentException("Matrix multiplication requires 2D tensors.");
+        }
+
+        int aRows = a.shape.get(0);
+        int aCols = a.shape.get(1);
+        int bRows = b.shape.get(0);
+        int bCols = b.shape.get(1);
+
+        if (aCols != bRows) {
+            throw new IllegalArgumentException(String.format(
+                    "Matrix dimensions mismatch for multiplication: (%d, %d) vs (%d, %d)",
+                    aRows, aCols, bRows, bCols));
+        }
+
+        ArrayList<Integer> resultShape = new ArrayList<>(List.of(aRows, bCols));
+        int resultSize = aRows * bCols;
+        double[] resultData = new double[resultSize];
+
+        for (int i = 0; i < aRows; i++) {
+            for (int j = 0; j < bCols; j++) {
+                double sum = 0;
+                for (int k = 0; k < aCols; k++) {
+                    sum += a.data[i * aCols + k] * b.data[k * bCols + j];
+                }
+                resultData[i * bCols + j] = sum;
+            }
+        }
+        Tensor result = new Tensor(resultData, resultShape);
+        ArrayList<Tensor> comps = new ArrayList<>();
+        comps.add(a);
+        comps.add(b);
+        graph.addNode(result,comps,"matMul");
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tensor Shape: ").append(shape).append("\n");
+        sb.append("Data: [");
+        for (int i = 0; i < data.length; i++) {
+            sb.append(data[i]);
+            if (i < data.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]\n");
+        sb.append("Gradient: [");
+        for (int i = 0; i < gradient.length; i++) {
+            sb.append(gradient[i]);
+            if (i < gradient.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    public Tensor transpose() {
+        if (shape.size() != 2) {
+            throw new UnsupportedOperationException("Transpose is only supported for 2D tensors.");
+        }
+        int rows = shape.get(0);
+        int cols = shape.get(1);
+        double[] transposedData = new double[data.length];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                transposedData[j * rows + i] = data[i * cols + j];
+            }
+        }
+
+        ArrayList<Integer> transposedShape = new ArrayList<>();
+        transposedShape.add(cols);
+        transposedShape.add(rows);
+        return new Tensor(transposedData, transposedShape);
+    }
 }
