@@ -76,6 +76,20 @@ public class Tensor {
         return new Tensor(vector, shape);
     }
 
+    public static Tensor randomMatrix(ArrayList<Integer> shape, double min, double max) {
+        int num_elements=1;
+        for(int dim:shape)
+        {
+            num_elements*=dim;
+        }
+        double[] data = new double[num_elements];
+        for(int i=0; i<data.length; i++)
+        {
+            data[i]=min+Math.random()*(max-min);
+        }
+        return new Tensor(data, shape);
+
+    }
     public static Tensor add(ArrayList<Tensor> addends, ComputationalGraph graph) {
         ArrayList<Integer> shapeOfAddends = addends.get(0).shape;
         for(Tensor addend:addends)
@@ -97,6 +111,7 @@ public class Tensor {
         graph.addNode(result,addends,"+");
         return result;
     }
+
     public static Tensor add(Tensor a, Tensor b, ComputationalGraph graph) {
         if(!a.shape.equals(b.shape))
         {
@@ -114,6 +129,7 @@ public class Tensor {
         graph.addNode(result,addends,"+");
         return result;
     }
+
     public static Tensor multiply(ArrayList<Tensor> factors, ComputationalGraph graph) {
 
         ArrayList<Integer> shapeOfFactors = factors.get(0).shape;
@@ -153,6 +169,7 @@ public class Tensor {
         graph.addNode(result, factors, "*");
         return result;
     }
+
     public Tensor sum(ComputationalGraph graph)
     {
         ArrayList<Integer> newShape = new ArrayList<>(shape);;
@@ -204,23 +221,33 @@ public class Tensor {
         }
 
         ArrayList<Integer> resultShape = new ArrayList<>(List.of(aRows, bCols));
-        int resultSize = aRows * bCols;
-        double[] resultData = new double[resultSize];
 
-        for (int i = 0; i < aRows; i++) {
-            for (int j = 0; j < bCols; j++) {
-                double sum = 0;
-                for (int k = 0; k < aCols; k++) {
-                    sum += a.data[i * aCols + k] * b.data[k * bCols + j];
-                }
-                resultData[i * bCols + j] = sum;
-            }
-        }
-        Tensor result = new Tensor(resultData, resultShape);
+        Tensor result = new Tensor(Utils.matmul(a.data,a.shape,b.data,b.shape), resultShape);
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(a);
         comps.add(b);
         graph.addNode(result,comps,"matMul");
+        return result;
+    }
+
+
+    public static Tensor vecTimesMat(Tensor Mat, Tensor vec, ComputationalGraph graph) {
+        int Rows = Mat.shape.get(0);
+        int Cols = Mat.shape.get(1);
+        int lenVec = vec.shape.get(0);
+        if (Cols != lenVec) {
+            throw new IllegalArgumentException("Dimension Mismatch!");
+        }
+        Tensor result = Tensor.zeros(new ArrayList<>(List.of(Rows)));
+        for (int i = 0; i < Rows; i++) {
+            for (int j = 0; j < Cols; j++) {
+                result.data[i] += Mat.data[i*Rows+j]*vec.data[j];
+            }
+        }
+        ArrayList<Tensor> comps = new ArrayList<>();
+        comps.add(Mat);
+        comps.add(vec);
+        graph.addNode(result,comps,"MatVec");
         return result;
     }
 
@@ -246,6 +273,7 @@ public class Tensor {
         sb.append("]");
         return sb.toString();
     }
+
     public Tensor transpose() {
         if (shape.size() != 2) {
             throw new UnsupportedOperationException("Transpose is only supported for 2D tensors.");
@@ -263,5 +291,16 @@ public class Tensor {
         transposedShape.add(cols);
         transposedShape.add(rows);
         return new Tensor(transposedData, transposedShape);
+    }
+    public static Tensor Relu(Tensor a,ComputationalGraph graph) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.data.length; i++) {
+            if(a.data[i] <= 0)
+                result.data[i] =0;
+            else
+                result.data[i]=a.data[i];
+        }
+        graph.addNode(result,new ArrayList<>(List.of(a)),"relu");
+        return result;
     }
 }

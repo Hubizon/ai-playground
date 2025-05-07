@@ -3,31 +3,7 @@ package org.example.aiplayground.core;
 import java.util.ArrayList;
 
 public class ComputationalGraph {
-    public static double[] matmul(double[] a, ArrayList<Integer> shapeA, double[] b, ArrayList<Integer> shapeB) {
-        int aRows = shapeA.get(0);
-        int aCols = shapeA.get(1);
-        int bRows = shapeB.get(0);
-        int bCols = shapeB.get(1);
 
-        if (aCols != bRows) {
-            throw new IllegalArgumentException("Matrix dimensions do not align: " +
-                    aCols + " (A columns) vs " + bRows + " (B rows).");
-        }
-
-        double[] result = new double[aRows * bCols];
-
-        for (int i = 0; i < aRows; i++) {
-            for (int j = 0; j < bCols; j++) {
-                double sum = 0.0;
-                for (int k = 0; k < aCols; k++) {
-                    sum += a[i * aCols + k] * b[k * bCols + j];
-                }
-                result[i * bCols + j] = sum;
-            }
-        }
-
-        return result;
-    }
     private static class CompGraphNode{
         Tensor result;
         ArrayList<Tensor> components;
@@ -73,8 +49,43 @@ public class ComputationalGraph {
                 Tensor a = components.get(0);
                 Tensor b = components.get(1);
                 Tensor c = result;
-                a.gradient = matmul(c.gradient, c.shape, b.transpose().data, b.shape);
-                b.gradient = matmul(a.transpose().data, a.transpose().shape, c.gradient, c.shape);
+                a.gradient = Utils.matmul(c.gradient, c.shape, b.transpose().data, b.shape);
+                b.gradient = Utils.matmul(a.transpose().data, a.transpose().shape, c.gradient, c.shape);
+            }
+            else if(operation.equals("relu")) {
+                Tensor input = components.get(0);
+                int length = result.data.length;
+                for (int i = 0; i < length; i++) {
+                    if (input.data[i] > 0) {
+                        input.gradient[i] += result.gradient[i];
+                    }
+                }
+            }
+            else if(operation.equals("MatVec")) {
+                Tensor mat = components.get(0);
+                Tensor vector = components.get(1);
+                Tensor result = this.result;
+
+                int matRows = mat.shape.get(0);
+                int matCols = mat.shape.get(1);
+                int vecLen = vector.shape.get(0);
+                int resultRows = result.shape.get(0);
+
+                if (matCols != vecLen || matRows != resultRows) {
+                    throw new IllegalArgumentException("Dimension mismatch in MatVec gradient propagation");
+                }
+
+                for (int i = 0; i < matRows; i++) {
+                    for (int j = 0; j < matCols; j++) {
+                        mat.gradient[i * matCols + j] += result.gradient[i] * vector.data[j];
+                    }
+                }
+
+                for (int j = 0; j < vecLen; j++) {
+                    for (int i = 0; i < resultRows; i++) {
+                        vector.gradient[j] += result.gradient[i] * mat.data[i * matCols + j];
+                    }
+                }
             }
         }
     }
