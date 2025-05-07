@@ -15,8 +15,11 @@ public class Optimizers {
 
         public void optimize() {
             for (Tensor param : params) {
-                for (int i = 0; i < param.data.length; i++) {
-                    param.data[i] -= param.gradient[i] * learningRate;
+                for (int i = 0; i < param.rows; i++) {
+                    for(int j=0;j<param.cols;j++)
+                    {
+                        param.data[i][j] -= param.gradient[i][j] * learningRate;
+                    }
                 }
 
             }
@@ -24,7 +27,9 @@ public class Optimizers {
 
         public void zeroGradient() {
             for (Tensor param : params) {
-                Arrays.fill(param.gradient, 0.0);
+                for(int i = 0; i < param.rows; i++) {
+                    Arrays.fill(param.gradient[i], 0.0);
+                }
             }
         }
     }
@@ -37,8 +42,8 @@ public class Optimizers {
         double epsilon = 1e-8;
         int timestep = 0;
 
-        ArrayList<double[]> m;
-        ArrayList<double[]> v;
+        ArrayList<double[][]> m;
+        ArrayList<double[][]> v;
 
         public AdamOptimizer(ArrayList<Tensor> params, double learningRate) {
             this.params = params;
@@ -48,8 +53,8 @@ public class Optimizers {
 
             // Initialize moment vectors to match param shapes
             for (Tensor param : params) {
-                m.add(new double[param.data.length]);
-                v.add(new double[param.data.length]);
+                m.add(new double[param.rows][param.cols]);
+                v.add(new double[param.rows][param.cols]);
             }
         }
 
@@ -57,30 +62,34 @@ public class Optimizers {
             timestep++;
             for (int i = 0; i < params.size(); i++) {
                 Tensor param = params.get(i);
-                double[] grad = param.gradient;
-                double[] m_t = m.get(i);
-                double[] v_t = v.get(i);
+                double[][] grad = param.gradient;
+                double[][] m_t = m.get(i);
+                double[][] v_t = v.get(i);
 
-                for (int j = 0; j < param.data.length; j++) {
-                    // Update biased first moment estimate
-                    m_t[j] = beta1 * m_t[j] + (1 - beta1) * grad[j];
+                for (int r = 0; r < param.rows; r++) {
+                    for (int c = 0; c < param.cols; c++) {
+                        // Update biased first moment estimate
+                        m_t[r][c] = beta1 * m_t[r][c] + (1 - beta1) * grad[r][c];
 
-                    // Update biased second raw moment estimate
-                    v_t[j] = beta2 * v_t[j] + (1 - beta2) * grad[j] * grad[j];
+                        // Update biased second raw moment estimate
+                        v_t[r][c] = beta2 * v_t[r][c] + (1 - beta2) * grad[r][c] * grad[r][c];
 
-                    // Compute bias-corrected first and second moment estimates
-                    double mHat = m_t[j] / (1 - Math.pow(beta1, timestep));
-                    double vHat = v_t[j] / (1 - Math.pow(beta2, timestep));
+                        // Compute bias-corrected first and second moment estimates
+                        double mHat = m_t[r][c] / (1 - Math.pow(beta1, timestep));
+                        double vHat = v_t[r][c] / (1 - Math.pow(beta2, timestep));
 
-                    // Update parameter
-                    param.data[j] -= learningRate * mHat / (Math.sqrt(vHat) + epsilon);
+                        // Update parameter
+                        param.data[r][c] -= learningRate * mHat / (Math.sqrt(vHat) + epsilon);
+                    }
                 }
             }
         }
 
         public void zeroGradient() {
             for (Tensor param : params) {
-                Arrays.fill(param.gradient, 0.0);
+                for (int r = 0; r < param.rows; r++) {
+                    Arrays.fill(param.gradient[r], 0.0);
+                }
             }
         }
     }
