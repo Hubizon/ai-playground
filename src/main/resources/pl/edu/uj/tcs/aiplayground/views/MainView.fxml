@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<HBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
+      stylesheets="@/css/styles.css"
+      prefWidth="1000" prefHeight="600">
+
+    <!-- Left side - Settings panel -->
+    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
+        <Label text="Settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="leaderboards" onAction="#onLeaderboardsClicked"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="user info" onAction="#onUserInfoClicked"/>
+        </HBox>
+    </VBox>
+
+    <!-- Center - bar container -->
+    <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+        <!-- Spacer to push content down by 60 pixels -->
+        <Region prefHeight="60"/>
+
+        <!-- Bars container centered horizontally -->
+        <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Run" onAction="#onRunBarClicked"/>
+                <Button text="Pause" onAction="#onPauseBarClicked"/>
+                <Button text="Reset" onAction="#onResetBarClicked"/>
+                <Button text="Remove layer" onAction="#onRemoveBarClicked"/>
+                <Button text="Add layer" onAction="#onAddBarClicked"/>
+            </HBox>
+            <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
+                <!-- Bars will be added here programmatically -->
+            </VBox>
+        </VBox>
+    </VBox>
+
+    <!-- Right side - Metrics panel -->
+    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
+        <Label text="Training Metrics" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Accuracy:" style="-fx-text-fill: white;"/>
+            <Label fx:id="accuracyField" text="0"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Loss %:" style="-fx-text-fill: white;"/>
+            <Label fx:id="lossField" text="0"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+    </VBox>
+</HBox>

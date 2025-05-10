@@ -8,14 +8,38 @@
     -fx-background-color: #3C3C3C;
     -fx-text-fill: white;
     -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10;
+}
+
+.button:hover {
+    -fx-background-color: #4C4C4C;
 }
 
 .text-field {
     -fx-background-color: #444444;
     -fx-text-fill: white;
     -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5;
 }
 
 .label {
     -fx-text-fill: white;
+}
+
+.vbox {
+    -fx-spacing: 10;
+}
+
+.hbox {
+    -fx-spacing: 10;
+}
+
+.metrics-panel {
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-background-color: #3C3C3C;
 }

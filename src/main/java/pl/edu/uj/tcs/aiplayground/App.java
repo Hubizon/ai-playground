@@ -15,6 +15,20 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+//        //skip login step for quicker testing
+//        try {
+//            Stage mainStage = new Stage();
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
+//            Scene scene = new Scene(loader.load());
+//
+//            mainStage.setTitle("AI Playground");
+//            mainStage.setScene(scene);
+//            mainStage.show();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        //original code:
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/LoginView.fxml"));
         Scene scene = new Scene(loader.load());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/styles.css")).toExternalForm());

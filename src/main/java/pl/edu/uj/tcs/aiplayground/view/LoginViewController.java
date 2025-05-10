@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -62,17 +63,11 @@ public class LoginViewController {
     private void openMainWindow() {
         try {
             Stage mainStage = new Stage();
-            // Here you would load your main application view
-            // For example:
-            // FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
-            // Scene scene = new Scene(loader.load());
-            // mainStage.setScene(scene);
-            // mainStage.setTitle("AI Playground");
-            // mainStage.show();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
+            Scene scene = new Scene(loader.load());
 
-            // For now, just show a simple window as placeholder
-            mainStage.setTitle("Main Application");
-            mainStage.setScene(new Scene(new Label("Welcome to the main application!"), 400, 300));
+            mainStage.setTitle("AI Playground");
+            mainStage.setScene(scene);
             mainStage.show();
         } catch (Exception e) {
             e.printStackTrace();
