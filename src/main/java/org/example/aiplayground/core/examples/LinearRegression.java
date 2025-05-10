@@ -1,7 +1,11 @@
-package org.example.aiplayground.core;
+package org.example.aiplayground.core.examples;
+
+import org.example.aiplayground.core.ComputationalGraph;
+import org.example.aiplayground.core.Tensor;
+import org.example.aiplayground.core.loss.MSE;
+import org.example.aiplayground.core.optim.AdamOptimizer;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class LinearRegression {
     public static void main(String[] args) {
@@ -23,13 +27,14 @@ public class LinearRegression {
         ArrayList<Tensor> params = new ArrayList<>();
         params.add(a);
         params.add(b);
-        Optimizers.AdamOptimizer optimizer = new Optimizers.AdamOptimizer(params,5);
+        AdamOptimizer optimizer = new AdamOptimizer(params,5);
+        MSE mse = new MSE();
         for (int epoch=0;epoch<1000;epoch++)
         {   optimizer.zeroGradient();
             for(int i=1;i<1000000;i++)
             {   d = Tensor.multiply(a,X.get(i), graph).sumCols(graph);
                 c= Tensor.add(b, d, graph);
-                LossFunctions.MSE(c,Y.get(i));
+                mse.loss(c,Y.get(i));
             }
             graph.propagate();
             optimizer.optimize();

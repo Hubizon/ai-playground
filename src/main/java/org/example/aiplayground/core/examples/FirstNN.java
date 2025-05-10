@@ -1,4 +1,9 @@
-package org.example.aiplayground.core;
+package org.example.aiplayground.core.examples;
+
+import org.example.aiplayground.core.ComputationalGraph;
+import org.example.aiplayground.core.Tensor;
+import org.example.aiplayground.core.loss.BCE;
+import org.example.aiplayground.core.optim.AdamOptimizer;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -60,7 +65,8 @@ public class FirstNN {
         params.add(L2);
         params.add(B1);
         params.add(B2);
-        Optimizers.AdamOptimizer optimizer = new Optimizers.AdamOptimizer(params,0.1);
+        AdamOptimizer optimizer = new AdamOptimizer(params,0.1);
+        BCE bce = new BCE();
         for (int epoch=0;epoch<10000;epoch++)
         {   optimizer.zeroGradient();
 
@@ -95,7 +101,7 @@ public class FirstNN {
                 g= Tensor.matMul(L2, e, graph);
                 f = Tensor.add(g,B2, graph);
                 c = Tensor.Sigmoid(f, graph);
-                LossFunctions.BCE(c,Y.get(i));
+                bce.loss(c,Y.get(i));
                 if(i%32==0)
                 {
                     graph.propagate();
