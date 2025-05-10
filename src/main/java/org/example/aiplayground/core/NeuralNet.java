@@ -1,11 +1,16 @@
 package org.example.aiplayground.core;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
+import org.example.aiplayground.core.layers.*;
 
-import org.example.aiplayground.core.layers.Layer;
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Scanner;
 public class NeuralNet {
 
     public ArrayList<Layer> layers = new ArrayList<>();
@@ -24,6 +29,71 @@ public class NeuralNet {
             forwardTensor = layer.forward(forwardTensor, graph);
         }
         return forwardTensor;
+    }
+
+    public void save(String outputPath) {
+        JSONObject json = new JSONObject();
+        JSONArray layersArray = new JSONArray();
+
+        for (Layer layer : layers) {
+            JSONObject layerJson = new JSONObject();
+            layerJson.put("layer", layer.toJson());
+            layersArray.put(layerJson);
+        }
+
+        json.put("layers", layersArray);
+
+        try (FileWriter file = new FileWriter(outputPath)) {
+            file.write(json.toString(4)); // Pretty print with 4 spaces
+        } catch (IOException e) {
+            System.err.println("Error saving model: " + e.getMessage());
+        }
+    }
+
+    public static NeuralNet load(String filePath) {
+        NeuralNet neuralNet = new NeuralNet();
+        try {
+            File file = new File(filePath);
+            Scanner scanner = new Scanner(file);
+            StringBuilder jsonContent = new StringBuilder();
+            while (scanner.hasNextLine()) {
+                jsonContent.append(scanner.nextLine());
+            }
+            scanner.close();
+
+            JSONObject jsonObject = new JSONObject(jsonContent.toString());
+            JSONArray layersArray = jsonObject.getJSONArray("layers");
+
+            for (int i = 0; i < layersArray.length(); i++) {
+                JSONObject layerWrapper = layersArray.getJSONObject(i);
+                String layerJsonString = layerWrapper.getString("layer");
+                JSONObject layerJson = new JSONObject(layerJsonString);
+                String type = layerJson.getString("type");
+
+                switch (type) {
+                    case "LinearLayer":
+                        int inputSize = layerJson.getInt("inputSize");
+                        int outputSize = layerJson.getInt("outputSize");
+                        boolean useBias = layerJson.getBoolean("useBias");
+                        LinearLayer linearLayer = new LinearLayer(inputSize, outputSize, useBias);
+                        neuralNet.layers.add(linearLayer);
+                        break;
+                    case "ReluLayer":
+                        neuralNet.layers.add(new ReluLayer());
+                        break;
+                    case "SigmoidLayer":
+                        neuralNet.layers.add(new SigmoidLayer());
+                        break;
+                    default:
+                        System.err.println("Unknown layer type: " + type);
+                        break;
+                }
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error loading model: " + e.getMessage());
+        }
+        return neuralNet;
     }
 
 }

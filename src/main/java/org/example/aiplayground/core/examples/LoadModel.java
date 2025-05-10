@@ -13,7 +13,7 @@ import org.example.aiplayground.core.optim.SGDOptimizer;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class NNUsingModel {
+public class LoadModel {
     public static void main(String[] args) {
         ArrayList<Tensor> X = new ArrayList<>();
         ArrayList<Tensor> Y = new ArrayList<>();
@@ -61,12 +61,7 @@ public class NNUsingModel {
 
         Tensor pred;
         ComputationalGraph graph = new ComputationalGraph();
-        NeuralNet net = new NeuralNet();
-        net.layers.add(new LinearLayer(2,12,true));
-        net.layers.add(new SigmoidLayer());
-        net.layers.add(new LinearLayer(12,6,true));
-        net.layers.add(new SigmoidLayer());
-        net.layers.add(new LinearLayer(6,1,true));
+        NeuralNet net = NeuralNet.load("model.json");
         SGDOptimizer optimizer = new SGDOptimizer(net.getParams(),0.1);
         BCE bce = new BCE();
         for (int epoch=0;epoch<10;epoch++)

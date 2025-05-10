@@ -8,4 +8,5 @@ import java.util.ArrayList;
 public interface Layer {
     public Tensor forward(Tensor input, ComputationalGraph graph);
     public ArrayList<Tensor> getParams();
+    public String toJson();
 }
