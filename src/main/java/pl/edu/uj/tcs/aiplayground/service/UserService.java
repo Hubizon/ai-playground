@@ -2,10 +2,11 @@ package pl.edu.uj.tcs.aiplayground.service;
 
 import pl.edu.uj.tcs.jooq.tables.records.CountriesRecord;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
-import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
-import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
-import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.repository.ICountryRepository;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
@@ -25,35 +26,63 @@ public class UserService {
         this.countryRepository = countryRepository;
     }
 
-    public List<String> getCountryNames() {
-        List<CountriesRecord> countriesRecords = countryRepository.getCountries();
+    public List<String> getCountryNames() throws DatabaseException {
+        List<CountriesRecord> countriesRecords;
+        try {
+            countriesRecords = countryRepository.getCountries();
+        } catch(Exception e) {
+            throw new DatabaseException(e);
+        }
+
         return countriesRecords.stream().map(CountriesRecord::getName).collect(Collectors.toList());
     }
 
-    public UsersRecord login(LoginForm loginForm) throws UserLoginException {
+    public UserDto login(LoginForm loginForm) throws UserModificationException, DatabaseException {
         UserValidation.validateLoginForm(loginForm);
 
-        UsersRecord user = userRepository.findByUsername(loginForm.username());
+        UsersRecord user;
+        try {
+            user = userRepository.findByUsername(loginForm.username());
+
+        } catch(Exception e) {
+            throw new DatabaseException(e);
+        }
+
         if (user == null)
-            throw new UserLoginException("User doesn't exist");
+            throw new UserModificationException("User doesn't exist");
 
         if (!PasswordHasher.verify(loginForm.password(), user.getPasswordHash()))
-            throw new UserLoginException("Invalid username or password");
+            throw new UserModificationException("Invalid username or password");
 
-        return user;
+        CountriesRecord countriesRecord;
+        try {
+            countriesRecord = countryRepository.getCountryById(user.getCountryId());
+        } catch(Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                countriesRecord.getName(),
+                user.getBirthDate()
+        );
     }
 
-    public void register(RegisterForm registerForm) throws UserRegisterException {
+    public void register(RegisterForm registerForm) throws UserModificationException, DatabaseException {
         UserValidation.validateRegisterForm(registerForm);
 
         Integer country_id = countryRepository.getCountryIdByName(registerForm.country());
         if (country_id == null)
-            throw new UserRegisterException("Country not found");
+            throw new UserModificationException("Country not found");
 
         if (userRepository.existUsername(registerForm.username()))
-            throw new UserRegisterException("Username taken");
+            throw new UserModificationException("Username taken");
         if (userRepository.existEmail(registerForm.email()))
-            throw new UserRegisterException("User with this email already exists");
+            throw new UserModificationException("User with this email already exists");
 
         String password_hashed = PasswordHasher.hash(registerForm.password());
 
@@ -75,7 +104,7 @@ public class UserService {
         try {
             userRepository.insertUser(user);
         } catch (Exception e) {
-            throw new UserRegisterException("Illegal data");
+            throw new DatabaseException(e);
         }
     }
 }

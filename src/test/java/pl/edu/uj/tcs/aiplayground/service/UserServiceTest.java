@@ -4,10 +4,9 @@ import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
-import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
-import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.repository.ICountryRepository;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
@@ -50,7 +49,7 @@ class UserServiceTest {
             assertEquals(username, result.getUsername());
             assertEquals(hashedPassword, result.getPasswordHash());
             assertEquals(testFirstName, result.getFirstName());
-        } catch (UserLoginException e) {
+        } catch (UserModificationException e) {
             fail(e.getMessage());
         }
     }
@@ -59,7 +58,7 @@ class UserServiceTest {
     void loginShouldThrowWhenUserNotFound() {
         when(userRepo.existUsername("ghost")).thenReturn(false);
         LoginForm form1 = new LoginForm("ghost", "pass");
-        assertThrows(UserLoginException.class, () -> service.login(form1));
+        assertThrows(UserModificationException.class, () -> service.login(form1));
     }
 
     @Test
@@ -72,7 +71,7 @@ class UserServiceTest {
 
         LoginForm form = new LoginForm("user", "wrongPassword");
 
-        assertThrows(UserLoginException.class, () -> service.login(form));
+        assertThrows(UserModificationException.class, () -> service.login(form));
     }
 
     @Test
@@ -111,7 +110,7 @@ class UserServiceTest {
 
         when(countryRepo.getCountryIdByName("Nowhere")).thenReturn(null);
 
-        assertThrows(UserRegisterException.class, () -> service.register(form));
+        assertThrows(UserModificationException.class, () -> service.register(form));
     }
 
     @Test
@@ -125,7 +124,7 @@ class UserServiceTest {
         when(userRepo.existUsername("john123")).thenReturn(true);
         when(userRepo.existEmail("john@smith.org")).thenReturn(false);
 
-        assertThrows(UserRegisterException.class, () -> service.register(form));
+        assertThrows(UserModificationException.class, () -> service.register(form));
     }
 
     @Test
@@ -139,7 +138,7 @@ class UserServiceTest {
         when(userRepo.existUsername("john123")).thenReturn(false);
         when(userRepo.existEmail("john@smith.org")).thenReturn(true);
 
-        assertThrows(UserRegisterException.class, () -> service.register(form));
+        assertThrows(UserModificationException.class, () -> service.register(form));
     }
 
     @Test
@@ -155,6 +154,6 @@ class UserServiceTest {
 
         doThrow(new RuntimeException("DB failure")).when(userRepo).insertUser(any());
 
-        assertThrows(UserRegisterException.class, () -> service.register(form));
+        assertThrows(UserModificationException.class, () -> service.register(form));
     }
 }

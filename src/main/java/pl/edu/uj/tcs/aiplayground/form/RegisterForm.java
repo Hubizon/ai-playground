@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.dto;
+package pl.edu.uj.tcs.aiplayground.form;
 
 import java.time.LocalDate;
 
