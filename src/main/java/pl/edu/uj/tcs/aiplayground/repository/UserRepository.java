@@ -1,12 +1,12 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.UsersRecord;
 import org.jooq.DSLContext;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
-import java.util.UUID;
+import java.util.List;
 
-import static org.example.jooq.Tables.USERS;
-
+@SuppressWarnings("ConstantConditions")
 public class UserRepository implements IUserRepository {
     private final DSLContext dsl;
 
@@ -14,44 +14,82 @@ public class UserRepository implements IUserRepository {
         this.dsl = dslContext;
     }
 
+    @Override
     public boolean existUsername(String username) {
-        UsersRecord record = dsl.select()
-                .from(USERS)
-                .where(USERS.USERNAME.eq(username))
-                .fetchOneInto(UsersRecord.class);
-        return record != null;
+        return dsl.fetchOne(
+                "SELECT EXISTS (SELECT * FROM users WHERE username = ?);",
+                username
+        ).into(Boolean.class);
     }
 
+    @Override
     public boolean existEmail(String email) {
-        UsersRecord record = dsl.select()
-                .from(USERS)
-                .where(USERS.EMAIL.eq(email))
-                .fetchOneInto(UsersRecord.class);
-        return record != null;
+        return dsl.fetchOne(
+                "SELECT EXISTS (SELECT * FROM users WHERE email = ?);",
+                email
+        ).into(Boolean.class);
     }
 
+    @Override
     public UsersRecord findByUsername(String username) {
-        return dsl.select()
-                .from(USERS)
-                .where(USERS.USERNAME.eq(username))
-                .fetchOneInto(UsersRecord.class);
+        return dsl.fetchOne("""
+                        SELECT *
+                            FROM users
+                            WHERE username = ?;
+                        """,
+                username
+        ).into(UsersRecord.class);
     }
 
-    public UsersRecord findByEmail(String email) {
-        return dsl.select()
-                .from(USERS)
-                .where(USERS.EMAIL.eq(email))
-                .fetchOneInto(UsersRecord.class);
+    @Override
+    public void insertUser(RegisterForm registerForm) {
+        dsl.query("""
+                        INSERT INTO users(username, first_name, last_name, email, password_hash, country_id, birth_date, created_at)
+                            VALUES (?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    (SELECT id FROM countries WHERE name = ?),
+                                    ?,
+                                    now())
+                        """,
+                registerForm.username(),
+                registerForm.firstName(),
+                registerForm.lastName(),
+                registerForm.email(),
+                registerForm.password(),
+                registerForm.country(),
+                registerForm.birthDate()
+        ).execute();
     }
 
-    public void insertUser(UsersRecord user) {
-        user.attach(dsl.configuration());
-        user.store();
+    @Override
+    public List<String> getCountries() {
+        return dsl.fetch("""
+                SELECT name
+                    FROM countries;
+                """
+        ).into(String.class);
     }
 
-    public void deleteUser(String id) {
-        dsl.deleteFrom(USERS)
-                .where(USERS.ID.eq(UUID.fromString(id)))
-                .execute();
+    @Override
+    public Integer getCountryIdByName(String countryName) {
+        return dsl.fetchOne("""
+                SELECT id
+                    FROM countries
+                    WHERE name = ?
+                """, countryName
+        ).into(Integer.class);
+    }
+
+    @Override
+    public String getCountryNameById(Integer countryId) {
+        return dsl.fetchOne("""
+                SELECT name
+                    FROM countries
+                    WHERE id = ?
+                """, countryId
+        ).into(String.class);
     }
 }

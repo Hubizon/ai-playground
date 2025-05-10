@@ -1,13 +1,15 @@
 package pl.edu.uj.tcs.aiplayground.dto;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-public record RegisterForm(
+public record UserDto(
+        UUID userId,
         String username,
         String firstName,
         String lastName,
         String email,
-        String password,
-        String country,
+        String countryName,
         LocalDate birthDate
-) { }
+) {
+}

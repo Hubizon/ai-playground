@@ -1,6 +1,9 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import org.example.jooq.tables.records.UsersRecord;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
+
+import java.util.List;
 
 public interface IUserRepository {
     boolean existUsername(String username);
@@ -9,9 +12,11 @@ public interface IUserRepository {
 
     UsersRecord findByUsername(String username);
 
-    UsersRecord findByEmail(String email);
+    void insertUser(RegisterForm user);
 
-    void insertUser(UsersRecord user);
+    List<String> getCountries();
 
-    void deleteUser(String id);
+    Integer getCountryIdByName(String countryName);
+
+    String getCountryNameById(Integer countryId);
 }

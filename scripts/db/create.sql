@@ -379,4 +379,14 @@ ADD COLUMN path TEXT;
 UPDATE datasets
 SET path = 'datasets/' || name;
 
+CREATE OR REPLACE FUNCTION next_model_version(version_number integer)
+    returns integer
+    language plpgsql
+as
+$$
+begin
+    return version_number + 1;
+end;
+$$;
+
 COMMIT;

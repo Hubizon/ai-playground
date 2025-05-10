@@ -1,16 +1,16 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import org.example.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
-import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
-import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,8 +29,15 @@ class UserViewModelTest {
     @Test
     void loginSuccessfulShouldSetUserAndMessage() {
         LoginForm form = new LoginForm("john", "secret");
-        UsersRecord record = new UsersRecord();
-        record.setUsername("john");
+        UserDto record = new UserDto(
+                UUID.randomUUID(),
+                "john",
+                "John",
+                "Wick",
+                "john@wick.com",
+                "Poland",
+                LocalDate.of(2020, 1, 1)
+        );
 
         try {
             when(userService.login(form)).thenReturn(record);
@@ -40,7 +47,7 @@ class UserViewModelTest {
             assertEquals(record, viewModel.userProperty().get());
             assertEquals("Login Successful: john", viewModel.statusMessageProperty().get());
             assertTrue(viewModel.isLoggedIn());
-        } catch (UserLoginException e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -50,14 +57,14 @@ class UserViewModelTest {
         LoginForm form = new LoginForm("john", "wrong");
 
         try {
-            when(userService.login(form)).thenThrow(new UserLoginException("Invalid credentials"));
+            when(userService.login(form)).thenThrow(new UserModificationException("Invalid credentials"));
 
             viewModel.login(form);
 
             assertNull(viewModel.userProperty().get());
             assertEquals("Invalid credentials", viewModel.statusMessageProperty().get());
             assertFalse(viewModel.isLoggedIn());
-        } catch (UserLoginException e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -75,7 +82,7 @@ class UserViewModelTest {
             viewModel.register(form);
 
             assertEquals("Registration Successful", viewModel.statusMessageProperty().get());
-        } catch (UserRegisterException e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -88,12 +95,12 @@ class UserViewModelTest {
         );
 
         try {
-            doThrow(new UserRegisterException("Username taken")).when(userService).register(form);
+            doThrow(new UserModificationException("Username taken")).when(userService).register(form);
 
             viewModel.register(form);
 
             assertEquals("Username taken", viewModel.statusMessageProperty().get());
-        } catch (UserRegisterException e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -101,12 +108,16 @@ class UserViewModelTest {
     @Test
     void getCountryNamesShouldReturnFromService() {
         List<String> countries = List.of("Poland", "Germany", "France");
-        when(userService.getCountryNames()).thenReturn(countries);
+        try {
+            when(userService.getCountryNames()).thenReturn(countries);
 
-        List<String> result = viewModel.getCountryNames();
+            List<String> result = viewModel.getCountryNames();
 
-        assertEquals(countries, result);
-        verify(userService).getCountryNames();
+            assertEquals(countries, result);
+            verify(userService).getCountryNames();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
