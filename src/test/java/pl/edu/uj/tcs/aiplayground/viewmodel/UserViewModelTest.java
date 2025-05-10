@@ -1,5 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,8 +30,15 @@ class UserViewModelTest {
     @Test
     void loginSuccessfulShouldSetUserAndMessage() {
         LoginForm form = new LoginForm("john", "secret");
-        UsersRecord record = new UsersRecord();
-        record.setUsername("john");
+        UserDto record = new UserDto(
+                UUID.randomUUID(),
+                "john",
+                "John",
+                "Wick",
+                "john@wick.com",
+                "Poland",
+                LocalDate.of(2020, 1, 1)
+        );
 
         try {
             when(userService.login(form)).thenReturn(record);

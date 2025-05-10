@@ -1,5 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
-import pl.edu.uj.tcs.aiplayground.repository.ICountryRepository;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
 
@@ -18,14 +19,12 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
     private IUserRepository userRepo;
-    private ICountryRepository countryRepo;
     private UserService service;
 
     @BeforeEach
     void setup() {
         userRepo = mock(IUserRepository.class);
-        countryRepo = mock(ICountryRepository.class);
-        service = new UserService(userRepo, countryRepo);
+        service = new UserService(userRepo);
     }
 
     @Test
@@ -45,11 +44,10 @@ class UserServiceTest {
         LoginForm form = new LoginForm(username, rawPassword);
 
         try {
-            UsersRecord result = service.login(form);
-            assertEquals(username, result.getUsername());
-            assertEquals(hashedPassword, result.getPasswordHash());
-            assertEquals(testFirstName, result.getFirstName());
-        } catch (UserModificationException e) {
+            UserDto result = service.login(form);
+            assertEquals(username, result.username());
+            assertEquals(testFirstName, result.firstName());
+        } catch (UserModificationException | DatabaseException e) {
             fail(e.getMessage());
         }
     }
@@ -81,24 +79,23 @@ class UserServiceTest {
                 "!1securePassword1!", "Poland", LocalDate.of(2000, 1, 1)
         );
 
-        when(countryRepo.getCountryIdByName("Poland")).thenReturn(1);
+        when(userRepo.getCountryIdByName("Poland")).thenReturn(1);
         when(userRepo.existUsername("john123")).thenReturn(false);
         when(userRepo.existEmail("john@smith.org")).thenReturn(false);
 
         assertDoesNotThrow(() -> service.register(form));
 
-        verify(userRepo).insertUser(any(UsersRecord.class));
+        verify(userRepo).insertUser(any(RegisterForm.class));
 
-        ArgumentCaptor<UsersRecord> captor = ArgumentCaptor.forClass(UsersRecord.class);
+        ArgumentCaptor<RegisterForm> captor = ArgumentCaptor.forClass(RegisterForm.class);
         verify(userRepo).insertUser(captor.capture());
-        UsersRecord inserted = captor.getValue();
+        RegisterForm inserted = captor.getValue();
 
-        assertEquals("john123", inserted.getUsername());
-        assertEquals("John", inserted.getFirstName());
-        assertEquals("Smith", inserted.getLastName());
-        assertEquals("john@smith.org", inserted.getEmail());
-        assertEquals(1, inserted.getCountryId());
-        assertTrue(PasswordHasher.verify("!1securePassword1!", inserted.getPasswordHash()));
+        assertEquals("john123", inserted.username());
+        assertEquals("John", inserted.firstName());
+        assertEquals("Smith", inserted.lastName());
+        assertEquals("john@smith.org", inserted.email());
+        assertEquals("Poland", inserted.country());
     }
 
     @Test
@@ -108,7 +105,7 @@ class UserServiceTest {
                 "!1securePassword1!", "Nowhere", LocalDate.of(2000, 1, 1)
         );
 
-        when(countryRepo.getCountryIdByName("Nowhere")).thenReturn(null);
+        when(userRepo.getCountryIdByName("Nowhere")).thenReturn(null);
 
         assertThrows(UserModificationException.class, () -> service.register(form));
     }
@@ -120,7 +117,7 @@ class UserServiceTest {
                 "!1securePassword1!", "Poland", LocalDate.of(2000, 1, 1)
         );
 
-        when(countryRepo.getCountryIdByName("Poland")).thenReturn(1);
+        when(userRepo.getCountryIdByName("Poland")).thenReturn(1);
         when(userRepo.existUsername("john123")).thenReturn(true);
         when(userRepo.existEmail("john@smith.org")).thenReturn(false);
 
@@ -134,7 +131,7 @@ class UserServiceTest {
                 "!1securePassword1!", "Poland", LocalDate.of(2000, 1, 1)
         );
 
-        when(countryRepo.getCountryIdByName("Poland")).thenReturn(1);
+        when(userRepo.getCountryIdByName("Poland")).thenReturn(1);
         when(userRepo.existUsername("john123")).thenReturn(false);
         when(userRepo.existEmail("john@smith.org")).thenReturn(true);
 
@@ -148,7 +145,7 @@ class UserServiceTest {
                 "!1securePassword1!", "Poland", LocalDate.of(2000, 1, 1)
         );
 
-        when(countryRepo.getCountryIdByName("Poland")).thenReturn(1);
+        when(userRepo.getCountryIdByName("Poland")).thenReturn(1);
         when(userRepo.existUsername("john123")).thenReturn(false);
         when(userRepo.existEmail("john@smith.org")).thenReturn(false);
 

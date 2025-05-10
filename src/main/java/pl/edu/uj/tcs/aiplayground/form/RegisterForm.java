@@ -10,4 +10,16 @@ public record RegisterForm(
         String password,
         String country,
         LocalDate birthDate
-) { }
+) {
+    public RegisterForm withHashedPassword(String hashedPassword) {
+        return new RegisterForm(
+                username,
+                firstName,
+                lastName,
+                email,
+                hashedPassword,
+                country,
+                birthDate
+        );
+    }
+}
