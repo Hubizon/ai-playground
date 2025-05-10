@@ -1,7 +1,9 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
 import org.jooq.DSLContext;
-import pl.edu.uj.tcs.aiplayground.repository.*;
+import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
+import pl.edu.uj.tcs.aiplayground.repository.JooqFactory;
+import pl.edu.uj.tcs.aiplayground.repository.UserRepository;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 public class ViewModelFactory {

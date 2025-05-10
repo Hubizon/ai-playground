@@ -1,15 +1,10 @@
 package pl.edu.uj.tcs.aiplayground.repository;
 
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
-import pl.edu.uj.tcs.jooq.tables.records.CountriesRecord;
-import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.jooq.DSLContext;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;
-import java.util.UUID;
-
-import static pl.edu.uj.tcs.jooq.Tables.COUNTRIES;
-import static pl.edu.uj.tcs.jooq.Tables.USERS;
 
 @SuppressWarnings("ConstantConditions")
 public class UserRepository implements IUserRepository {
@@ -38,10 +33,10 @@ public class UserRepository implements IUserRepository {
     @Override
     public UsersRecord findByUsername(String username) {
         return dsl.fetchOne("""
-                SELECT *
-                    FROM users
-                    WHERE username = ?;
-                """,
+                        SELECT *
+                            FROM users
+                            WHERE username = ?;
+                        """,
                 username
         ).into(UsersRecord.class);
     }
@@ -49,16 +44,16 @@ public class UserRepository implements IUserRepository {
     @Override
     public void insertUser(RegisterForm registerForm) {
         dsl.query("""
-            INSERT INTO users(username, first_name, last_name, email, password_hash, country_id, birth_date, created_at)
-                VALUES (?,
-                        ?,
-                        ?,
-                        ?,
-                        ?,
-                        (SELECT id FROM countries WHERE name = ?),
-                        ?,
-                        now())
-            """,
+                        INSERT INTO users(username, first_name, last_name, email, password_hash, country_id, birth_date, created_at)
+                            VALUES (?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    (SELECT id FROM countries WHERE name = ?),
+                                    ?,
+                                    now())
+                        """,
                 registerForm.username(),
                 registerForm.firstName(),
                 registerForm.lastName(),

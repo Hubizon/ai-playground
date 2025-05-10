@@ -17,9 +17,6 @@ import static org.mockito.Mockito.*;
 
 class ModelServiceTest {
 
-    private IModelRepository repo;
-    private ModelService service;
-
     private final UUID userId = UUID.randomUUID();
     private final UUID modelId = UUID.randomUUID();
     private final UUID modelVersionId = UUID.randomUUID();
@@ -30,6 +27,8 @@ class ModelServiceTest {
             modelId, userId, modelVersionId, modelName, versionNumber, architecture
     );
     private final ModelForm form = new ModelForm(userId, modelName, architecture);
+    private IModelRepository repo;
+    private ModelService service;
 
     @BeforeEach
     void setUp() {

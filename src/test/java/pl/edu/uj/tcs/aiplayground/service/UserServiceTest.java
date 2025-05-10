@@ -1,16 +1,16 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
-import pl.edu.uj.tcs.aiplayground.dto.UserDto;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.time.LocalDate;
 
@@ -40,6 +40,7 @@ class UserServiceTest {
         userRecord.setPasswordHash(hashedPassword);
 
         when(userRepo.findByUsername(username)).thenReturn(userRecord);
+        when(userRepo.existUsername(username)).thenReturn(true);
 
         LoginForm form = new LoginForm(username, rawPassword);
 
@@ -151,6 +152,6 @@ class UserServiceTest {
 
         doThrow(new RuntimeException("DB failure")).when(userRepo).insertUser(any());
 
-        assertThrows(UserModificationException.class, () -> service.register(form));
+        assertThrows(DatabaseException.class, () -> service.register(form));
     }
 }

@@ -8,4 +8,5 @@ public record ModelForm(
         UUID userId,
         String name,
         JSONB jsonArchitecture
-) { }
+) {
+}

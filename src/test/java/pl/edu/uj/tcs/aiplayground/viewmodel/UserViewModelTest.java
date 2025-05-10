@@ -1,12 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import pl.edu.uj.tcs.aiplayground.dto.UserDto;
-import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.time.LocalDate;
@@ -116,7 +115,7 @@ class UserViewModelTest {
 
             assertEquals(countries, result);
             verify(userService).getCountryNames();
-        } catch(Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }

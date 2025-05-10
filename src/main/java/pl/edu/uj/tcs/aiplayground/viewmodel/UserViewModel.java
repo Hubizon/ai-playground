@@ -6,12 +6,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
-import pl.edu.uj.tcs.aiplayground.model.Training;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
@@ -42,7 +41,8 @@ public class UserViewModel {
     public List<String> getCountryNames() {
         try {
             return userService.getCountryNames();
-        } catch(Exception e) {
+        } catch (Exception e) {
+            logger.error("Failed to get country names, error={}", e.getMessage(), e);
             statusMessage.set("Internal Error");
             return null;
         }
@@ -67,8 +67,7 @@ public class UserViewModel {
         try {
             userService.register(registerForm);
             statusMessage.set("Registration Successful");
-        }
-        catch (UserModificationException e) {
+        } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
         } catch (DatabaseException e) {
             logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);

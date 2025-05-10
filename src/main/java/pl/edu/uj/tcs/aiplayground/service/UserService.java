@@ -1,14 +1,14 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
-import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.utility.PasswordHasher;
 import pl.edu.uj.tcs.aiplayground.validation.UserValidation;
+import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class UserService {
     public List<String> getCountryNames() throws DatabaseException {
         try {
             return userRepository.getCountries();
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new DatabaseException(e);
         }
     }
@@ -36,7 +36,7 @@ public class UserService {
         UsersRecord user;
         try {
             user = userRepository.findByUsername(loginForm.username());
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -46,7 +46,7 @@ public class UserService {
         String countryName;
         try {
             countryName = userRepository.getCountryNameById(user.getCountryId());
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new DatabaseException(e);
         }
 
