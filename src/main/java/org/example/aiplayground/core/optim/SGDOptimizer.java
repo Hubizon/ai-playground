@@ -2,8 +2,14 @@ package org.example.aiplayground.core.optim;
 
 import org.example.aiplayground.core.Tensor;
 
+import java.util.ArrayList;
+
 public class SGDOptimizer extends Optimizer
 {
+    public SGDOptimizer(ArrayList<Tensor> params, double learningRate) {
+        this.params = params;
+        this.learningRate = learningRate;
+    }
     public void optimize() {
         for (Tensor param : params) {
             for (int i = 0; i < param.rows; i++) {

@@ -1,14 +1,19 @@
 package org.example.aiplayground.core.examples;
 
 import org.example.aiplayground.core.ComputationalGraph;
+import org.example.aiplayground.core.NeuralNet;
 import org.example.aiplayground.core.Tensor;
+import org.example.aiplayground.core.layers.LinearLayer;
+import org.example.aiplayground.core.layers.ReluLayer;
+import org.example.aiplayground.core.layers.SigmoidLayer;
 import org.example.aiplayground.core.loss.BCE;
 import org.example.aiplayground.core.optim.AdamOptimizer;
+import org.example.aiplayground.core.optim.SGDOptimizer;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class FirstNN {
+public class NNUsingModel {
     public static void main(String[] args) {
         ArrayList<Tensor> X = new ArrayList<>();
         ArrayList<Tensor> Y = new ArrayList<>();
@@ -41,7 +46,7 @@ public class FirstNN {
                 double ringRadius = Math.sqrt(radiusInnerRing * radiusInnerRing + (radiusOuterRing * radiusOuterRing - radiusInnerRing * radiusInnerRing) * rand.nextDouble());
                 x = centerX + ringRadius * Math.cos(angle);
                 y = centerY + ringRadius * Math.sin(angle);
-                label_ = -1;
+                label_ = 0;
             }
 
 
@@ -53,19 +58,14 @@ public class FirstNN {
             X.add(input);
             Y.add(output);
         }
-        Tensor L1,L2, B1, B2,c = new Tensor(0),d,e,f,g,h;
 
+        Tensor pred;
         ComputationalGraph graph = new ComputationalGraph();
-        L1 = Tensor.randomMatrix(4,2,-1,1);
-        B1 = Tensor.randomMatrix(4,1,-1,1);
-        L2 = Tensor.randomMatrix(1,4,-1,1);
-        B2 = Tensor.randomMatrix(1,1,-1,1);
-        ArrayList<Tensor> params = new ArrayList<>();
-        params.add(L1);
-        params.add(L2);
-        params.add(B1);
-        params.add(B2);
-        AdamOptimizer optimizer = new AdamOptimizer(params,0.1);
+        NeuralNet net = new NeuralNet();
+        net.layers.add(new LinearLayer(2,512,true));
+        net.layers.add(new SigmoidLayer());
+        net.layers.add(new LinearLayer(512,1,true));
+        SGDOptimizer optimizer = new SGDOptimizer(net.getParams(),0.1);
         BCE bce = new BCE();
         for (int epoch=0;epoch<10000;epoch++)
         {   optimizer.zeroGradient();
@@ -77,16 +77,11 @@ public class FirstNN {
                 System.out.println("EVAL MODE: "+epoch);
                 for(int i=0;i<numPoints;i++)
                 {
-                    d = Tensor.matMul(L1,X.get(i), graph);
-                    f = Tensor.add(d,B1, graph);
-                    e= Tensor.Sigmoid(f, graph);
-                    g= Tensor.matMul(L2, e, graph);
-                    c = Tensor.add(g,B2, graph);
-
-                    if(c.data[0][0]*Y.get(i).data[0][0]>0)
-                    {
+                    pred = net.forward(X.get(i),graph);
+                    if((pred.data[0][0] > 0.5) == (Y.get(i).data[0][0] == 1)) {
                         sum++;
                     }
+                    graph.clear();
                 }
                 System.out.println(((double) sum)/numPoints);
             }
@@ -94,13 +89,8 @@ public class FirstNN {
             optimizer.zeroGradient();
             for(int i=0;i<numPoints;i++)
             {
-                d = Tensor.matMul(L1,X.get(i), graph);
-                f = Tensor.add(d,B1, graph);
-                e= Tensor.Sigmoid(f, graph);
-                g= Tensor.matMul(L2, e, graph);
-                f = Tensor.add(g,B2, graph);
-                c = Tensor.Sigmoid(f, graph);
-                bce.loss(c,Y.get(i));
+                pred = net.forward(X.get(i),graph);
+                bce.loss(pred,Y.get(i));
                 if(i%32==0)
                 {
                     graph.propagate();
