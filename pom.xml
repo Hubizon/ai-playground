@@ -71,7 +71,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>org.example.aiplayground.App</mainClass>
+                    <mainClass>pl.edu.uj.tcs.aiplayground.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
