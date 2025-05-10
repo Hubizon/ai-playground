@@ -4,16 +4,20 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
+import pl.edu.uj.tcs.aiplayground.model.Training;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
 
 public class UserViewModel {
+    private static final Logger logger = LoggerFactory.getLogger(UserViewModel.class);
     private final UserService userService;
 
     private final StringProperty statusMessage = new SimpleStringProperty();
@@ -53,6 +57,7 @@ public class UserViewModel {
             statusMessage.set(e.getMessage());
             user.set(null);
         } catch (DatabaseException e) {
+            logger.error("Failed to login for loginForm={}, error={}", loginForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
             user.set(null);
         }
@@ -66,6 +71,7 @@ public class UserViewModel {
         catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
         } catch (DatabaseException e) {
+            logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
             user.set(null);
         }

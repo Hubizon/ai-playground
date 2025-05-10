@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
@@ -37,8 +38,8 @@ public class LoginViewController {
         userViewModel.login(form);
 
         if (userViewModel.isLoggedIn()) {
-            UsersRecord user = userViewModel.userProperty().get();
-            System.out.println("Login successful: " + user.getUsername());
+            UserDto user = userViewModel.userProperty().get();
+            System.out.println("Login successful: " + user.username());
         } else {
             System.out.println("Login failed: " + userViewModel.statusMessageProperty().get());
         }
