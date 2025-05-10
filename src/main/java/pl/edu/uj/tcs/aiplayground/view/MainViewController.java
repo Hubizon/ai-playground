@@ -23,6 +23,7 @@ public class MainViewController {
     @FXML
     private Label lossField;
 
+    //bar - one hidden layer
     private final List<Integer> barValues = new ArrayList<>(); //holds number of neurons in each layer
 
 
@@ -35,11 +36,10 @@ public class MainViewController {
 
     @FXML
     private void initialize() {
-        // Initialize metrics fields
         accuracyField.setText("0");
         lossField.setText("0");
 
-        // Add initial bar
+        // one initial bar:
         addNewBar();
     }
 
@@ -66,7 +66,6 @@ public class MainViewController {
             barsContainer.getChildren().removeLast();
             barCount--;
 
-            // Remove the corresponding value from the list
             if (!barValues.isEmpty()) {
                 barValues.removeLast();
             }
@@ -95,14 +94,14 @@ public class MainViewController {
         Pane barPane = new Pane();
         barPane.setPrefSize(INITIAL_WIDTH, BAR_HEIGHT);
 
-        // Create the background rectangle
+        // background rectangle
         Rectangle background = new Rectangle(INITIAL_WIDTH, BAR_HEIGHT);
         background.setFill(javafx.scene.paint.Color.web("#2E2E2E"));
         barPane.getChildren().add(background);
 
-        // Create the white strips
         createStrips(barPane, INITIAL_WIDTH);
 
+        //+1 neuron
         Button increaseBtn = new Button("+");
         increaseBtn.setOnAction(e -> {
             double newWidth = barPane.getPrefWidth() + (WIDTH_CHANGE + STRIP_WIDTH);
@@ -110,13 +109,14 @@ public class MainViewController {
             background.setWidth(newWidth);
             createStrips(barPane, newWidth);
 
-            // Update the corresponding value in the list
+            // update barValues
             int index = barsContainer.getChildren().indexOf(barPane.getParent());
             if (index >= 0 && index < barValues.size()) {
                 barValues.set(index, barValues.get(index) + 1);
             }
         });
 
+        //-1 neuron
         Button decreaseBtn = new Button("-");
         decreaseBtn.setOnAction(e -> {
             double newWidth = barPane.getPrefWidth() - (WIDTH_CHANGE + STRIP_WIDTH);
@@ -125,7 +125,8 @@ public class MainViewController {
                 background.setWidth(newWidth);
                 createStrips(barPane, newWidth);
 
-                // Update the corresponding value in the list
+
+                // update barValues
                 int index = barsContainer.getChildren().indexOf(barPane.getParent());
                 if (index >= 0 && index < barValues.size()) {
                     barValues.set(index, barValues.get(index) - 1);
@@ -133,7 +134,7 @@ public class MainViewController {
             }
         });
 
-        // Create a spacer to push the bar to the center
+        // spacer
         Region leftSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
 
@@ -146,18 +147,16 @@ public class MainViewController {
         barsContainer.getChildren().add(barContainer);
         barCount++;
 
-        // Add initial value (4) for the new bar
+        // default number squares
         barValues.add(4);
     }
 
-    // Parts a bar into squares
+    // parts a bar into squares
     private void createStrips(Pane barPane, double width) {
-        // Remove existing strips (keep only the background rectangle)
         if (barPane.getChildren().size() > 1) {
             barPane.getChildren().remove(1, barPane.getChildren().size());
         }
 
-        // Add new strips
         double x = STRIP_SPACING;
         while (x < width) {
             Rectangle strip = new Rectangle(STRIP_WIDTH, BAR_HEIGHT);
@@ -168,7 +167,6 @@ public class MainViewController {
         }
     }
 
-    // Getters for the metrics fields
     public void setAccuracy(int accuracy) {
         accuracyField.setText(String.valueOf(accuracy));
     }
@@ -177,7 +175,6 @@ public class MainViewController {
         lossField.setText(String.valueOf(lossPercentage));
     }
 
-    // Getters for the metrics fields
     public int getAccuracy() {
         return Integer.parseInt(accuracyField.getText());
     }
@@ -186,7 +183,7 @@ public class MainViewController {
         return Integer.parseInt(lossField.getText());
     }
 
-    public List<Integer> getBarValues(){
+    public List<Integer> getBarValues() {
         return barValues;
     }
 }

@@ -48,12 +48,11 @@ public class LoginViewController {
             UsersRecord user = userViewModel.userProperty().get();
             System.out.println("Login successful: " + user.getUsername());
 
-            // Close current window
+            //closing current window
             if (stage != null) {
                 stage.close();
             }
 
-            // Open new window
             openMainWindow();
         } else {
             System.out.println("Login failed: " + userViewModel.statusMessageProperty().get());
