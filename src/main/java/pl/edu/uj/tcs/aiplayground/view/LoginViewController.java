@@ -1,9 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
@@ -21,9 +23,14 @@ public class LoginViewController {
     private PasswordField passwordField;
     @FXML
     private Label statusLabel;
+    private Stage stage; // Add reference to the stage
 
     public LoginViewController() {
         this.userViewModel = ViewModelFactory.createUserViewModel();
+    }
+
+    public void setStage(Stage stage) { // Add setter for stage
+        this.stage = stage;
     }
 
     @FXML
@@ -39,8 +46,36 @@ public class LoginViewController {
         if (userViewModel.isLoggedIn()) {
             UsersRecord user = userViewModel.userProperty().get();
             System.out.println("Login successful: " + user.getUsername());
+
+            // Close current window
+            if (stage != null) {
+                stage.close();
+            }
+
+            // Open new window
+            openMainWindow();
         } else {
             System.out.println("Login failed: " + userViewModel.statusMessageProperty().get());
+        }
+    }
+
+    private void openMainWindow() {
+        try {
+            Stage mainStage = new Stage();
+            // Here you would load your main application view
+            // For example:
+            // FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
+            // Scene scene = new Scene(loader.load());
+            // mainStage.setScene(scene);
+            // mainStage.setTitle("AI Playground");
+            // mainStage.show();
+
+            // For now, just show a simple window as placeholder
+            mainStage.setTitle("Main Application");
+            mainStage.setScene(new Scene(new Label("Welcome to the main application!"), 400, 300));
+            mainStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -57,6 +92,5 @@ public class LoginViewController {
         );
 
         userViewModel.register(form);
-
     }
 }
