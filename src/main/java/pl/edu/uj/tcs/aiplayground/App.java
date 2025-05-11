@@ -19,7 +19,6 @@ public class App extends Application {
         Scene scene = new Scene(loader.load());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/styles.css")).toExternalForm());
 
-        // Get the controller and set the stage
         LoginViewController controller = loader.getController();
         controller.setStage(stage);
 

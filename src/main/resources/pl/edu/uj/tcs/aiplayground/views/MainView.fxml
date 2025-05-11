@@ -101,7 +101,7 @@
         <VBox style="-fx-padding: 10 0 0 0;">
             <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Loss graph" side="BOTTOM" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="Loss plot" side="BOTTOM" />
                 </xAxis>
                 <yAxis>
                     <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
@@ -111,7 +111,7 @@
         <VBox style="-fx-padding: 10 0 0 0;">
             <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy graph" side="BOTTOM" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy plot" side="BOTTOM" />
                 </xAxis>
                 <yAxis>
                     <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
