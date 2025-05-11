@@ -43,3 +43,66 @@
     -fx-spacing: 15;
     -fx-background-color: #3C3C3C;
 }
+/* Updated ComboBox styling with border */
+.combo-box {
+    -fx-background-color: #3C3C3C;
+    -fx-mark-color: white; /* Arrow color */
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-border-width: 1;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-padding: 3 5;
+}
+
+.combo-box .list-view {
+    -fx-background-color: #3C3C3C;
+    -fx-background-insets: 0;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);
+}
+
+.combo-box .list-view .list-cell {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-padding: 3 5;
+}
+
+.combo-box .list-view .list-cell:hover {
+    -fx-background-color: #555;
+}
+
+.combo-box .list-view .list-cell:selected {
+    -fx-background-color: #666;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+/* For when the ComboBox is focused */
+.combo-box:focused {
+    -fx-border-color: #777;
+}
+
+/* Add to your existing CSS */
+.number-field {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5;
+    -fx-alignment: CENTER_RIGHT;
+}

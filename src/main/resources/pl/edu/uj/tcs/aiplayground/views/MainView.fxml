@@ -3,7 +3,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
+<?import javafx.scene.chart.*?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <HBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/css/styles.css"
@@ -13,24 +16,41 @@
     <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
         <Label text="Settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="leaderboards" onAction="#onLeaderboardsClicked"/>
+            <Button text="Leaderboards" onAction="#onLeaderboardsClicked"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="user info" onAction="#onUserInfoClicked"/>
+            <Button text="User info" onAction="#onUserInfoClicked"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ComboBox fx:id="datasetComboBox" promptText="Dataset">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Moons" />
+                        <String fx:value="Iris" />
+                        <String fx:value="MNIST" />
+                        <String fx:value="CIFAR-10" />
+                    </FXCollections>
+                </items>
+            </ComboBox>
         </HBox>
     </VBox>
 
     <!-- Center - bar container -->
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
         <!-- Spacer -->
-        <Region prefHeight="60"/>
+        <!--<Region prefHeight="60"/>-->
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
-                <Button text="Run" onAction="#onRunBarClicked"/>
-                <Button text="Pause" onAction="#onPauseBarClicked"/>
-                <Button text="Reset" onAction="#onResetBarClicked"/>
-                <Button text="Remove layer" onAction="#onRemoveBarClicked"/>
-                <Button text="Add layer" onAction="#onAddBarClicked"/>
+                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+                    <Button text="Run" onAction="#onRunBarClicked"/>
+                    <Button text="Pause" onAction="#onPauseBarClicked"/>
+                    <Button text="Reset" onAction="#onResetBarClicked"/>
+                </VBox>
+                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+                    <Button text="Add linear layer" onAction="#onAddLinearBarClicked"/>
+                    <Button text="Add sigmoid layer" onAction="#onAddSigmoidBarClicked"/>
+                    <Button text="Add relu layer" onAction="#onAddReluBarClicked"/>
+                </VBox>
             </HBox>
             <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
             </VBox>
@@ -46,9 +66,21 @@
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Loss %:" style="-fx-text-fill: white;"/>
-            <Label fx:id="lossField" text="0"
+            <Label text="Epoch:" style="-fx-text-fill: white;"/>
+            <Label fx:id="epochField" text="0"
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
+
+        <VBox style="-fx-padding: 10 0 0 0;">
+            <Label text="Performance Graph" style="-fx-text-fill: white; -fx-font-size: 14;"/>
+            <LineChart fx:id="metricsChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
+                <xAxis>
+                    <NumberAxis lowerBound="0" upperBound="50" label="Time" side="BOTTOM" />
+                </xAxis>
+                <yAxis>
+                    <NumberAxis lowerBound="0" upperBound="50" label="Loss" side="LEFT" />
+                </yAxis>
+            </LineChart>
+        </VBox>
     </VBox>
 </HBox>

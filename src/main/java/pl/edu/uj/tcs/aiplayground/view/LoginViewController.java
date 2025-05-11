@@ -75,16 +75,27 @@ public class LoginViewController {
 
     @FXML
     private void onRegisterClicked() {
-        RegisterForm form = new RegisterForm(
-                usernameField.getText(),
-                "Test",
-                "User",
-                emailField.getText(),
-                passwordField.getText(),
-                "Polska",
-                LocalDate.of(2000, 1, 1)
-        );
+        try {
+            Stage mainStage = new Stage();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/Register.fxml"));
+            Scene scene = new Scene(loader.load());
 
-        userViewModel.register(form);
+            mainStage.setTitle("AI Playground - Rgister");
+            mainStage.setScene(scene);
+            mainStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        RegisterForm form = new RegisterForm(
+//                usernameField.getText(),
+//                "Test",
+//                "User",
+//                emailField.getText(),
+//                passwordField.getText(),
+//                "Polska",
+//                LocalDate.of(2000, 1, 1)
+//        );
+//
+//        userViewModel.register(form);
     }
 }
