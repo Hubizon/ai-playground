@@ -1,10 +1,9 @@
 package pl.edu.uj.tcs.aiplayground.validation;
 
 import org.junit.jupiter.api.Test;
-import pl.edu.uj.tcs.aiplayground.dto.LoginForm;
-import pl.edu.uj.tcs.aiplayground.dto.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.exception.UserLoginException;
-import pl.edu.uj.tcs.aiplayground.exception.UserRegisterException;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
+import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 
 import java.time.LocalDate;
 
@@ -22,49 +21,49 @@ class UserValidationTest {
     @Test
     void emptyUsernameInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("", "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
     void tooShortUsernameInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("no", "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
     void tooLongUsernameInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("x".repeat(101), "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
     void invalidCharactersUsernameInLoginFormShouldThrow() {
         LoginForm form2 = new LoginForm("abc/abc", "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form2));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form2));
 
         LoginForm form3 = new LoginForm("abc!abc", "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form3));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form3));
 
         LoginForm form1 = new LoginForm("abcąabc", "passworD!");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form1));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form1));
     }
 
     @Test
     void emptyPasswordInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("validLogin", "");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
     void tooShortPasswordInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("validLogin", "no");
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
     void tooLongPasswordInLoginFormShouldThrow() {
         LoginForm form = new LoginForm("validLogin", "x".repeat(51));
-        assertThrows(UserLoginException.class, () -> UserValidation.validateLoginForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateLoginForm(form));
     }
 
     @Test
@@ -92,7 +91,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form));
     }
 
     @Test
@@ -106,7 +105,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form1));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form1));
 
         RegisterForm form2 = new RegisterForm(
                 "iamjohnwick",
@@ -117,7 +116,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form2));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form2));
     }
 
     @Test
@@ -131,7 +130,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form1));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form1));
 
         RegisterForm form2 = new RegisterForm(
                 "iamjohnwick",
@@ -142,7 +141,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form2));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form2));
     }
 
     @Test
@@ -156,7 +155,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form1));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form1));
 
         RegisterForm form2 = new RegisterForm(
                 "iamjohnwick",
@@ -167,7 +166,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form2));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form2));
 
         RegisterForm form3 = new RegisterForm(
                 "iamjohnwick",
@@ -178,7 +177,7 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form3));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form3));
     }
 
     @Test
@@ -192,6 +191,6 @@ class UserValidationTest {
                 "Poland",
                 LocalDate.of(2000, 1, 1)
         );
-        assertThrows(UserRegisterException.class, () -> UserValidation.validateRegisterForm(form));
+        assertThrows(UserModificationException.class, () -> UserValidation.validateRegisterForm(form));
     }
 }
