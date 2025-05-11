@@ -15,29 +15,16 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-//        FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/LoginView.fxml"));
-//        Scene scene = new Scene(loader.load());
-//        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/styles.css")).toExternalForm());
-//
-//        // Get the controller and set the stage
-//        LoginViewController controller = loader.getController();
-//        controller.setStage(stage);
-//
-//        stage.setTitle("AI Playground - Login");
-//        stage.setScene(scene);
-//        stage.show();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/LoginView.fxml"));
+        Scene scene = new Scene(loader.load());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/styles.css")).toExternalForm());
 
-        //for simpler testing:
-        try {
-            Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
-            Scene scene = new Scene(loader.load());
+        // Get the controller and set the stage
+        LoginViewController controller = loader.getController();
+        controller.setStage(stage);
 
-            mainStage.setTitle("AI Playground");
-            mainStage.setScene(scene);
-            mainStage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        stage.setTitle("AI Playground - Login");
+        stage.setScene(scene);
+        stage.show();
     }
 }

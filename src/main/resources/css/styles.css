@@ -43,10 +43,9 @@
     -fx-spacing: 15;
     -fx-background-color: #3C3C3C;
 }
-/* Updated ComboBox styling with border */
 .combo-box {
     -fx-background-color: #3C3C3C;
-    -fx-mark-color: white; /* Arrow color */
+    -fx-mark-color: white;
     -fx-text-fill: white;
     -fx-border-color: #555;
     -fx-border-radius: 3;
@@ -91,12 +90,10 @@
     -fx-background-color: white;
 }
 
-/* For when the ComboBox is focused */
 .combo-box:focused {
     -fx-border-color: #777;
 }
 
-/* Add to your existing CSS */
 .number-field {
     -fx-background-color: #444444;
     -fx-text-fill: white;

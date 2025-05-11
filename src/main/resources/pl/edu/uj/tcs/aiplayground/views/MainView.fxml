@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
 <?import javafx.scene.chart.*?>
 
 <?import javafx.collections.FXCollections?>
@@ -14,13 +13,13 @@
 
     <!-- Left side - Settings panel -->
     <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
-        <Label text="Settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Button text="Leaderboards" onAction="#onLeaderboardsClicked"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Button text="User info" onAction="#onUserInfoClicked"/>
         </HBox>
+        <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <ComboBox fx:id="datasetComboBox" promptText="Dataset">
                 <items>
@@ -33,11 +32,39 @@
                 </items>
             </ComboBox>
         </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Opt 1" />
+                        <String fx:value="Opt 2" />
+                        <String fx:value="Opt 3" />
+                        <String fx:value="Opt 4" />
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ComboBox fx:id="lossComboBox" promptText="Loss">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Loss 1" />
+                        <String fx:value="Loss 2" />
+                        <String fx:value="Loss 3" />
+                        <String fx:value="Loss 4" />
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Epochs:" style="-fx-text-fill: white;"/>
+            <TextField fx:id="maxEpochField" text="10"
+                       style="-fx-pref-width: 100; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+        </HBox>
     </VBox>
 
     <!-- Center - bar container -->
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-        <!-- Spacer -->
         <!--<Region prefHeight="60"/>-->
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
@@ -57,7 +84,7 @@
         </VBox>
     </VBox>
 
-    <!-- Right side - Metrics panel -->
+    <!-- Right side - training outcome panel -->
     <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
         <Label text="Training Metrics" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
@@ -72,13 +99,22 @@
         </HBox>
 
         <VBox style="-fx-padding: 10 0 0 0;">
-            <Label text="Performance Graph" style="-fx-text-fill: white; -fx-font-size: 14;"/>
-            <LineChart fx:id="metricsChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
+            <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Time" side="BOTTOM" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="Loss graph" side="BOTTOM" />
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Loss" side="LEFT" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
+                </yAxis>
+            </LineChart>
+        </VBox>
+        <VBox style="-fx-padding: 10 0 0 0;">
+            <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
+                <xAxis>
+                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy graph" side="BOTTOM" />
+                </xAxis>
+                <yAxis>
+                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
                 </yAxis>
             </LineChart>
         </VBox>

@@ -1,18 +1,15 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -20,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainViewController {
+
     @FXML
     private VBox barsContainer;
     @FXML
@@ -29,7 +27,17 @@ public class MainViewController {
     @FXML
     private Label epochField;
     @FXML
+    private TextField maxEpochField;
+    @FXML
     private ComboBox<String> datasetComboBox;
+    @FXML
+    private ComboBox<String> optimizerComboBox;
+    @FXML
+    private ComboBox<String> lossComboBox;
+    @FXML
+    public LineChart lossChart;
+    @FXML
+    public LineChart accuracyChart;
 
     private  final double SPACER = 200;
     //bar - one hidden layer
@@ -46,9 +54,24 @@ public class MainViewController {
         datasetComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 System.out.println("Selected dataset: " + newVal);
-                // dataset selection logic
             }
         });
+        optimizerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                System.out.println("Selected dataset: " + newVal);
+            }
+        });
+        lossComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                System.out.println("Selected dataset: " + newVal);
+            }
+        });
+        maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*")) {
+                return change;
+            }
+            return null;
+        }));
     }
 
     @FXML
@@ -103,45 +126,39 @@ public class MainViewController {
     }
 
     private void addLinearBar() {
-        // Create the main container for the bar
         HBox barContainer = new HBox();
         barContainer.setStyle("-fx-background-color: #444; -fx-padding: 15; -fx-spacing: 10;");
         barContainer.setPrefHeight(40);
 
-        // Create the label for the bar name
         Label nameLabel = new Label("Linear");
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
 
-        // Create controls for the 3 parameters
-        // First int parameter
+        //parameter controls
         TextField param1Field = new TextField("0");
         param1Field.setPrefWidth(50);
         param1Field.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
 
-        // Second int parameter
         TextField param2Field = new TextField("0");
         param2Field.setPrefWidth(50);
         param2Field.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
 
-        // Bool parameter (as checkbox)
         CheckBox param3CheckBox = new CheckBox("");
         param3CheckBox.setStyle("-fx-text-fill: white;");
 
-        // Calculate the minimum width needed for the label
+        //spacers
         Text text = new Text("Linear");
         text.setFont(nameLabel.getFont());
         double textWidth = text.getLayoutBounds().getWidth();
         nameLabel.setMinWidth(textWidth);
 
-        HBox.setHgrow(nameLabel, Priority.NEVER);  // Prevent the label from growing/shrinking
+        HBox.setHgrow(nameLabel, Priority.NEVER);
 
-        // Create flexible spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        // Create the remove button
+        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -149,43 +166,36 @@ public class MainViewController {
             barValues.remove(new Integer[]{0, Integer.parseInt(param1Field.getText()), Integer.parseInt(param2Field.getText()), param3CheckBox.isSelected() ? 1 : 0});
         });
 
-        // Add all elements to the bar container
+        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, param1Field, param2Field, param3CheckBox, rightSpacer, removeButton);
         barValues.add(new Integer[]{0, Integer.parseInt(param1Field.getText()), Integer.parseInt(param2Field.getText()), param3CheckBox.isSelected() ? 1 : 0});
 
-        // Add the bar to the main container
         barsContainer.getChildren().add(barContainer);
     }
 
     private void addSigmoidBar() {
-        // Create the main container for the bar
         HBox barContainer = new HBox();
         barContainer.setStyle("-fx-background-color: #444; -fx-padding: 15; -fx-spacing: 10;");
         barContainer.setPrefHeight(40);
 
-        // Create the label for the bar name
         Label nameLabel = new Label("Sigmoid");
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
 
-        // Calculate the minimum width needed for the label
         Text text = new Text("Sigmoid");
         text.setFont(nameLabel.getFont());
         double textWidth = text.getLayoutBounds().getWidth();
         nameLabel.setMinWidth(textWidth);
 
-        HBox.setHgrow(nameLabel, Priority.NEVER);  // Prevent the label from growing/shrinking
+        HBox.setHgrow(nameLabel, Priority.NEVER);
 
-        // Create flexible spacers
+        //spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
 
 
-        // Create the remove button
-        Region spacer2 = new Region();
-        HBox.setHgrow(spacer2, Priority.ALWAYS);
-
+        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -193,39 +203,35 @@ public class MainViewController {
             barValues.remove(new Integer[]{1});
         });
 
-        // Add all elements to the bar container
+        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, rightSpacer, removeButton);
         barValues.add(new Integer[]{1});
 
-        // Add the bar to the main container
         barsContainer.getChildren().add(barContainer);
     }
 
     private void addReluBar() {
-        // Create the main container for the bar
         HBox barContainer = new HBox();
         barContainer.setStyle("-fx-background-color: #444; -fx-padding: 15; -fx-spacing: 10;");
         barContainer.setPrefHeight(40);
 
-        // Create the label for the bar name
         Label nameLabel = new Label("Relu");
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
 
-        // Calculate the minimum width needed for the label
         Text text = new Text("Relu");
         text.setFont(nameLabel.getFont());
         double textWidth = text.getLayoutBounds().getWidth();
         nameLabel.setMinWidth(textWidth);
 
-        HBox.setHgrow(nameLabel, Priority.NEVER);  // Prevent the label from growing/shrinking
+        HBox.setHgrow(nameLabel, Priority.NEVER);
 
-        // Create flexible spacers
+        //spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        // Create the remove button
+        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -233,12 +239,10 @@ public class MainViewController {
             barValues.remove(new Integer[]{2});
         });
 
-        // Add all elements to the bar container
+        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, rightSpacer, removeButton);
         barValues.add(new Integer[]{2});
 
-        // Remove the width listener as it's no longer needed with the new layout approach
-        // Add the bar to the main container
         barsContainer.getChildren().add(barContainer);
     }
 
