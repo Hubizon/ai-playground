@@ -191,8 +191,8 @@ public class MainViewController {
         //spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);  // Changed from SOMETIMES to ALWAYS
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
 
         //remove
