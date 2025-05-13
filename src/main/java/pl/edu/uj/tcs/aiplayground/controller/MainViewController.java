@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.view;
+package pl.edu.uj.tcs.aiplayground.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +12,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
+import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,9 @@ public class MainViewController {
     // 0 - linear
     // 1 - sigmoid
     // 2 - relu
+
+    private ViewModelFactory factory;
+    private MainViewModel mainViewModel;
 
     @FXML
     public LineChart lossChart;
@@ -46,8 +51,10 @@ public class MainViewController {
     @FXML
     private ComboBox<String> lossComboBox;
 
-    @FXML
-    private void initialize() {
+    public void initialize(ViewModelFactory factory) {
+        this.factory = factory;
+        this.mainViewModel = factory.getMainViewModel();
+
         accuracyField.setText("0");
 //        lossField.setText("0");
 
@@ -114,7 +121,7 @@ public class MainViewController {
     private void onUserInfoClicked() {
         try {
             Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/UserInfo.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/UserInfoView.fxml"));
             Scene scene = new Scene(loader.load());
 
             mainStage.setTitle("AI Playground - User info");
@@ -264,5 +271,8 @@ public class MainViewController {
 
     public List<Integer[]> getBarValues() {
         return barValues;
+    }
+
+    public void setStage(Stage stage) {
     }
 }

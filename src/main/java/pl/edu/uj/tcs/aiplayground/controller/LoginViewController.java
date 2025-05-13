@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.view;
+package pl.edu.uj.tcs.aiplayground.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,15 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.viewmodel.LoginViewModel;
+import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.io.IOException;
 
 public class LoginViewController {
     private static final Logger logger = LoggerFactory.getLogger(LoginViewController.class);
+    private ViewModelFactory factory;
+    private UserViewModel userViewModel;
 
-    private final LoginViewModel loginViewModel;
     @FXML
     private TextField usernameField;
     @FXML
@@ -28,26 +29,25 @@ public class LoginViewController {
     private Label statusLabel;
     private Stage stage;
 
-    public LoginViewController() {
-        this.loginViewModel = ViewModelFactory.createLoginViewModel();
-    }
+    public LoginViewController() {}
 
-    public void setStage(Stage stage) { // Add setter for stage
+    public void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    @FXML
-    private void initialize() {
-        statusLabel.textProperty().bind(loginViewModel.statusMessageProperty());
+    public void initialize(ViewModelFactory factory) {
+        this.factory = factory;
+        this.userViewModel = factory.getUserViewModel();
+        statusLabel.textProperty().bind(userViewModel.statusMessageProperty());
     }
 
     @FXML
     private void onLoginClicked() {
         LoginForm form = new LoginForm(usernameField.getText(), passwordField.getText());
-        loginViewModel.login(form);
+        userViewModel.login(form);
 
-        if (loginViewModel.isLoggedIn()) {
-            UserDto user = loginViewModel.userProperty().get();
+        if (userViewModel.isLoggedIn()) {
+            UserDto user = userViewModel.userProperty().get();
             System.out.println("Login successful: " + user.username());
 
             // closing current window
@@ -57,7 +57,7 @@ public class LoginViewController {
 
             openMainWindow();
         } else {
-            System.out.println("Login failed: " + loginViewModel.statusMessageProperty().get());
+            System.out.println("Login failed: " + userViewModel.statusMessageProperty().get());
         }
     }
 
@@ -67,11 +67,15 @@ public class LoginViewController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
             Scene scene = new Scene(loader.load());
 
+            MainViewController controller = loader.getController();
+            controller.initialize(factory);
+            controller.setStage(stage);
+
             mainStage.setTitle("AI Playground");
             mainStage.setScene(scene);
             mainStage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error("Problem with loading the scene, error={}", e.getMessage(), e);
         }
     }
 
@@ -79,8 +83,12 @@ public class LoginViewController {
     private void onRegisterClicked() {
         try {
             Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/Register.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/RegisterView.fxml"));
             Scene scene = new Scene(loader.load());
+
+            RegisterController controller = loader.getController();
+            controller.initialize(factory);
+            controller.setStage(mainStage);
 
             mainStage.setTitle("AI Playground - Register");
             mainStage.setScene(scene);

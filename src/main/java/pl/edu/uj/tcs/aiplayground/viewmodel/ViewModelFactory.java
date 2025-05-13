@@ -7,15 +7,25 @@ import pl.edu.uj.tcs.aiplayground.repository.UserRepository;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 public class ViewModelFactory {
-    private static final DSLContext dsl = JooqFactory.getDSLContext();
+    private final DSLContext dsl;
+    private final UserViewModel userViewModel;
+    private final MainViewModel mainViewModel;
 
-    public static LoginViewModel createLoginViewModel(IUserRepository userRepository) {
-        UserService userService = new UserService(userRepository);
-        return new LoginViewModel(userService);
+    public ViewModelFactory() {
+        this.dsl = JooqFactory.getDSLContext();
+
+        var userRepository = new UserRepository(dsl);
+        var userService = new UserService(userRepository);
+        this.userViewModel = new UserViewModel(userService);
+
+        this.mainViewModel = new MainViewModel();
     }
 
-    public static LoginViewModel createLoginViewModel() {
-        IUserRepository userRepository = new UserRepository(dsl);
-        return createLoginViewModel(userRepository);
+    public UserViewModel getUserViewModel() {
+        return userViewModel;
+    }
+
+    public MainViewModel getMainViewModel() {
+        return mainViewModel;
     }
 }

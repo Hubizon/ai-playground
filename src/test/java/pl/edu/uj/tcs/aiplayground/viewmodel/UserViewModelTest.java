@@ -18,12 +18,12 @@ import static org.mockito.Mockito.*;
 class UserViewModelTest {
 
     private UserService userService;
-    private LoginViewModel viewModel;
+    private UserViewModel viewModel;
 
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
-        viewModel = new LoginViewModel(userService);
+        viewModel = new UserViewModel(userService);
     }
 
     @Test

@@ -1,10 +1,10 @@
-package pl.edu.uj.tcs.aiplayground.view;
+package pl.edu.uj.tcs.aiplayground.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 
-public class RegisterController {
+public class UserInfoController {
     @FXML
     private PasswordField passwordField;
     @FXML

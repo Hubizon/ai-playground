@@ -15,14 +15,14 @@ import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
 
-public class LoginViewModel {
-    private static final Logger logger = LoggerFactory.getLogger(LoginViewModel.class);
+public class UserViewModel {
+    private static final Logger logger = LoggerFactory.getLogger(UserViewModel.class);
     private final UserService userService;
 
     private final StringProperty statusMessage = new SimpleStringProperty();
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
 
-    public LoginViewModel(UserService userService) {
+    public UserViewModel(UserService userService) {
         this.userService = userService;
     }
 
@@ -63,16 +63,19 @@ public class LoginViewModel {
         }
     }
 
-    public void register(RegisterForm registerForm) {
+    public boolean register(RegisterForm registerForm) {
         try {
             userService.register(registerForm);
             statusMessage.set("Registration Successful");
+            return true;
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
+            user.set(null);
         } catch (DatabaseException e) {
             logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
             user.set(null);
         }
+        return false;
     }
 }
