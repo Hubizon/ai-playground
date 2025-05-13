@@ -15,14 +15,14 @@ import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
 
-public class UserViewModel {
-    private static final Logger logger = LoggerFactory.getLogger(UserViewModel.class);
+public class LoginViewModel {
+    private static final Logger logger = LoggerFactory.getLogger(LoginViewModel.class);
     private final UserService userService;
 
     private final StringProperty statusMessage = new SimpleStringProperty();
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
 
-    public UserViewModel(UserService userService) {
+    public LoginViewModel(UserService userService) {
         this.userService = userService;
     }
 

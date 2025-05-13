@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.chart.*?>
-
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
-<HBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+<?import java.lang.*?>
+<HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
-      stylesheets="@/css/styles.css"
+      stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       prefWidth="1000" prefHeight="600">
 
     <!-- Left side - Settings panel -->
@@ -24,10 +23,10 @@
             <ComboBox fx:id="datasetComboBox" promptText="Dataset">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Moons" />
-                        <String fx:value="Iris" />
-                        <String fx:value="MNIST" />
-                        <String fx:value="CIFAR-10" />
+                        <String fx:value="Moons"/>
+                        <String fx:value="Iris"/>
+                        <String fx:value="MNIST"/>
+                        <String fx:value="CIFAR-10"/>
                     </FXCollections>
                 </items>
             </ComboBox>
@@ -36,10 +35,10 @@
             <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Opt 1" />
-                        <String fx:value="Opt 2" />
-                        <String fx:value="Opt 3" />
-                        <String fx:value="Opt 4" />
+                        <String fx:value="Opt 1"/>
+                        <String fx:value="Opt 2"/>
+                        <String fx:value="Opt 3"/>
+                        <String fx:value="Opt 4"/>
                     </FXCollections>
                 </items>
             </ComboBox>
@@ -48,10 +47,10 @@
             <ComboBox fx:id="lossComboBox" promptText="Loss">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Loss 1" />
-                        <String fx:value="Loss 2" />
-                        <String fx:value="Loss 3" />
-                        <String fx:value="Loss 4" />
+                        <String fx:value="Loss 1"/>
+                        <String fx:value="Loss 2"/>
+                        <String fx:value="Loss 3"/>
+                        <String fx:value="Loss 4"/>
                     </FXCollections>
                 </items>
             </ComboBox>
@@ -99,22 +98,24 @@
         </HBox>
 
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
+            <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+                       prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Loss plot" side="BOTTOM" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="Loss plot" side="BOTTOM"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
                 </yAxis>
             </LineChart>
         </VBox>
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;" prefHeight="200" prefWidth="180">
+            <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+                       prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy plot" side="BOTTOM" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy plot" side="BOTTOM"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT" />
+                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
                 </yAxis>
             </LineChart>
         </VBox>

@@ -7,19 +7,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
-import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
+import pl.edu.uj.tcs.aiplayground.viewmodel.LoginViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.time.LocalDate;
+import java.io.IOException;
 
 public class LoginViewController {
+    private static final Logger logger = LoggerFactory.getLogger(LoginViewController.class);
 
-    private final UserViewModel userViewModel;
+    private final LoginViewModel loginViewModel;
     @FXML
-    private TextField usernameField, emailField;
+    private TextField usernameField;
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -27,7 +29,7 @@ public class LoginViewController {
     private Stage stage;
 
     public LoginViewController() {
-        this.userViewModel = ViewModelFactory.createUserViewModel();
+        this.loginViewModel = ViewModelFactory.createLoginViewModel();
     }
 
     public void setStage(Stage stage) { // Add setter for stage
@@ -36,33 +38,33 @@ public class LoginViewController {
 
     @FXML
     private void initialize() {
-        statusLabel.textProperty().bind(userViewModel.statusMessageProperty());
+        statusLabel.textProperty().bind(loginViewModel.statusMessageProperty());
     }
 
     @FXML
     private void onLoginClicked() {
         LoginForm form = new LoginForm(usernameField.getText(), passwordField.getText());
-        userViewModel.login(form);
+        loginViewModel.login(form);
 
-        if (userViewModel.isLoggedIn()) {
-            UserDto user = userViewModel.userProperty().get();
+        if (loginViewModel.isLoggedIn()) {
+            UserDto user = loginViewModel.userProperty().get();
             System.out.println("Login successful: " + user.username());
 
-            //closing current window
+            // closing current window
             if (stage != null) {
                 stage.close();
             }
 
             openMainWindow();
         } else {
-            System.out.println("Login failed: " + userViewModel.statusMessageProperty().get());
+            System.out.println("Login failed: " + loginViewModel.statusMessageProperty().get());
         }
     }
 
     private void openMainWindow() {
         try {
             Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/MainView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
             Scene scene = new Scene(loader.load());
 
             mainStage.setTitle("AI Playground");
@@ -75,27 +77,16 @@ public class LoginViewController {
 
     @FXML
     private void onRegisterClicked() {
-//        try {
-//            Stage mainStage = new Stage();
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/Register.fxml"));
-//            Scene scene = new Scene(loader.load());
-//
-//            mainStage.setTitle("AI Playground - Rgister");
-//            mainStage.setScene(scene);
-//            mainStage.show();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        RegisterForm form = new RegisterForm(
-                usernameField.getText(),
-                "Test",
-                "User",
-                emailField.getText(),
-                passwordField.getText(),
-                "Polska",
-                LocalDate.of(2000, 1, 1)
-        );
+        try {
+            Stage mainStage = new Stage();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/Register.fxml"));
+            Scene scene = new Scene(loader.load());
 
-        userViewModel.register(form);
+            mainStage.setTitle("AI Playground - Register");
+            mainStage.setScene(scene);
+            mainStage.show();
+        } catch (IOException e) {
+            logger.error("Problem with loading the scene, error={}", e.getMessage(), e);
+        }
     }
 }

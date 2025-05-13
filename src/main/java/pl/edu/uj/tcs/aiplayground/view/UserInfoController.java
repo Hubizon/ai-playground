@@ -3,11 +3,12 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 
 public class UserInfoController {
-    @FXML private PasswordField passwordField;
-    @FXML private Button showPasswordButton;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private Button showPasswordButton;
 
     private boolean passwordVisible = false;
 

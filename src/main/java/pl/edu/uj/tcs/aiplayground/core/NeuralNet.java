@@ -2,57 +2,20 @@ package pl.edu.uj.tcs.aiplayground.core;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class NeuralNet {
 
     public ArrayList<Layer> layers = new ArrayList<>();
-
-    public ArrayList<Tensor> getParams() {
-        ArrayList<Tensor> params = new ArrayList<>();
-        for (Layer layer : layers) {
-            params.addAll(layer.getParams());
-        }
-        return params;
-    }
-
-    public Tensor forward(Tensor input, ComputationalGraph graph) {
-        Tensor forwardTensor = input;
-        for (Layer layer : layers) {
-            forwardTensor = layer.forward(forwardTensor, graph);
-        }
-        return forwardTensor;
-    }
-
-    public void save(String outputPath) {
-        JSONObject json = new JSONObject();
-        JSONArray layersArray = new JSONArray();
-
-        for (Layer layer : layers) {
-            JSONObject layerJson = new JSONObject();
-            layerJson.put("layer", layer.toJson());
-            layersArray.put(layerJson);
-        }
-
-        json.put("layers", layersArray);
-
-        try (FileWriter file = new FileWriter(outputPath)) {
-            file.write(json.toString(4)); // Pretty print with 4 spaces
-        } catch (IOException e) {
-            System.err.println("Error saving model: " + e.getMessage());
-        }
-    }
 
     public static NeuralNet load(String filePath) {
         NeuralNet neuralNet = new NeuralNet();
@@ -98,6 +61,41 @@ public class NeuralNet {
             System.err.println("Error loading model: " + e.getMessage());
         }
         return neuralNet;
+    }
+
+    public ArrayList<Tensor> getParams() {
+        ArrayList<Tensor> params = new ArrayList<>();
+        for (Layer layer : layers) {
+            params.addAll(layer.getParams());
+        }
+        return params;
+    }
+
+    public Tensor forward(Tensor input, ComputationalGraph graph) {
+        Tensor forwardTensor = input;
+        for (Layer layer : layers) {
+            forwardTensor = layer.forward(forwardTensor, graph);
+        }
+        return forwardTensor;
+    }
+
+    public void save(String outputPath) {
+        JSONObject json = new JSONObject();
+        JSONArray layersArray = new JSONArray();
+
+        for (Layer layer : layers) {
+            JSONObject layerJson = new JSONObject();
+            layerJson.put("layer", layer.toJson());
+            layersArray.put(layerJson);
+        }
+
+        json.put("layers", layersArray);
+
+        try (FileWriter file = new FileWriter(outputPath)) {
+            file.write(json.toString(4)); // Pretty print with 4 spaces
+        } catch (IOException e) {
+            System.err.println("Error saving model: " + e.getMessage());
+        }
     }
 
 }

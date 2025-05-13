@@ -4,6 +4,22 @@ import java.util.ArrayList;
 
 public class ComputationalGraph {
 
+    ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
+
+    public void addNode(Tensor result, ArrayList<Tensor> components, String operation) {
+        nodes.add(new CompGraphNode(result, components, operation));
+    }
+
+    public void propagate() {
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            nodes.get(i).propagateGradient();
+        }
+    }
+
+    public void clear() {
+        nodes.clear();
+    }
+
     private static class CompGraphNode {
         Tensor result;
         ArrayList<Tensor> components;
@@ -111,21 +127,5 @@ public class ComputationalGraph {
                 }
             }
         }
-    }
-
-    ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
-
-    public void addNode(Tensor result, ArrayList<Tensor> components, String operation) {
-        nodes.add(new CompGraphNode(result, components, operation));
-    }
-
-    public void propagate() {
-        for (int i = nodes.size() - 1; i >= 0; i--) {
-            nodes.get(i).propagateGradient();
-        }
-    }
-
-    public void clear() {
-        nodes.clear();
     }
 }

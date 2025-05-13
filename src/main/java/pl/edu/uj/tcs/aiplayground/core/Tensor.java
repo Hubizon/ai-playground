@@ -44,13 +44,6 @@ public class Tensor {
         return new Tensor(zeros, other.rows, other.cols);
     }
 
-    public void fill(double value) {
-        for (int i = 0; i < rows; i++) {
-            Arrays.fill(data[i], value);
-        }
-
-    }
-
     public static Tensor randomMatrix(int rows, int cols, double min, double max) {
         double[][] data = new double[rows][cols];
         for (int i = 0; i < rows; i++) {
@@ -98,6 +91,57 @@ public class Tensor {
         return result;
     }
 
+    public static Tensor matMul(Tensor a, Tensor b, ComputationalGraph graph) {
+        if (a.cols != b.rows) {
+            throw new IllegalArgumentException(String.format("Shape mismatch for matMul! a=%d, %d, b= %d, %d", a.rows, a.cols, b.rows, b.cols));
+        }
+        Tensor result = zeros(a.rows, b.cols);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < b.cols; j++) {
+                for (int k = 0; k < a.cols; k++) {
+                    result.data[i][j] += a.data[i][k] * b.data[k][j];
+                }
+            }
+        }
+
+        ArrayList<Tensor> factors = new ArrayList<>();
+        factors.add(a);
+        factors.add(b);
+        graph.addNode(result, factors, "matMul");
+        return result;
+    }
+
+    public static Tensor Relu(Tensor a, ComputationalGraph graph) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                if (a.data[i][j] <= 0) result.data[i][j] = 0;
+                else result.data[i][j] = a.data[i][j];
+            }
+
+        }
+        graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+        return result;
+    }
+
+    public static Tensor Sigmoid(Tensor a, ComputationalGraph graph) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                result.data[i][j] = 1 / (1 + Math.exp(-a.data[i][j]));
+            }
+        }
+        graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+        return result;
+    }
+
+    public void fill(double value) {
+        for (int i = 0; i < rows; i++) {
+            Arrays.fill(data[i], value);
+        }
+
+    }
+
     public Tensor sumRows(ComputationalGraph graph) {
         double[][] sum = new double[1][cols];
         for (int i = 0; i < cols; i++) {
@@ -126,26 +170,6 @@ public class Tensor {
         return result;
     }
 
-    public static Tensor matMul(Tensor a, Tensor b, ComputationalGraph graph) {
-        if (a.cols != b.rows) {
-            throw new IllegalArgumentException(String.format("Shape mismatch for matMul! a=%d, %d, b= %d, %d", a.rows, a.cols, b.rows, b.cols));
-        }
-        Tensor result = zeros(a.rows, b.cols);
-        for (int i = 0; i < a.rows; i++) {
-            for (int j = 0; j < b.cols; j++) {
-                for (int k = 0; k < a.cols; k++) {
-                    result.data[i][j] += a.data[i][k] * b.data[k][j];
-                }
-            }
-        }
-
-        ArrayList<Tensor> factors = new ArrayList<>();
-        factors.add(a);
-        factors.add(b);
-        graph.addNode(result, factors, "matMul");
-        return result;
-    }
-
     public Tensor transpose() {
 
         double[][] transposedData = new double[cols][rows];
@@ -155,29 +179,5 @@ public class Tensor {
             }
         }
         return new Tensor(transposedData, cols, rows);
-    }
-
-    public static Tensor Relu(Tensor a, ComputationalGraph graph) {
-        Tensor result = Tensor.zerosLike(a);
-        for (int i = 0; i < a.rows; i++) {
-            for (int j = 0; j < a.cols; j++) {
-                if (a.data[i][j] <= 0) result.data[i][j] = 0;
-                else result.data[i][j] = a.data[i][j];
-            }
-
-        }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
-        return result;
-    }
-
-    public static Tensor Sigmoid(Tensor a, ComputationalGraph graph) {
-        Tensor result = Tensor.zerosLike(a);
-        for (int i = 0; i < a.rows; i++) {
-            for (int j = 0; j < a.cols; j++) {
-                result.data[i][j] = 1 / (1 + Math.exp(-a.data[i][j]));
-            }
-        }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
-        return result;
     }
 }

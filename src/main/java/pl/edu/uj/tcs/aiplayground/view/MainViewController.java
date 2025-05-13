@@ -18,6 +18,17 @@ import java.util.List;
 
 public class MainViewController {
 
+    private final double SPACER = 200;
+    //bar - one hidden layer
+    private final List<Integer[]> barValues = new ArrayList<>(); //holds info about each layer, Integer[0] holds info about type of the layer
+    // 0 - linear
+    // 1 - sigmoid
+    // 2 - relu
+
+    @FXML
+    public LineChart lossChart;
+    @FXML
+    public LineChart accuracyChart;
     @FXML
     private VBox barsContainer;
     @FXML
@@ -34,17 +45,6 @@ public class MainViewController {
     private ComboBox<String> optimizerComboBox;
     @FXML
     private ComboBox<String> lossComboBox;
-    @FXML
-    public LineChart lossChart;
-    @FXML
-    public LineChart accuracyChart;
-
-    private  final double SPACER = 200;
-    //bar - one hidden layer
-    private final List<Integer[]> barValues = new ArrayList<>(); //holds info about each layer, Integer[0] holds info about type of the layer
-    // 0 - linear
-    // 1 - sigmoid
-    // 2 - relu
 
     @FXML
     private void initialize() {
@@ -114,7 +114,7 @@ public class MainViewController {
     private void onUserInfoClicked() {
         try {
             Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/views/UserInfo.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/UserInfo.fxml"));
             Scene scene = new Scene(loader.load());
 
             mainStage.setTitle("AI Playground - User info");
@@ -246,20 +246,20 @@ public class MainViewController {
         barsContainer.getChildren().add(barContainer);
     }
 
-    public void setAccuracy(int accuracy) {
-        accuracyField.setText(String.valueOf(accuracy));
-    }
-
-    public void setLossPercentage(int lossPercentage) {
-        lossField.setText(String.valueOf(lossPercentage));
-    }
-
     public int getAccuracy() {
         return Integer.parseInt(accuracyField.getText());
     }
 
+    public void setAccuracy(int accuracy) {
+        accuracyField.setText(String.valueOf(accuracy));
+    }
+
     public int getLossPercentage() {
         return Integer.parseInt(lossField.getText());
+    }
+
+    public void setLossPercentage(int lossPercentage) {
+        lossField.setText(String.valueOf(lossPercentage));
     }
 
     public List<Integer[]> getBarValues() {

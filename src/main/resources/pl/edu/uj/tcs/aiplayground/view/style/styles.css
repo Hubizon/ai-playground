@@ -43,6 +43,7 @@
     -fx-spacing: 15;
     -fx-background-color: #3C3C3C;
 }
+
 .combo-box {
     -fx-background-color: #3C3C3C;
     -fx-mark-color: white;
@@ -65,7 +66,7 @@
     -fx-border-color: #555;
     -fx-border-radius: 3;
     -fx-border-width: 1;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 5, 0, 0, 0);
 }
 
 .combo-box .list-view .list-cell {

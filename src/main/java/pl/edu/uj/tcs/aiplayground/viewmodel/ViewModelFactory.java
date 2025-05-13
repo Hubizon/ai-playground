@@ -9,13 +9,13 @@ import pl.edu.uj.tcs.aiplayground.service.UserService;
 public class ViewModelFactory {
     private static final DSLContext dsl = JooqFactory.getDSLContext();
 
-    public static UserViewModel createUserViewModel(IUserRepository userRepository) {
+    public static LoginViewModel createLoginViewModel(IUserRepository userRepository) {
         UserService userService = new UserService(userRepository);
-        return new UserViewModel(userService);
+        return new LoginViewModel(userService);
     }
 
-    public static UserViewModel createUserViewModel() {
+    public static LoginViewModel createLoginViewModel() {
         IUserRepository userRepository = new UserRepository(dsl);
-        return createUserViewModel(userRepository);
+        return createLoginViewModel(userRepository);
     }
 }
