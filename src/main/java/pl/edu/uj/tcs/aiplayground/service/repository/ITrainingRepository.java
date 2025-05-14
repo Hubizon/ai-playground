@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.repository;
+package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;

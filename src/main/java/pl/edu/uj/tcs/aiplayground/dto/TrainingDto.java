@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record TrainingDto(
         UUID modelVersionId,
+        Integer maxEpochs,
         Float learningRate,
         String dataset,
         String optimizer,

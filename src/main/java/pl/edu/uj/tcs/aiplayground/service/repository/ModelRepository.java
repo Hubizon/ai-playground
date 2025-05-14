@@ -1,8 +1,8 @@
-package pl.edu.uj.tcs.aiplayground.repository;
+package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
-import pl.edu.uj.tcs.aiplayground.form.ModelForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 
 import java.util.List;
 import java.util.UUID;
@@ -120,5 +120,14 @@ public class ModelRepository implements IModelRepository {
                 userId,
                 modelName
         ).into(ModelDto.class);
+    }
+
+    @Override
+    public List<Integer> getModelVersions(UUID userId, String modelName) {
+        return dsl.fetch("""
+                SELECT mvi.version_number AS versionNumber
+                    FROM model_versions mvi
+                """
+        ).into(Integer.class);
     }
 }

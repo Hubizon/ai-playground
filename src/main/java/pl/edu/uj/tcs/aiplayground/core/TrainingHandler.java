@@ -2,21 +2,22 @@ package pl.edu.uj.tcs.aiplayground.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.edu.uj.tcs.aiplayground.dto.StatusName;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.repository.JooqFactory;
-import pl.edu.uj.tcs.aiplayground.repository.TrainingRepository;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
+import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
+import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
 
 import java.util.UUID;
 
-public class Training {
-    private static final Logger logger = LoggerFactory.getLogger(Training.class);
+public class TrainingHandler {
+    private static final Logger logger = LoggerFactory.getLogger(TrainingHandler.class);
     private final TrainingService trainingService;
     private UUID trainingId = null;
 
-    public Training(TrainingService trainingService, TrainingDto trainingDto) {
+    public TrainingHandler(TrainingService trainingService, TrainingDto trainingDto) {
         this.trainingService = trainingService;
 
         try {
@@ -26,7 +27,7 @@ public class Training {
         }
     }
 
-    public Training(TrainingDto trainingDto) {
+    public TrainingHandler(TrainingDto trainingDto) {
         this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto);
     }
 
@@ -39,9 +40,9 @@ public class Training {
         }
     }
 
-    public void updateTrainingStatus(String status) {
+    public void updateTrainingStatus(StatusName status) {
         try {
-            trainingService.updateTrainingStatus(trainingId, status);
+            trainingService.updateTrainingStatus(trainingId, status.getName());
         } catch (DatabaseException e) {
             logger.error("Failed to update the status for for trainingId={}, status={}, error={}",
                     trainingId, status, e.getMessage(), e);

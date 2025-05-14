@@ -2,13 +2,16 @@ package pl.edu.uj.tcs.aiplayground.core.layers;
 
 import pl.edu.uj.tcs.aiplayground.core.ComputationalGraph;
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 
 import java.util.ArrayList;
 
 public interface Layer {
-    public Tensor forward(Tensor input, ComputationalGraph graph);
+    Tensor forward(Tensor input, ComputationalGraph graph);
 
-    public ArrayList<Tensor> getParams();
+    ArrayList<Tensor> getParams();
 
-    public String toJson();
+    String toJson();
+
+    LayerConfig toConfig();
 }

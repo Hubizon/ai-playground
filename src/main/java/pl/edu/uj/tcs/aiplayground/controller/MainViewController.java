@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
+import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.util.ArrayList;
@@ -26,14 +27,13 @@ public class MainViewController {
     // 0 - linear
     // 1 - sigmoid
     // 2 - relu
-
-    private ViewModelFactory factory;
-    private MainViewModel mainViewModel;
-
     @FXML
     public LineChart lossChart;
     @FXML
     public LineChart accuracyChart;
+    private ViewModelFactory factory;
+    private UserViewModel userViewModel;
+    private MainViewModel mainViewModel;
     @FXML
     private VBox barsContainer;
     @FXML
@@ -53,6 +53,7 @@ public class MainViewController {
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
+        this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
 
         accuracyField.setText("0");

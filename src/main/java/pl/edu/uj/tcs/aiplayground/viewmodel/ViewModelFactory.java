@@ -1,10 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
 import org.jooq.DSLContext;
-import pl.edu.uj.tcs.aiplayground.repository.IUserRepository;
-import pl.edu.uj.tcs.aiplayground.repository.JooqFactory;
-import pl.edu.uj.tcs.aiplayground.repository.UserRepository;
+import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
+import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
+import pl.edu.uj.tcs.aiplayground.service.repository.ModelRepository;
+import pl.edu.uj.tcs.aiplayground.service.repository.UserRepository;
 
 public class ViewModelFactory {
     private final DSLContext dsl;
@@ -18,7 +19,9 @@ public class ViewModelFactory {
         var userService = new UserService(userRepository);
         this.userViewModel = new UserViewModel(userService);
 
-        this.mainViewModel = new MainViewModel();
+        var modelRepository = new ModelRepository(dsl);
+        var modelService = new ModelService(modelRepository);
+        this.mainViewModel = new MainViewModel(modelService);
     }
 
     public UserViewModel getUserViewModel() {

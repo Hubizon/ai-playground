@@ -1,8 +1,8 @@
-package pl.edu.uj.tcs.aiplayground.validation;
+package pl.edu.uj.tcs.aiplayground.service.validation;
 
+import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 
 public class UserValidation {
     private static final String USERNAME_REGEX = "^[A-Za-z0-9_.]{3,50}$";

@@ -1,7 +1,7 @@
-package pl.edu.uj.tcs.aiplayground.validation;
+package pl.edu.uj.tcs.aiplayground.service.validation;
 
+import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
-import pl.edu.uj.tcs.aiplayground.form.ModelForm;
 
 public class ModelValidation {
     private static final String MODEL_NAME_REGEX = "^[A-Za-z0-9_.]{3,50}$";

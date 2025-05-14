@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.form;
+package pl.edu.uj.tcs.aiplayground.dto.form;
 
 import org.jooq.JSONB;
 

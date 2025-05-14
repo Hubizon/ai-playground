@@ -1,7 +1,7 @@
-package pl.edu.uj.tcs.aiplayground.repository;
+package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;

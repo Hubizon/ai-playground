@@ -9,9 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.uj.tcs.aiplayground.dto.UserDto;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
@@ -36,7 +34,8 @@ public class RegisterController {
 
     private boolean passwordVisible = false;
 
-    public RegisterController() { }
+    public RegisterController() {
+    }
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;

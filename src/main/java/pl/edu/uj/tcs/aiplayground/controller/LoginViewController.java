@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
@@ -29,7 +29,8 @@ public class LoginViewController {
     private Label statusLabel;
     private Stage stage;
 
-    public LoginViewController() {}
+    public LoginViewController() {
+    }
 
     public void setStage(Stage stage) {
         this.stage = stage;

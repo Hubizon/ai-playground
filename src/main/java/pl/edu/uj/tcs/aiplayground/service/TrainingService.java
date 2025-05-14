@@ -3,7 +3,7 @@ package pl.edu.uj.tcs.aiplayground.service;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.repository.ITrainingRepository;
+import pl.edu.uj.tcs.aiplayground.service.repository.ITrainingRepository;
 
 import java.util.List;
 import java.util.UUID;

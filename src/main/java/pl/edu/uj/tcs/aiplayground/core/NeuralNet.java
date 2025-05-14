@@ -1,21 +1,43 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
+import org.jooq.JSONB;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class NeuralNet {
 
-    public ArrayList<Layer> layers = new ArrayList<>();
+    public List<Layer> layers = new ArrayList<>();
+
+    public NeuralNet() {
+        // TODO
+    }
+
+    public NeuralNet(List<LayerConfig> configs) {
+        this.layers = configs.stream()
+                .map(LayerConfig::toLayer)
+                .toList();
+        // TODO
+    }
+
+    public NeuralNet(JSONB architecture) {
+        // TODO
+    }
 
     public static NeuralNet load(String filePath) {
         NeuralNet neuralNet = new NeuralNet();
@@ -98,4 +120,26 @@ public class NeuralNet {
         }
     }
 
+    public List<LayerConfig> toConfigList() {
+        return layers.stream()
+                .map(Layer::toConfig)
+                .toList();
+    }
+
+    public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
+        for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
+            // TODO
+
+            double loss = 0, accuracy = 0;
+
+            if (isCancelled.get())
+                break;
+            TrainingMetricDto metric = new TrainingMetricDto(epoch, loss, accuracy);
+            callback.accept(metric);
+        }
+    }
+
+    public JSONB toJson() {
+        return null;
+    }
 }

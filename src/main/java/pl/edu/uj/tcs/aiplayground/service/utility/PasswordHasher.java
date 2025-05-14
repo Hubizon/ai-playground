@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.utility;
+package pl.edu.uj.tcs.aiplayground.service.utility;
 
 import org.mindrot.jbcrypt.BCrypt;
 
