@@ -69,7 +69,7 @@ public class Tensor {
         ArrayList<Tensor> addends = new ArrayList<Tensor>();
         addends.add(a);
         addends.add(b);
-        graph.addNode(result, addends, "+");
+        if(graph!=null){graph.addNode(result, addends, "+");}
         return result;
     }
 
@@ -87,7 +87,7 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        graph.addNode(result, factors, "*");
+        if(graph!=null) {graph.addNode(result, factors, "*");}
         return result;
     }
 
@@ -107,7 +107,7 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        graph.addNode(result, factors, "matMul");
+        if(graph!=null) {graph.addNode(result, factors, "matMul");}
         return result;
     }
 
@@ -120,7 +120,7 @@ public class Tensor {
             }
 
         }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+        if(graph!=null){graph.addNode(result, new ArrayList<>(List.of(a)), "relu");}
         return result;
     }
 
@@ -131,7 +131,7 @@ public class Tensor {
                 result.data[i][j] = 1 / (1 + Math.exp(-a.data[i][j]));
             }
         }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+        if(graph!=null){ graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");}
         return result;
     }
 
@@ -152,7 +152,7 @@ public class Tensor {
         Tensor result = new Tensor(sum, 1, cols);
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
-        graph.addNode(result, comps, "sumRows");
+        if(graph!=null){graph.addNode(result, comps, "sumRows");}
         return result;
     }
 
@@ -166,7 +166,7 @@ public class Tensor {
         Tensor result = new Tensor(sum, rows, 1);
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
-        graph.addNode(result, comps, "sumCols");
+        if(graph!=null){graph.addNode(result, comps, "sumCols");}
         return result;
     }
 

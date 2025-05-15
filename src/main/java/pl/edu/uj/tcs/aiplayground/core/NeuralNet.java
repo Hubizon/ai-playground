@@ -1,12 +1,18 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
+import javafx.util.Pair;
 import org.jooq.JSONB;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.core.loss.BCE;
+import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
+import pl.edu.uj.tcs.aiplayground.core.optim.AdamOptimizer;
+import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
@@ -25,7 +31,7 @@ public class NeuralNet {
     public List<Layer> layers = new ArrayList<>();
 
     public NeuralNet() {
-        layers = new ArrayList<>();
+        // TODO
     }
 
     public NeuralNet(List<LayerConfig> configs) {
@@ -127,17 +133,37 @@ public class NeuralNet {
     }
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
+        Dataset dataset = new Dataset(new ArrayList<>(List.of(3)),new ArrayList<>(List.of(3)));
+        dataset.load(dto.dataset(), 0.8F);
+        LossFunc loss = new BCE();
+        Optimizer optimizer = new AdamOptimizer(this.getParams(),0.1);
+        double lossValue, accuracy;
         for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
-            // TODO
-
-            double loss = 0, accuracy = 0;
-
+            Dataset.DataLoader trainLoader = dataset.getDataLoader("train",32);
+            ArrayList<Pair<Tensor,Tensor>> datapionts;
+            Tensor output;
+            ComputationalGraph graph = new ComputationalGraph();
+            lossValue = 0.0;
+            while(trainLoader.hasNext()) {
+                datapionts = trainLoader.next();
+                optimizer.zeroGradient();
+                graph.clear();
+                for (Pair<Tensor,Tensor> datapoint : datapionts) {
+                    output = forward(datapoint.getKey(), graph);
+                    lossValue += loss.loss(output,datapoint.getValue());
+                }
+                graph.propagate();
+                optimizer.optimize();
+            }
+            Accuracy acc = new Accuracy();
+            accuracy = acc.eval(dataset,this);
             if (isCancelled.get())
                 break;
-            TrainingMetricDto metric = new TrainingMetricDto(epoch, loss, accuracy);
+            TrainingMetricDto metric = new TrainingMetricDto(epoch, lossValue, accuracy);
             callback.accept(metric);
         }
     }
+
 
     public JSONB toJson() {
         return null;
