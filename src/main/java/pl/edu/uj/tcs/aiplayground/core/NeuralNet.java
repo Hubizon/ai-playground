@@ -25,7 +25,7 @@ public class NeuralNet {
     public List<Layer> layers = new ArrayList<>();
 
     public NeuralNet() {
-        // TODO
+        layers = new ArrayList<>();
     }
 
     public NeuralNet(List<LayerConfig> configs) {
