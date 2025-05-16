@@ -28,23 +28,22 @@ public class MainViewModel {
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
+    private final ObservableList<LayerConfig> layers = FXCollections.observableArrayList();
     private final BooleanProperty trainingInProgress = new SimpleBooleanProperty(false);
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private UserDto user = null;
     private ModelDto model = null;
-    private List<LayerConfig> layers = new ArrayList<>();
 
     public MainViewModel(ModelService modelService) {
         this.modelService = modelService;
     }
 
     private void setupModel() {
-        if (model == null)
-            layers = null;
-        else {
+        layers.clear();
+        if (model != null) {
             NeuralNet neuralNet = new NeuralNet(model.architecture());
-            layers = neuralNet.toConfigList();
+            layers.addAll(neuralNet.toConfigList());
             updateIsPreviousVersion();
             updateIsNextVersion();
         }
@@ -108,7 +107,7 @@ public class MainViewModel {
         return isNextVersion;
     }
 
-    public List<LayerConfig> getLayers() {
+    public ObservableList<LayerConfig> getLayers() {
         return layers;
     }
 
