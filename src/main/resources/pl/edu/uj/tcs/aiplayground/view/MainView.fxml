@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import java.lang.*?>
 <HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
-      fx:controller="pl.edu.uj.tcs.aiplayground.controller.MainViewController"
+      fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       prefWidth="1000" prefHeight="600">
 

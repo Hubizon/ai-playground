@@ -13,12 +13,14 @@ import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
 import pl.edu.uj.tcs.aiplayground.core.TrainingHandler;
 import pl.edu.uj.tcs.aiplayground.dto.*;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
 
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,9 +31,10 @@ public class MainViewModel {
     private final StringProperty statusMessage = new SimpleStringProperty();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
     private final ObservableList<LayerConfig> layers = FXCollections.observableArrayList();
-    private final BooleanProperty trainingInProgress = new SimpleBooleanProperty(false);
+    private final BooleanProperty isTrainingInProgress = new SimpleBooleanProperty(false);
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
+    private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
     private UserDto user = null;
     private ModelDto model = null;
 
@@ -47,6 +50,7 @@ public class MainViewModel {
             updateIsPreviousVersion();
             updateIsNextVersion();
         }
+        isModelLoaded.set(model != null);
     }
 
     private void setUser(UserDto user) {
@@ -54,7 +58,7 @@ public class MainViewModel {
     }
 
     private void updateIsPreviousVersion() {
-        if (!isModelLoaded())
+        if (!isModelLoaded.get())
             isPreviousVersion.set(false);
         try {
             Integer previousVersion = modelService.getPreviousVersion(
@@ -71,7 +75,7 @@ public class MainViewModel {
     }
 
     private void updateIsNextVersion() {
-        if (!isModelLoaded())
+        if (!isModelLoaded.get())
             isNextVersion.set(false);
         try {
             Integer nextVersion = modelService.getNextVersion(
@@ -87,46 +91,67 @@ public class MainViewModel {
         }
     }
 
-    public StringProperty getStatusMessageProperty() {
+    public StringProperty statusMessageProperty() {
         return statusMessage;
     }
 
-    public ObservableList<TrainingMetricDto> getLiveMetrics() {
+    public ObservableList<TrainingMetricDto> liveMetricsProperty() {
         return liveMetrics;
     }
 
-    public BooleanProperty getTrainingInProgressProperty() {
-        return trainingInProgress;
+    public BooleanProperty isTrainingInProgressProperty() {
+        return isTrainingInProgress;
     }
 
-    public BooleanProperty getIsPreviousVersionProperty() {
+    public BooleanProperty isPreviousVersionProperty() {
         return isPreviousVersion;
     }
 
-    public BooleanProperty getIsNextVersionProperty() {
+    public BooleanProperty isNextVersionProperty() {
         return isNextVersion;
     }
 
-    public ObservableList<LayerConfig> getLayers() {
+    public BooleanProperty isModelLoadedProperty() {
+        return isModelLoaded;
+    }
+
+    public ObservableList<LayerConfig> layersProperty() {
         return layers;
+    }
+
+    public void addLayer(LayerType layer) {
+        try {
+            LayerParams defaultParams = layer.getParamType().getDeclaredConstructor().newInstance();
+            LayerConfig config = new LayerConfig(layer, defaultParams);
+            layers.add(config);
+        } catch(NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            logger.error("Failed to add a layer for layer={}, error={}",
+                    layer, e.getMessage(), e);
+            statusMessage.set("Internal Error");
+        }
+    }
+
+    public void removeLayer(int idx) {
+        layers.remove(idx);
+    }
+
+    public void updateLayer(int idx, LayerParams layerParams) {
+        LayerType type = layers.get(idx).type();
+        layers.set(idx, new LayerConfig(type, layerParams));
     }
 
     public boolean isLoggedIn() {
         return user != null;
     }
 
-    public boolean isModelLoaded() {
-        return model != null;
-    }
-
     public String getModelName() {
-        if (isModelLoaded())
+        if (isModelLoaded.get())
             return model.modelName();
         return null;
     }
 
     public Integer getModelVersionNumber() {
-        if (isModelLoaded())
+        if (isModelLoaded.get())
             return model.versionNumber();
         return null;
     }
@@ -230,7 +255,7 @@ public class MainViewModel {
 
     public void train(Integer maxEpochs, Float learningRate, String dataset, String optimizer, String lossFunction) {
         isCancelled.set(false);
-        trainingInProgress.set(true);
+        isTrainingInProgress.set(true);
         liveMetrics.clear();
 
         new Thread(() -> {
@@ -268,7 +293,7 @@ public class MainViewModel {
                     statusMessage.set("Training failed.");
                 });
             } finally {
-                Platform.runLater(() -> trainingInProgress.set(false));
+                Platform.runLater(() -> isTrainingInProgress.set(false));
             }
         }).start();
     }

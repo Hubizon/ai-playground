@@ -4,7 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import pl.edu.uj.tcs.aiplayground.controller.LoginViewController;
+import pl.edu.uj.tcs.aiplayground.view.LoginViewController;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.util.Objects;

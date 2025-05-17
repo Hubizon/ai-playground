@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.controller;
+package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
