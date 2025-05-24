@@ -30,7 +30,7 @@ import java.util.List;
 public class MainViewController {
 
     private final double SPACER = 200;
-    private final List<Integer[]> barValues = new ArrayList<>();
+    private final List<Integer[]> barValues = new ArrayList<>(); //layers
 
     @FXML
     public LineChart<?, ?> lossChart;
@@ -163,7 +163,7 @@ public class MainViewController {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Missing Selection");
         alert.setHeaderText(null);
-        alert.setContentText("You must select a " + message);
+        alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
@@ -176,15 +176,19 @@ public class MainViewController {
     @FXML
     private void onRunBarClicked() {
         if (datasetComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("dataset");
+            pop_up_warning_missing_comboBox_selection("You must select a dataset");
             return;
         }
         if (optimizerComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("optimizer");
+            pop_up_warning_missing_comboBox_selection("You must select a optimizer");
             return;
         }
         if (lossComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("loss");
+            pop_up_warning_missing_comboBox_selection("You must select a loss");
+            return;
+        }
+        if(barValues.isEmpty()){
+            pop_up_warning_missing_comboBox_selection("You must add at least one layer");
             return;
         }
 
@@ -197,6 +201,7 @@ public class MainViewController {
 
     @FXML
     private void onPauseBarClicked() {
+        mainViewModel.stopTraining();
     }
 
     @FXML
@@ -408,7 +413,5 @@ public class MainViewController {
         result.ifPresent(modelName -> {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
         });
-
-        mainViewModel.isModelLoadedProperty().set(true);
     }
 }

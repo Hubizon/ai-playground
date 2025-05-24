@@ -17,6 +17,10 @@
         <Tab text="Training">
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+                        <Button text="Run" onAction="#onRunBarClicked"/>
+                        <Button text="Pause" onAction="#onPauseBarClicked"/>
+                    </HBox>
                     <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <ComboBox fx:id="datasetComboBox" promptText="Dataset" prefWidth="150">
@@ -101,11 +105,6 @@
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
-                <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-                    <Button text="Run" onAction="#onRunBarClicked"/>
-                    <Button text="Pause" onAction="#onPauseBarClicked"/>
-                    <Button text="Reset" onAction="#onResetBarClicked"/>
-                </HBox>
             </HBox>
             <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
             </VBox>
