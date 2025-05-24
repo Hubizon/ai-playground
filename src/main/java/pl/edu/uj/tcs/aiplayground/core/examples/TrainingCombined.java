@@ -17,7 +17,9 @@ import java.util.function.Consumer;
 public class TrainingCombined {
     public static void main(String[] args) {
         List<LayerConfig> architecture = List.of(
-                new LayerConfig(LayerType.LINEAR, new LinearParams(4,16,true)),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(4,16, true)),
+                new LayerConfig(LayerType.RELU, new EmptyParams()),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(16,16,true)),
                 new LayerConfig(LayerType.RELU, new EmptyParams()),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(16,3,true)),
                 new LayerConfig(LayerType.SOFTMAX,new EmptyParams())
@@ -28,9 +30,9 @@ public class TrainingCombined {
 
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
-                100000,
+                100,
                 0.1F,
-                "iris.csv",
+                "src\\main\\resources\\datasets\\iris.csv",
                 "Adam",
                 "MSE"
         );
