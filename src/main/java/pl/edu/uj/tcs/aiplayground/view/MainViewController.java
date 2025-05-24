@@ -12,6 +12,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.control.TextInputDialog;
+import java.util.Optional;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
@@ -22,15 +24,15 @@ import java.util.List;
 public class MainViewController {
 
     private final double SPACER = 200;
-    //bar - one hidden layer
-    private final List<Integer[]> barValues = new ArrayList<>(); //holds info about each layer, Integer[0] holds info about type of the layer
-    // 0 - linear
-    // 1 - sigmoid
-    // 2 - relu
+    private final List<Integer[]> barValues = new ArrayList<>();
+
     @FXML
-    public LineChart lossChart;
+    public LineChart<?, ?> lossChart;
     @FXML
-    public LineChart accuracyChart;
+    public LineChart<?, ?> accuracyChart;
+    @FXML
+    private TabPane leftTabPane;
+
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     private MainViewModel mainViewModel;
@@ -56,8 +58,35 @@ public class MainViewController {
         this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
 
+        // Initially select "My models" tab and disable other tabs
+        leftTabPane.getSelectionModel().select(1); // "My models" tab
+        disableTabsExceptMyModels();
+
+        // Check if user is logged in and load models
+        if (userViewModel.isLoggedIn()) {
+            List<String> modelNames = mainViewModel.getUserModelNames(userViewModel.getUser());
+            if (modelNames != null && !modelNames.isEmpty()) {
+                // Here you would populate the models list in the UI
+                // For now, we'll just enable all tabs if there are models
+                enableAllTabs();
+            }
+        }
+
+        // Listen to model loaded property
+        mainViewModel.isModelLoadedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                enableAllTabs();
+            } else {
+                disableTabsExceptMyModels();
+                leftTabPane.getSelectionModel().select(1); // "My models" tab
+            }
+        });
+
         accuracyField.setText("0");
-//        lossField.setText("0");
+
+        leftTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            System.out.println("Tab changed to: " + newTab.getText());
+        });
 
         datasetComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -66,12 +95,12 @@ public class MainViewController {
         });
         optimizerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                System.out.println("Selected dataset: " + newVal);
+                System.out.println("Selected optimizer: " + newVal);
             }
         });
         lossComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                System.out.println("Selected dataset: " + newVal);
+                System.out.println("Selected loss function: " + newVal);
             }
         });
         maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
@@ -81,6 +110,21 @@ public class MainViewController {
             return null;
         }));
     }
+    private void disableTabsExceptMyModels() {
+        for (Tab tab : leftTabPane.getTabs()) {
+            if (!"My models".equals(tab.getText())) {
+                tab.setDisable(true);
+            }
+        }
+    }
+
+    private void enableAllTabs() {
+        for (Tab tab : leftTabPane.getTabs()) {
+            tab.setDisable(false);
+        }
+    }
+
+
 
     @FXML
     private void onRunBarClicked() {
@@ -97,6 +141,7 @@ public class MainViewController {
     @FXML
     private void onAddLinearBarClicked() {
         addLinearBar();
+        mainViewModel.isModelLoadedProperty().set(true); // This will trigger the listener
     }
 
     @FXML
@@ -107,6 +152,11 @@ public class MainViewController {
     @FXML
     private void onAddReluBarClicked() {
         addReluBar();
+    }
+
+    @FXML
+    private void onClearBarClicked() {
+        clearBars();
     }
 
     @FXML
@@ -141,7 +191,6 @@ public class MainViewController {
         Label nameLabel = new Label("Linear");
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
 
-        //parameter controls
         TextField param1Field = new TextField("0");
         param1Field.setPrefWidth(50);
         param1Field.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
@@ -153,7 +202,6 @@ public class MainViewController {
         CheckBox param3CheckBox = new CheckBox("");
         param3CheckBox.setStyle("-fx-text-fill: white;");
 
-        //spacers
         Text text = new Text("Linear");
         text.setFont(nameLabel.getFont());
         double textWidth = text.getLayoutBounds().getWidth();
@@ -166,7 +214,6 @@ public class MainViewController {
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -174,7 +221,6 @@ public class MainViewController {
             barValues.remove(new Integer[]{0, Integer.parseInt(param1Field.getText()), Integer.parseInt(param2Field.getText()), param3CheckBox.isSelected() ? 1 : 0});
         });
 
-        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, param1Field, param2Field, param3CheckBox, rightSpacer, removeButton);
         barValues.add(new Integer[]{0, Integer.parseInt(param1Field.getText()), Integer.parseInt(param2Field.getText()), param3CheckBox.isSelected() ? 1 : 0});
 
@@ -196,14 +242,11 @@ public class MainViewController {
 
         HBox.setHgrow(nameLabel, Priority.NEVER);
 
-        //spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-
-        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -211,7 +254,6 @@ public class MainViewController {
             barValues.remove(new Integer[]{1});
         });
 
-        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, rightSpacer, removeButton);
         barValues.add(new Integer[]{1});
 
@@ -233,13 +275,11 @@ public class MainViewController {
 
         HBox.setHgrow(nameLabel, Priority.NEVER);
 
-        //spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        //remove
         Button removeButton = new Button("remove");
         removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
         removeButton.setOnAction(e -> {
@@ -247,11 +287,15 @@ public class MainViewController {
             barValues.remove(new Integer[]{2});
         });
 
-        //update
         barContainer.getChildren().addAll(leftSpacer, nameLabel, rightSpacer, removeButton);
         barValues.add(new Integer[]{2});
 
         barsContainer.getChildren().add(barContainer);
+    }
+
+    private  void clearBars(){
+        barValues.clear();
+        barsContainer.getChildren().clear();
     }
 
     public int getAccuracy() {
@@ -275,5 +319,24 @@ public class MainViewController {
     }
 
     public void setStage(Stage stage) {
+    }
+
+    @FXML
+    private void onCreateNewModelClicked() {
+        // Show dialog to get model name
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Create New Model");
+        dialog.setHeaderText("Enter model name:");
+        dialog.setContentText("Name:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(modelName -> {
+            mainViewModel.createNewModel(userViewModel.getUser(), modelName);
+            // The listener on isModelLoadedProperty will handle the tab enabling
+        });
+        if (mainViewModel.isModelLoadedProperty().get()) {
+            enableAllTabs();
+        }
+        enableAllTabs(); //just for testing
     }
 }

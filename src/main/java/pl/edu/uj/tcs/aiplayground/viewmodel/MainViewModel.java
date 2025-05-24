@@ -224,20 +224,23 @@ public class MainViewModel {
             );
             this.model = modelService.addModel(modelForm);
             setUser(user);
+            isModelLoaded.set(true);
         } catch (ModelModificationException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             statusMessage.set("Illegal model name");
             this.model = null;
             setUser(null);
+            isModelLoaded.set(false);
         } catch (DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             statusMessage.set("Internal Error");
             this.model = null;
             setUser(null);
+            isModelLoaded.set(false);
         }
-        setupModel();
+//        setupModel();
     }
 
     public void stopTraining() {

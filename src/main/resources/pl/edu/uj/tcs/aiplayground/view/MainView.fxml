@@ -4,79 +4,131 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.lang.*?>
+<?import java.lang.String?>
 <HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       prefWidth="1000" prefHeight="600">
 
-    <!-- Left side - Settings panel -->
-    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="Leaderboards" onAction="#onLeaderboardsClicked"/>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="User info" onAction="#onUserInfoClicked"/>
-        </HBox>
-        <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="datasetComboBox" promptText="Dataset">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Moons"/>
-                        <String fx:value="Iris"/>
-                        <String fx:value="MNIST"/>
-                        <String fx:value="CIFAR-10"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Opt 1"/>
-                        <String fx:value="Opt 2"/>
-                        <String fx:value="Opt 3"/>
-                        <String fx:value="Opt 4"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="lossComboBox" promptText="Loss">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Loss 1"/>
-                        <String fx:value="Loss 2"/>
-                        <String fx:value="Loss 3"/>
-                        <String fx:value="Loss 4"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Epochs:" style="-fx-text-fill: white;"/>
-            <TextField fx:id="maxEpochField" text="10"
-                       style="-fx-pref-width: 100; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
-        </HBox>
-    </VBox>
+    <!-- Left side - Tab panel -->
+    <TabPane fx:id="leftTabPane" prefWidth="200" tabClosingPolicy="UNAVAILABLE" side="LEFT">
 
-    <!-- Center - bar container -->
-    <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-        <!--<Region prefHeight="60"/>-->
-        <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-            <HBox spacing="10" alignment="CENTER">
-                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-                    <Button text="Run" onAction="#onRunBarClicked"/>
-                    <Button text="Pause" onAction="#onPauseBarClicked"/>
-                    <Button text="Reset" onAction="#onResetBarClicked"/>
+        <Tab text="Training">
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="datasetComboBox" promptText="Dataset">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Moons"/>
+                                    <String fx:value="Iris"/>
+                                    <String fx:value="MNIST"/>
+                                    <String fx:value="CIFAR-10"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Opt 1"/>
+                                    <String fx:value="Opt 2"/>
+                                    <String fx:value="Opt 3"/>
+                                    <String fx:value="Opt 4"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="lossComboBox" promptText="Loss">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Loss 1"/>
+                                    <String fx:value="Loss 2"/>
+                                    <String fx:value="Loss 3"/>
+                                    <String fx:value="Loss 4"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Epochs:" style="-fx-text-fill: white;"/>
+                        <TextField fx:id="maxEpochField" text="10"
+                                   style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                    </HBox>
                 </VBox>
-                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+        </Tab>
+        <Tab text="My models">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="Model">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Layers" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <Button text="Add linear layer" onAction="#onAddLinearBarClicked"/>
                     <Button text="Add sigmoid layer" onAction="#onAddSigmoidBarClicked"/>
                     <Button text="Add relu layer" onAction="#onAddReluBarClicked"/>
+                    <Button text="Clear" onAction="#onClearBarClicked"/>
                 </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="Leaderboards">
+            <content>
+
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Leaderboards" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="User info" onAction="#onUserInfoClicked"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="leaderbors_select_region" promptText="Region">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Global"/>
+                                    <String fx:value="Country"/>
+                                    <String fx:value="Only my models"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="leaderboards_select_training_dataset" promptText="Dataset">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Moons"/>
+                                    <String fx:value="Iris"/>
+                                    <String fx:value="MNIST"/>
+                                    <String fx:value="CIFAR-10"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="Show Leaderboards" onAction="#onLeaderboardsClicked"/>
+                    </HBox>
+                </VBox>
+            </content>
+        </Tab>
+    </TabPane>
+
+    <!-- Rest of your FXML remains unchanged -->
+    <!-- Center - bar container -->
+    <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+        <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+            <HBox spacing="10" alignment="CENTER">
+                <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+                    <Button text="Run" onAction="#onRunBarClicked"/>
+                    <Button text="Pause" onAction="#onPauseBarClicked"/>
+                    <Button text="Reset" onAction="#onResetBarClicked"/>
+                </HBox>
             </HBox>
             <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
             </VBox>

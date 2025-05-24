@@ -78,4 +78,7 @@ public class UserViewModel {
         }
         return false;
     }
+    public UserDto getUser() {
+        return user.get();
+    }
 }

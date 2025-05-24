@@ -104,3 +104,24 @@
     -fx-padding: 5;
     -fx-alignment: CENTER_RIGHT;
 }
+
+.tab-label {
+    -fx-text-fill: white;
+}
+
+.tab {
+    -fx-background-color: #3C3C3C;
+    -fx-background-insets: 0 1 0 1, 0, 0;
+}
+
+.tab:selected {
+    -fx-background-color: #555;
+}
+
+.tab-header-background {
+    -fx-background-color: #2E2E2E; /* Make sure header background is yellow */
+}
+
+.tab-content-area {
+    -fx-background-color: #3C3C3C; /* Content area color */
+}
