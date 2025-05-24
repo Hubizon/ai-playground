@@ -10,6 +10,7 @@ import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
 import pl.edu.uj.tcs.aiplayground.core.loss.BCE;
+import pl.edu.uj.tcs.aiplayground.core.loss.CrossEntropy;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.loss.MSE;
 import pl.edu.uj.tcs.aiplayground.core.optim.AdamOptimizer;
@@ -102,9 +103,9 @@ public class NeuralNet {
     }
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
-        Dataset dataset = new Dataset(new ArrayList<>(List.of(4)),new ArrayList<>(List.of(3)));
+        Dataset dataset = new Dataset();
         dataset.load(dto.dataset(), 0.8F);
-        LossFunc loss = new MSE();
+        LossFunc loss = new CrossEntropy();
         Optimizer optimizer = new AdamOptimizer(this.getParams(),0.1);
         double lossValue, accuracy;
         for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {

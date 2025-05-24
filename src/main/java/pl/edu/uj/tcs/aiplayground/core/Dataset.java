@@ -1,8 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
 import javafx.util.Pair;
-import org.jooq.SelectSeekLimitStep;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,52 +16,122 @@ public class  Dataset {
     private Map<String, Integer> labelMap;
     private int nextLabel = 0;
 
-    public Dataset(ArrayList<Integer> inputShape, ArrayList<Integer> outputShape) {
-        this.inputShape = inputShape;
-        this.outputShape = outputShape;
-        this.size = 0;
+    public Dataset() {
+        inputShape = new ArrayList<>();
+        outputShape = new ArrayList<>();
+        labelMap = new HashMap<>();
     }
 
     public void load(String filename, float trainTestSplit) {
         trainData = new ArrayList<>();
         testData = new ArrayList<>();
-        labelMap = new HashMap<>();
 
-        ArrayList<Pair<Tensor, Tensor>> allData = new ArrayList<>();
+        ArrayList<double[]> rawInputs = new ArrayList<>();
+        ArrayList<double[]> rawOutputs = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String header = br.readLine(); // skip header
+            String inLine = br.readLine();
+            if (inLine == null || !inLine.startsWith("IN: ")) {
+                throw new IOException("Invalid file format: Missing or malformed IN: line.");
+            }
+            String inDimStr = inLine.substring(4).replace(",", "").trim();
+            inputShape.clear();
+            inputShape.add(Integer.parseInt(inDimStr));
+
+            String outLine = br.readLine();
+            if (outLine == null || !outLine.startsWith("OUT: ")) {
+                throw new IOException("Invalid file format: Missing or malformed OUT: line.");
+            }
+            String outDimStr = outLine.substring(5).replace(",", "").trim();
+            outputShape.clear();
+            outputShape.add(Integer.parseInt(outDimStr));
+
+            if (inputShape.isEmpty() || outputShape.isEmpty()) {
+                throw new IOException("Input or output shape could not be determined from the file header.");
+            }
+
+            int inputLen = inputShape.get(0);
+            int outputLen = outputShape.get(0);
+
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
                 String[] tokens = line.split(",");
-                int inputLen = inputShape.get(0);
-                int outputLen = outputShape.get(0);
-
-                double[][] inputValues = new double[1][inputLen];
-                double[][] outputValues = new double[1][outputLen];
-
-                for (int i = 0; i < inputLen; i++) {
-                    inputValues[0][i] = Double.parseDouble(tokens[i]);
+                if (tokens.length != inputLen + outputLen) {
+                    System.err.println("Warning: Skipping malformed line (incorrect number of tokens): " + line);
+                    continue;
                 }
 
-                for (int i = 0; i < outputLen; i++) {
-                    outputValues[0][i] = Double.parseDouble(tokens[i + inputLen]);
+                double[] inputValues = new double[inputLen];
+                double[] outputValues = new double[outputLen];
+
+                try {
+                    for (int i = 0; i < inputLen; i++) {
+                        inputValues[i] = Double.parseDouble(tokens[i].trim());
+                    }
+                    for (int i = 0; i < outputLen; i++) {
+                        outputValues[i] = Double.parseDouble(tokens[i + inputLen].trim());
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Warning: Skipping malformed line (number format error): " + line);
+                    continue;
                 }
 
-                Tensor input = new Tensor(inputValues, 1, inputLen);
-                Tensor label = new Tensor(outputValues, 1, outputLen);
-
-                allData.add(new Pair<>(input, label));
+                rawInputs.add(inputValues);
+                rawOutputs.add(outputValues);
             }
-        } catch (IOException e) {
+
+            // === Compute normalization stats ===
+            double[] mean = new double[inputShape.get(0)];
+            double[] std = new double[inputShape.get(0)];
+
+            for (double[] input : rawInputs) {
+                for (int i = 0; i < input.length; i++) {
+                    mean[i] += input[i];
+                }
+            }
+            for (int i = 0; i < mean.length; i++) {
+                mean[i] /= rawInputs.size();
+            }
+
+            for (double[] input : rawInputs) {
+                for (int i = 0; i < input.length; i++) {
+                    std[i] += Math.pow(input[i] - mean[i], 2);
+                }
+            }
+            for (int i = 0; i < std.length; i++) {
+                std[i] = Math.sqrt(std[i] / rawInputs.size());
+                if (std[i] == 0.0) std[i] = 1e-8; // avoid division by zero
+            }
+
+            // === Normalize and create tensors ===
+            ArrayList<Pair<Tensor, Tensor>> allData = new ArrayList<>();
+            for (int idx = 0; idx < rawInputs.size(); idx++) {
+                double[] normalized = new double[inputShape.get(0)];
+                for (int i = 0; i < normalized.length; i++) {
+                    normalized[i] = (rawInputs.get(idx)[i] - mean[i]) / std[i];
+                }
+
+                Tensor inputTensor = new Tensor(new double[][]{normalized}, 1, normalized.length);
+                Tensor outputTensor = new Tensor(new double[][]{rawOutputs.get(idx)}, 1, outputShape.get(0));
+                allData.add(new Pair<>(inputTensor, outputTensor));
+            }
+
+            if (!allData.isEmpty()) {
+                Collections.shuffle(allData);
+                int splitIndex = (int) (allData.size() * trainTestSplit);
+                trainData = new ArrayList<>(allData.subList(0, splitIndex));
+                testData = new ArrayList<>(allData.subList(splitIndex, allData.size()));
+                size = allData.size();
+            } else {
+                size = 0;
+                System.err.println("Warning: No data loaded into the dataset. Train and test sets will be empty.");
+            }
+
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("Error loading dataset: " + e.getMessage());
             e.printStackTrace();
         }
-
-        Collections.shuffle(allData);
-        int splitIndex = (int)(allData.size() * trainTestSplit);
-        trainData = new ArrayList<>(allData.subList(0, splitIndex));
-        testData = new ArrayList<>(allData.subList(splitIndex, allData.size()));
-        size = allData.size();
     }
 
     public void shuffle() {
