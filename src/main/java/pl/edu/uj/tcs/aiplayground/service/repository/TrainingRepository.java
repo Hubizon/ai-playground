@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
+import pl.edu.uj.tcs.aiplayground.dto.StatusName;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 @SuppressWarnings("ConstantConditions")
 public class TrainingRepository implements ITrainingRepository {
-    private static final String DEFAULT_STATUS = "QUEUE";
+    private static final StatusName DEFAULT_STATUS = StatusName.QUEUE;
     private final DSLContext dsl;
 
     public TrainingRepository(DSLContext dslContext) {
@@ -22,7 +23,7 @@ public class TrainingRepository implements ITrainingRepository {
                 SELECT epoch, loss, accuracy
                 FROM training_metrics
                 WHERE training_id = ?
-                ORDER BY epoch, timestamp;
+                ORDER BY epoch;
                 """, trainingId
         ).into(TrainingMetricDto.class);
     }
@@ -43,33 +44,34 @@ public class TrainingRepository implements ITrainingRepository {
     @Override
     public UUID insertTraining(TrainingDto trainingDto) {
         return dsl.fetchOne("""
-                            WITH training_ids AS (
-                                SELECT
-                                    (SELECT id FROM datasets WHERE name = $1) AS dataset_id,
-                                    (SELECT id FROM optimizers WHERE name = $2) AS optimizer_id,
-                                    (SELECT id FROM loss_functions WHERE name = $3) AS loss_function_id,
-                                    (SELECT id FROM training_statuses WHERE name = $4) AS status_id
-                            ),
-                            INSERT INTO trainings (model_version_id, dataset_id, optimizer_id, loss_function_id, status_id)
-                                SELECT DEFAULT, dataset_id, optimizer_id, loss_function_id, status_id
-                                FROM training_ids
-                                RETURNING id);
-                        """,
-                trainingDto.dataset(),
-                trainingDto.optimizer(),
-                trainingDto.lossFunction(),
-                DEFAULT_STATUS
+        INSERT INTO trainings (model_version_id, learning_rate, dataset_id, optimizer, loss_function, status)
+        VALUES (
+            ?,
+            ?,
+            (SELECT id FROM datasets WHERE name = ?),
+            (SELECT id FROM optimizers WHERE name = ?),
+            (SELECT id FROM loss_functions WHERE name = ?),
+            (SELECT id FROM statuses WHERE name = ?)
+        )
+        RETURNING id;
+        """,
+                trainingDto.modelVersionId(),
+                trainingDto.learningRate(),
+                trainingDto.dataset().getDbKey(),
+                trainingDto.optimizer().getDbKey(),
+                trainingDto.lossFunction().getDbKey(),
+                DEFAULT_STATUS.getName()
         ).into(UUID.class);
     }
 
     @Override
-    public void updateTrainingStatus(UUID trainingId, String status) {
+    public void updateTrainingStatus(UUID trainingId, StatusName status) {
         dsl.query("""
                         UPDATE trainings
                             SET status = (SELECT id FROM statuses WHERE name = ?)
                                 WHERE id = ?;
                         """,
-                status,
+                status.getName(),
                 trainingId
         ).execute();
     }

@@ -6,13 +6,13 @@ import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.loss.MSE;
 
 public enum LossFunctionType {
-    MSE("mse", "Mean Squared Error") {
+    MSE("Mean Squared Error", "Mean Squared Error") {
         @Override
         public LossFunc create() {
             return new MSE();
         }
     },
-    BCE("bce", "Binary Cross Entropy") {
+    BCE("Binary Cross-Entropy", "Binary Cross Entropy") {
         @Override
         public LossFunc create() {
             return new BCE();

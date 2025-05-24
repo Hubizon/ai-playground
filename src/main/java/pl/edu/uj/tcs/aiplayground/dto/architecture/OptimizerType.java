@@ -8,13 +8,13 @@ import pl.edu.uj.tcs.aiplayground.core.optim.SGDOptimizer;
 import java.util.ArrayList;
 
 public enum OptimizerType {
-    SGD("sgd", "Stochastic Gradient Descent") {
+    SGD("SGD", "Stochastic Gradient Descent") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new SGDOptimizer(params, learningRate);
         }
     },
-    ADAM("adam", "Adam Optimizer") {
+    ADAM("Adam", "Adam Optimizer") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdamOptimizer(params, learningRate);

@@ -227,11 +227,11 @@ VALUES ('Początkowe Tokeny', TRUE),
        ('Koszt Uploadu Zestawu Danych', FALSE);
 
 INSERT INTO statuses (name, description)
-VALUES ('Oczekujący', 'Trening czeka na rozpoczęcie.'),
-       ('W Trakcie', 'Trening jest aktualnie uruchomiony.'),
-       ('Ukończony', 'Trening zakończył się pomyślnie.'),
-       ('Niepowodzenie', 'Trening zakończył się błędem.'),
-       ('Anulowany', 'Trening został anulowany przez użytkownika lub system.');
+VALUES ('Queue', 'Trening czeka na rozpoczęcie.'),
+       ('In Progress', 'Trening jest aktualnie uruchomiony.'),
+       ('Finished', 'Trening zakończył się pomyślnie.'),
+       ('Error', 'Trening zakończył się błędem.'),
+       ('Cancelled', 'Trening został anulowany przez użytkownika lub system.');
 
 INSERT INTO roles (name, initial_tokens)
 VALUES ('Użytkownik Podstawowy', 1000),
@@ -247,7 +247,10 @@ WITH inserted_users AS (
                                           ('piotr_zielinski', 'Piotr', 'Zielinski', 'piotr.zielinski@example.com',
                                            'hashed_password_piotr', 2, '1995-07-22'),
                                           ('admin_system', 'Admin', 'Systemowy', 'admin@company.com',
-                                           'hashed_password_admin', 3, '1975-01-01')
+                                           'hashed_password_admin', 3, '1975-01-01'),
+                                          ('admin', 'admin', 'admin', 'admin@admin.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
+                                           '2020-01-01')
         RETURNING id, username)
 
 INSERT
@@ -336,7 +339,22 @@ VALUES ((SELECT id
        }'::jsonb);
 
 WITH inserted_datasets AS (
-    INSERT INTO datasets (name, description, category_id) VALUES ('CIFAR-10',
+    INSERT INTO datasets (name, description, category_id) VALUES ('Iris',
+                                                                  'TODO',
+                                                                  (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
+                                                                 ('Moons',
+                                                                  'TODO',
+                                                                  (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
+                                                                 ('Blobs',
+                                                                  'TODO',
+                                                                  (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
+                                                                 ('Circles',
+                                                                  'TODO',
+                                                                  (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
+                                                                 ('MNIST',
+                                                                  'TODO',
+                                                                  (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
+                                                                 ('CIFAR-10',
                                                                   'Zestaw danych obrazów 32x32 do klasyfikacji na 10 klas.',
                                                                   (SELECT id FROM categories WHERE name = 'Rozpoznawanie Obrazów')),
                                                                  ('IMDB Reviews',
@@ -534,7 +552,7 @@ WHERE T.status != 1;
 ALTER TABLE datasets
     ADD COLUMN path TEXT;
 UPDATE datasets
-SET path = 'datasets/' || name;
+SET path = 'datasets/' || name || '.csv';
 
 CREATE OR REPLACE FUNCTION next_model_version(version_number integer)
     returns integer

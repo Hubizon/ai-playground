@@ -1,10 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.dto;
 
 public enum StatusName {
-    IN_PROGRESS("W Trakcie"),
+    QUEUE("Queue"),
+    IN_PROGRESS("In Progress"),
     FINISHED("Ukończony"),
-    ERROR("Niepowodzenie"),
-    CANCELLED("Anulowany");
+    ERROR("Error"),
+    CANCELLED("Cancelled");
 
     String name;
 
