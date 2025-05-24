@@ -52,46 +52,43 @@ public class MainViewController {
     private Label epochField;
     @FXML
     private TextField maxEpochField;
-
+    @FXML
+    private TextField learningRateField;
     @FXML
     private ComboBox<OptimizerType> optimizerComboBox;
     @FXML
     private ComboBox<LossFunctionType> lossComboBox;
     @FXML
     private ComboBox<DatasetType> datasetComboBox;
+    @FXML
+    private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
 
-        // Initially select "My models" tab and disable other tabs
+        // Initially select "My models" tab
         leftTabPane.getSelectionModel().select(1); // "My models" tab
-        disableTabsExceptMyModels();
+
+        for (Tab tab : leftTabPane.getTabs()) {
+            if (!"My models".equals(tab.getText())) {
+                tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
+            }
+        }
 
         // Check if user is logged in and load models
         if (userViewModel.isLoggedIn()) {
             List<String> modelNames = mainViewModel.getUserModelNames(userViewModel.getUser());
             if (modelNames != null && !modelNames.isEmpty()) {
                 // Here you would populate the models list in the UI
-                // For now, we'll just enable all tabs if there are models
-                enableAllTabs();
             }
         }
-
-        // Listen to model loaded property
-        mainViewModel.isModelLoadedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) {
-                enableAllTabs();
-            } else {
-                disableTabsExceptMyModels();
-                leftTabPane.getSelectionModel().select(1); // "My models" tab
-            }
-        });
 
         optimizerComboBox.setItems(FXCollections.observableArrayList(OptimizerType.values()));
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
+        leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
 
         accuracyField.setText("0");
 
@@ -114,31 +111,88 @@ public class MainViewController {
                 System.out.println("Selected loss function: " + newVal);
             }
         });
+        leaderboards_select_dataset_combobox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                System.out.println("Selected dataset for leaderboards sorting: " + newVal);
+            }
+        });
         maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
             if (change.getControlNewText().matches("\\d*")) {
                 return change;
             }
             return null;
         }));
-    }
-
-    private void disableTabsExceptMyModels() {
-        for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText())) {
-                tab.setDisable(true);
+        learningRateField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*(\\.\\d*)?")) { // Allows digits and optional decimal
+                learningRateField.setText(oldValue);
             }
+        });
+    }
+
+    private int getMaxEpoch() {
+        try {
+            int value = Integer.parseInt(maxEpochField.getText());
+            if (value < 0) {
+                System.err.println("Max epoch rate must be between 0");
+                return 10;
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            // Handle the case when the input is not a valid integer
+            System.err.println("Invalid number format in maxEpochField");
+            return 10; // or some default value
         }
     }
 
-    private void enableAllTabs() {
-        for (Tab tab : leftTabPane.getTabs()) {
-            tab.setDisable(false);
+    private double getLearningRate() {
+        try {
+            double value = Double.parseDouble(learningRateField.getText());
+            if (value < 0.0 || value > 1.0) {
+                System.err.println("Learning rate must be between 0.0 and 1.0");
+                return 0.01; // Default fallback
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid learning rate format");
+            return 0.01; // Default fallback
         }
     }
 
+    @FXML
+    private void pop_up_warning_missing_comboBox_selection(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Missing Selection");
+        alert.setHeaderText(null);
+        alert.setContentText("You must select a " + message);
+        alert.getDialogPane().getStylesheets().add(
+                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+        );
+        alert.getDialogPane().getStyleClass().add("dialog-pane");
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(okButton);
+        alert.showAndWait();
+    }
 
     @FXML
     private void onRunBarClicked() {
+        if (datasetComboBox.getValue() == null) {
+            pop_up_warning_missing_comboBox_selection("dataset");
+            return;
+        }
+        if (optimizerComboBox.getValue() == null) {
+            pop_up_warning_missing_comboBox_selection("optimizer");
+            return;
+        }
+        if (lossComboBox.getValue() == null) {
+            pop_up_warning_missing_comboBox_selection("loss");
+            return;
+        }
+
+        mainViewModel.train(getMaxEpoch(),
+                getLearningRate(),
+                datasetComboBox.getValue(),
+                optimizerComboBox.getValue(),
+                lossComboBox.getValue());
     }
 
     @FXML
@@ -152,7 +206,6 @@ public class MainViewController {
     @FXML
     private void onAddLinearBarClicked() {
         addLinearBar();
-        mainViewModel.isModelLoadedProperty().set(true); // This will trigger the listener
     }
 
     @FXML
@@ -343,13 +396,11 @@ public class MainViewController {
         dialog.setGraphic(null);
         dialog.setHeaderText(null);
 
-        // Apply styles from CSS
         dialog.getDialogPane().getStylesheets().add(
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
 
-        // Style the text field
         TextField textField = dialog.getEditor();
         textField.getStyleClass().add("text-field");
 
@@ -358,10 +409,6 @@ public class MainViewController {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
         });
 
-        if (mainViewModel.isModelLoadedProperty().get()) {
-            enableAllTabs();
-        }
-        enableAllTabs(); //just for testing
+        mainViewModel.isModelLoadedProperty().set(true);
     }
-
 }

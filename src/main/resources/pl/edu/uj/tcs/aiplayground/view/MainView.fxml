@@ -5,32 +5,41 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.lang.String?>
+
 <HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       prefWidth="1000" prefHeight="600">
 
     <!-- Left side - Tab panel -->
-    <TabPane fx:id="leftTabPane" prefWidth="200" tabClosingPolicy="UNAVAILABLE" side="LEFT">
+    <TabPane fx:id="leftTabPane" prefWidth="230" tabClosingPolicy="UNAVAILABLE" side="LEFT">
 
         <Tab text="Training">
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="datasetComboBox" promptText="Dataset">
+                        <ComboBox fx:id="datasetComboBox" promptText="Dataset" prefWidth="150">
                         </ComboBox>
                     </HBox>
+                    <Label text="Optimizer" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
+                        <ComboBox fx:id="optimizerComboBox" promptText="Optimizer" prefWidth="150">
                         </ComboBox>
                     </HBox>
+                    <Label text="Loss" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="lossComboBox" promptText="Loss">
+                        <ComboBox fx:id="lossComboBox" promptText="Loss" prefWidth="150">
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Label text="Epochs:" style="-fx-text-fill: white;"/>
                         <TextField fx:id="maxEpochField" text="10"
+                                   style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Learning rate:" style="-fx-text-fill: white;"/>
+                        <TextField fx:id="learningRateField" text="0.01"
                                    style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
                     </HBox>
                 </VBox>
@@ -76,15 +85,7 @@
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="leaderboards_select_training_dataset" promptText="Dataset">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Moons"/>
-                                    <String fx:value="Iris"/>
-                                    <String fx:value="MNIST"/>
-                                    <String fx:value="CIFAR-10"/>
-                                </FXCollections>
-                            </items>
+                        <ComboBox fx:id="leaderboards_select_dataset_combobox" promptText="Dataset">
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -112,7 +113,7 @@
     </VBox>
 
     <!-- Right side - training outcome panel -->
-    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
+    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="230">
         <Label text="Training Metrics" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Label text="Accuracy:" style="-fx-text-fill: white;"/>
