@@ -2,6 +2,7 @@ package pl.edu.uj.tcs.aiplayground.service.validation;
 
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 
 public class UserValidation {
@@ -32,6 +33,14 @@ public class UserValidation {
             throw new UserModificationException("Invalid email address");
 
         if (!registerForm.password().matches(PASSWORD_REGEX))
+            throw new UserModificationException("Invalid password");
+    }
+
+    public static void validateUpdateUserForm(UpdateUserForm updateUserForm) throws UserModificationException {
+        if (!updateUserForm.email().matches(EMAIL_REGEX))
+            throw new UserModificationException("Invalid email address");
+
+        if (!updateUserForm.password().matches(PASSWORD_REGEX))
             throw new UserModificationException("Invalid password");
     }
 }

@@ -1,32 +1,78 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.*;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
+import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
+import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
+
+import java.time.LocalDate;
+import java.util.Date;
 
 public class UserInfoController {
     @FXML
-    private PasswordField passwordField;
+    private PasswordField passwordInfoField;
     @FXML
     private Button showPasswordButton;
 
+    @FXML private TextField usernameInfoField;
+    @FXML private TextField firstNameInfoField;
+    @FXML private TextField lastNameInfoField;
+    @FXML private TextField emailInfoField;
+    @FXML private ComboBox<String> countryInfoComboBox;
+    @FXML private DatePicker birthDateInfoDatePicker;
+
     private boolean passwordVisible = false;
+
+    private ViewModelFactory factory;
+    private UserViewModel userViewModel;
+
+    public void initialize(ViewModelFactory factory) {
+        this.factory = factory;
+        this.userViewModel = factory.getUserViewModel();
+
+        UserDto user = userViewModel.getUser();
+        if (user != null) {
+            usernameInfoField.setText(user.username());
+            firstNameInfoField.setText(user.firstName());
+            lastNameInfoField.setText(user.lastName());
+            emailInfoField.setText(user.email());
+            countryInfoComboBox.setValue(user.countryName());
+            birthDateInfoDatePicker.setValue(user.birthDate());
+        }
+    }
 
     @FXML
     private void handleShowPassword() {
         if (!passwordVisible) {
             // Show password
-            String password = passwordField.getText();
-            passwordField.setPromptText(password);
-            passwordField.clear();
+            String password = passwordInfoField.getText();
+            passwordInfoField.setPromptText(password);
+            passwordInfoField.clear();
             showPasswordButton.setText("Hide Password");
         } else {
             // Hide password
-            String password = passwordField.getPromptText();
-            passwordField.setText(password);
-            passwordField.setPromptText("");
+            String password = passwordInfoField.getPromptText();
+            passwordInfoField.setText(password);
+            passwordInfoField.setPromptText("");
             showPasswordButton.setText("Show Password");
         }
         passwordVisible = !passwordVisible;
+    }
+
+    public void onSaveClick() {
+        UpdateUserForm updateUserForm = new UpdateUserForm(
+                emailInfoField.getText(),
+                passwordInfoField.getText(),
+                countryInfoComboBox.getValue(),
+                birthDateInfoDatePicker.getValue()
+        );
+        userViewModel.updateUser(updateUserForm);
+    }
+
+    public void onCancelClick() {
+        // TODO
     }
 }

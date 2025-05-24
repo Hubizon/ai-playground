@@ -16,35 +16,32 @@
         </padding>
 
         <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <TextField fx:id="usernameInfoField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false"/>
 
         <Label text="First Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <TextField fx:id="firstNameInfoField" GridPane.rowIndex="1" GridPane.columnIndex="1" editable="false"/>
 
         <Label text="Last Name:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <TextField fx:id="lastNameInfoField" GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
 
-        <Label text="Gmail:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailInfoField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
         <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
         <HBox spacing="5" GridPane.rowIndex="4" GridPane.columnIndex="1">
-            <PasswordField fx:id="passwordField"/>
+            <PasswordField fx:id="passwordInfoField"/>
             <Button text="Show Password" onAction="#handleShowPassword"/>
         </HBox>
 
         <Label text="Country:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <ComboBox GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="countryInfoComboBox" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
         <Label text="Birth Date:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <DatePicker GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
-        <Label text="Account Created At:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-        <Label text="2023-01-01" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+        <DatePicker fx:id="birthDateInfoDatePicker" GridPane.rowIndex="6" GridPane.columnIndex="1" editable="false"/>
     </GridPane>
 
     <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10;">
-        <Button text="Save" style="-fx-font-weight: bold;"/>
-        <Button text="Cancel"/>
+        <Button text="Save" style="-fx-font-weight: bold;" onAction="#onSaveClick"/>
+        <Button text="Cancel" onAction="#onCancelClick"/>
     </HBox>
 </VBox>
