@@ -23,27 +23,32 @@
                     </HBox>
                     <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="datasetComboBox" promptText="Dataset" prefWidth="150">
+                        <ComboBox fx:id="datasetComboBox" promptText="Choose Dataset" prefWidth="150">
                         </ComboBox>
                     </HBox>
                     <Label text="Optimizer" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="optimizerComboBox" promptText="Optimizer" prefWidth="150">
+                        <ComboBox fx:id="optimizerComboBox" promptText="Choose Optimizer" prefWidth="150">
                         </ComboBox>
                     </HBox>
                     <Label text="Loss" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="lossComboBox" promptText="Loss" prefWidth="150">
+                        <ComboBox fx:id="lossComboBox" promptText="Choose Loss" prefWidth="150">
                         </ComboBox>
-                    </HBox>
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="Epochs:" style="-fx-text-fill: white;"/>
-                        <TextField fx:id="maxEpochField" text="10"
-                                   style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Label text="Learning rate:" style="-fx-text-fill: white;"/>
                         <TextField fx:id="learningRateField" text="0.01"
+                                   style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Batch:" style="-fx-text-fill: white;"/>
+                        <TextField fx:id="batchField" text=""
+                                   style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Epochs:" style="-fx-text-fill: white;"/>
+                        <TextField fx:id="maxEpochField" text="10"
                                    style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
                     </HBox>
                 </VBox>

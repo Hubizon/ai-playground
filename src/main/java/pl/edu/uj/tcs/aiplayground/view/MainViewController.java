@@ -20,6 +20,7 @@ import java.util.Optional;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LossFunctionType;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.OptimizerType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
@@ -52,6 +53,8 @@ public class MainViewController {
     private Label epochField;
     @FXML
     private TextField maxEpochField;
+    @FXML
+    private TextField batchField;
     @FXML
     private TextField learningRateField;
     @FXML
@@ -127,6 +130,12 @@ public class MainViewController {
                 learningRateField.setText(oldValue);
             }
         });
+        batchField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*")) {
+                return change;
+            }
+            return null;
+        }));
     }
 
     private int getMaxEpoch() {
@@ -187,11 +196,11 @@ public class MainViewController {
             pop_up_warning_missing_comboBox_selection("You must select a loss");
             return;
         }
-        if(barValues.isEmpty()){
+        if (barValues.isEmpty()) {
             pop_up_warning_missing_comboBox_selection("You must add at least one layer");
             return;
         }
-
+        System.out.println("Run button clicked - training started");
         mainViewModel.train(getMaxEpoch(),
                 getLearningRate(),
                 datasetComboBox.getValue(),
@@ -201,6 +210,7 @@ public class MainViewController {
 
     @FXML
     private void onPauseBarClicked() {
+        System.out.println("Pause button clicked - training stopped");
         mainViewModel.stopTraining();
     }
 
