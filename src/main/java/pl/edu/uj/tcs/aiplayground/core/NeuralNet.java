@@ -104,7 +104,7 @@ public class NeuralNet {
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
 
-        final int batchSize=128;
+        final int batchSize=8;
         final int numThreads  = Runtime.getRuntime().availableProcessors();;
         System.out.println("Using "+numThreads+" threads");
 
