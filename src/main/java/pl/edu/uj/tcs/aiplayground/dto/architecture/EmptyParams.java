@@ -7,4 +7,8 @@ public record EmptyParams() implements LayerParams {
     public List<String> getParamNames() {
         return List.of();
     }
+
+    public List<Class<?>> getParamTypes() {
+        return List.of();
+    }
 }

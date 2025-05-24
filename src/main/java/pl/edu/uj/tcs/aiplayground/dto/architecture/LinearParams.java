@@ -7,4 +7,8 @@ public record LinearParams(int inputSize, int outputSize, boolean isBias) implem
     public List<String> getParamNames() {
         return List.of("Input Size", "Output Size", "Is Bias");
     }
+
+    public List<Class<?>> getParamTypes() {
+        return List.of(Integer.class, Integer.class, Boolean.class);
+    }
 }
