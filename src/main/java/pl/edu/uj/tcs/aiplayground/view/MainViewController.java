@@ -1,5 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -13,7 +14,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.control.TextInputDialog;
+
 import java.util.Optional;
+
+import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LossFunctionType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.OptimizerType;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
@@ -46,12 +52,13 @@ public class MainViewController {
     private Label epochField;
     @FXML
     private TextField maxEpochField;
+
     @FXML
-    private ComboBox<String> datasetComboBox;
+    private ComboBox<OptimizerType> optimizerComboBox;
     @FXML
-    private ComboBox<String> optimizerComboBox;
+    private ComboBox<LossFunctionType> lossComboBox;
     @FXML
-    private ComboBox<String> lossComboBox;
+    private ComboBox<DatasetType> datasetComboBox;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -82,6 +89,10 @@ public class MainViewController {
             }
         });
 
+        optimizerComboBox.setItems(FXCollections.observableArrayList(OptimizerType.values()));
+        lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
+        datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
+
         accuracyField.setText("0");
 
         leftTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
@@ -110,6 +121,7 @@ public class MainViewController {
             return null;
         }));
     }
+
     private void disableTabsExceptMyModels() {
         for (Tab tab : leftTabPane.getTabs()) {
             if (!"My models".equals(tab.getText())) {
@@ -123,7 +135,6 @@ public class MainViewController {
             tab.setDisable(false);
         }
     }
-
 
 
     @FXML
@@ -293,7 +304,7 @@ public class MainViewController {
         barsContainer.getChildren().add(barContainer);
     }
 
-    private  void clearBars(){
+    private void clearBars() {
         barValues.clear();
         barsContainer.getChildren().clear();
     }
