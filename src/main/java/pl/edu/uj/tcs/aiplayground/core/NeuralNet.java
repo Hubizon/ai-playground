@@ -103,28 +103,37 @@ public class NeuralNet {
     }
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
-        Dataset dataset = new Dataset();
-        dataset.load(dto.dataset(), 0.8F);
-        LossFunc loss = new CrossEntropy();
-        Optimizer optimizer = new AdamOptimizer(this.getParams(),0.1);
-        double lossValue, accuracy;
+        //Dataset dataset = dto.dataset().create();
+        Dataset dataset = new Dataset("src/main/resources/datasets/mnist_pytorch_dataset.csv");
+        LossFunc loss = dto.lossFunction().create();
+        Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
+        double lossValue, lossItem, accuracy;
+
         for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
-            Dataset.DataLoader trainLoader = dataset.getDataLoader("train",16);
+            assert dataset != null;
+            int processed = 0;
+            Dataset.DataLoader trainLoader = dataset.getDataLoader("train",32);
             ArrayList<Pair<Tensor,Tensor>> datapionts;
             Tensor output;
             ComputationalGraph graph = new ComputationalGraph();
             lossValue = 0.0;
+
             while(trainLoader.hasNext()) {
+                lossItem =0.0;
                 datapionts = trainLoader.next();
                 optimizer.zeroGradient();
                 graph.clear();
                 for (Pair<Tensor,Tensor> datapoint : datapionts) {
                     output = forward(datapoint.getKey().transpose(), graph);
-                    lossValue += loss.loss(output,datapoint.getValue().transpose());
+                    lossItem += loss.loss(output,datapoint.getValue().transpose());
                 }
+                if(processed % 4096 == 0) System.out.println(processed+" "+lossItem);
+                lossValue += lossItem;
                 graph.propagate();
                 optimizer.optimize();
+                processed+=32;
             }
+
             Accuracy acc = new Accuracy();
             accuracy = acc.eval(dataset,this);
             if (isCancelled.get())
