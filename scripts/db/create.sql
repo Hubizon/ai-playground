@@ -98,7 +98,7 @@ CREATE TABLE model_versions
 (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     model_id       UUID  NOT NULL REFERENCES models (id),
-    version_number INT   NOT NULL,
+    version_number INT   NOT NULL DEFAULT 1,
     architecture   JSONB NOT NULL,
     created_at     TIMESTAMPTZ      DEFAULT now()
 );

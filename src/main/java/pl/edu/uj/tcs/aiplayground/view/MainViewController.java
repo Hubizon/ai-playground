@@ -352,5 +352,4 @@ public class MainViewController {
         }
         enableAllTabs(); //just for testing
     }
-
 }
