@@ -3,36 +3,41 @@ package pl.edu.uj.tcs.aiplayground.core.layers;
 import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.ComputationalGraph;
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.EmptyParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.EmptyParams;
 
 import java.util.ArrayList;
 
-public class SigmoidLayer implements Layer {
-    public SigmoidLayer() {
-    }
+public class SoftMaxLayer implements Layer {
 
+    public SoftMaxLayer() {}
+
+    @Override
     public Tensor forward(Tensor input, ComputationalGraph graph) {
-        return Tensor.Sigmoid(input, graph);
+        Tensor result = Tensor.Softmax(input,graph);
+        return result;
     }
 
+    @Override
     public ArrayList<Tensor> getParams() {
         return new ArrayList<>();
     }
 
+    @Override
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        json.put("type", "SigmoidLayer");
+        json.put("type", "SoftMax");
         return json;
     }
 
+    @Override
     public void loadJson(JSONObject json) {
-
+        // No parameters to load
     }
 
     @Override
     public LayerConfig toConfig() {
-        return new LayerConfig(LayerType.LINEAR, new EmptyParams());
+        return new LayerConfig(LayerType.SOFTMAX, new EmptyParams());
     }
 }
