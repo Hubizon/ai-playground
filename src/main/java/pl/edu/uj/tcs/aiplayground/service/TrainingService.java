@@ -46,4 +46,12 @@ public class TrainingService {
             throw new DatabaseException(e);
         }
     }
+
+    public String getDatasetPathByName(String dbName) throws DatabaseException {
+        try {
+            return trainingRepository.getDatasetPathByName(dbName);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
 }

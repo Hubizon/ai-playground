@@ -1,29 +1,21 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
-import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
-import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.core.layers.*;
 
 import java.util.function.Function;
 
 public enum LayerType {
-    LINEAR("Linear", LinearParams.class, params -> new LinearLayer((LinearParams) params)),
-    RELU("ReLU", EmptyParams.class, params -> new ReluLayer()),
-    SIGMOID("Sigmoid", EmptyParams.class, params -> new SigmoidLayer());
+    LINEAR(LinearParams.class, params -> new LinearLayer((LinearParams) params)),
+    RELU(EmptyParams.class, params -> new ReluLayer()),
+    SIGMOID(EmptyParams.class, params -> new SigmoidLayer()),
+    SOFTMAX(EmptyParams.class, params -> new SoftMaxLayer());
 
-    private final String name;
     private final Class<? extends LayerParams> paramType;
     private final Function<LayerParams, Layer> factory;
 
-    LayerType(String name, Class<? extends LayerParams> paramType, Function<LayerParams, Layer> factory) {
-        this.name = name;
+    LayerType(Class<? extends LayerParams> paramType, Function<LayerParams, Layer> factory) {
         this.paramType = paramType;
         this.factory = factory;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Class<? extends LayerParams> getParamType() {
