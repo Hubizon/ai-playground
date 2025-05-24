@@ -108,8 +108,7 @@ public class NeuralNet {
         final int numThreads  = Runtime.getRuntime().availableProcessors();;
         System.out.println("Using "+numThreads+" threads");
 
-        //Dataset dataset = dto.dataset().create();
-        Dataset dataset = new Dataset("src/main/resources/datasets/mnist_pytorch_dataset.csv");
+        Dataset dataset = dto.dataset().create();
         LossFunc lossFn = dto.lossFunction().create();
         Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
 

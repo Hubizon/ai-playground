@@ -4,6 +4,7 @@ import javafx.util.Pair;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class  Dataset {
@@ -26,7 +27,9 @@ public class  Dataset {
         ArrayList<double[]> rawInputs = new ArrayList<>();
         ArrayList<double[]> rawOutputs = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(filename))))) {
             String inLine = br.readLine();
             if (inLine == null || !inLine.startsWith("IN: ")) {
                 throw new IOException("Invalid file format: Missing or malformed IN: line.");
