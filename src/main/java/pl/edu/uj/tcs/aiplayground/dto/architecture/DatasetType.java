@@ -7,7 +7,11 @@ import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 
 public enum DatasetType {
-    IRIS("iris", "Iris dataset");
+    IRIS("Iris", "Iris dataset"),
+    MOONS("Moon", "Moons dataset"),
+    BLOBS("Blobs", "Blobs dataset"),
+    CIRCLES("Circles", "Circles dataset"),
+    MNIST("MNIST", "MNIST dataset");
 
     private static final Logger logger = LoggerFactory.getLogger(DatasetType.class);
     private final String dbKey;

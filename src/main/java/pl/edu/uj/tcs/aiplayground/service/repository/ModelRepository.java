@@ -29,53 +29,62 @@ public class ModelRepository implements IModelRepository {
         return dsl.fetchOne("""
                         WITH model_insert AS (
                             INSERT INTO models(id, user_id, name)
-                                VALUES (DEFAULT, $1, $2)
+                                VALUES (DEFAULT, ?, ?)
                                 RETURNING id
                         ),
                         model_version_insert AS (
                             INSERT INTO model_versions(model_id, architecture, created_at)
-                                SELECT id, $3, now()
+                                SELECT id, ?, now()
                                 FROM model_insert
                                 RETURNING id, model_id, version_number, architecture
                         )
                         SELECT model_id AS modelId,
-                               $1 AS userId,
+                               ? AS userId,
                                mvi.id AS modelVersionId,
-                               $2 AS modelName,
+                               ? AS modelName,
                                version_number AS versionNumber,
                                architecture AS architecture
                         FROM model_version_insert mvi;
                         """,
                 modelForm.userId(),
                 modelForm.name(),
-                modelForm.jsonArchitecture()
+                modelForm.jsonArchitecture(),
+                modelForm.userId(),
+                modelForm.name()
         ).into(ModelDto.class);
     }
 
     @Override
     public ModelDto insertModelVersion(ModelForm modelForm) {
         return dsl.fetchOne("""
-                        WITH model_version_insert AS (
+                        WITH model_id_fetch AS (
+                            SELECT id
+                            FROM models
+                                WHERE models.user_id = ? AND models.name = ?
+                        ),
+                        model_version_insert AS (
                             INSERT INTO model_versions(model_id, version_number, architecture, created_at)
-                                SELECT (SELECT id FROM models WHERE models.user_id = $1 AND models.name = $2),
+                                SELECT model_id_fetch.id,
                                        next_model_version((SELECT MAX(version_number)
                                                                 FROM model_versions
-                                                                WHERE model_id = ?)),
-                                       $3,
+                                                                WHERE model_id = model_id_fetch.id)),
+                                       ?,
                                        now()
                                 RETURNING id, model_id, version_number, architecture
                         )
                         SELECT model_id AS modelId,
-                               $1 AS userId,
+                               ? AS userId,
                                mvi.id AS modelVersionId,
-                               $2 AS modelName,
+                               ? AS modelName,
                                version_number AS versionNumber,
                                architecture AS architecture
                         FROM model_version_insert mvi;
                         """,
                 modelForm.userId(),
                 modelForm.name(),
-                modelForm.jsonArchitecture()
+                modelForm.jsonArchitecture(),
+                modelForm.userId(),
+                modelForm.name()
         ).into(ModelDto.class);
     }
 
@@ -90,9 +99,9 @@ public class ModelRepository implements IModelRepository {
                                mvi.architecture AS architecture
                             FROM model_versions mvi
                             JOIN models ON mvi.model_id = models.id
-                            WHERE models.user_id = $1
-                              AND models.name = $2
-                              AND mvi.version_number = $3;
+                            WHERE models.user_id = ?
+                              AND models.name = ?
+                              AND mvi.version_number = ?;
                         """,
                 userId,
                 modelName,
@@ -111,8 +120,8 @@ public class ModelRepository implements IModelRepository {
                                mvi.architecture AS architecture
                             FROM model_versions mvi
                             JOIN models ON mvi.model_id = models.id
-                            WHERE models.user_id = $1
-                              AND models.name = $2
+                            WHERE models.user_id = ?
+                              AND models.name = ?
                               AND mvi.version_number = (SELECT MAX(version_number)
                                                             FROM model_versions mvi2
                                                             WHERE mvi2.model_id = mvi.model_id);
@@ -125,9 +134,14 @@ public class ModelRepository implements IModelRepository {
     @Override
     public List<Integer> getModelVersions(UUID userId, String modelName) {
         return dsl.fetch("""
-                SELECT mvi.version_number AS versionNumber
-                    FROM model_versions mvi
-                """
+            SELECT mvi.version_number
+            FROM model_versions mvi
+            JOIN models m ON m.id = mvi.model_id
+            WHERE m.user_id = ? AND m.name = ?
+            ORDER BY mvi.version_number;
+            """,
+                userId,
+                modelName
         ).into(Integer.class);
     }
 }

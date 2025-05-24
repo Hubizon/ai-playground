@@ -42,7 +42,7 @@ public class TrainingHandler {
 
     public void updateTrainingStatus(StatusName status) {
         try {
-            trainingService.updateTrainingStatus(trainingId, status.getName());
+            trainingService.updateTrainingStatus(trainingId, status);
         } catch (DatabaseException e) {
             logger.error("Failed to update the status for for trainingId={}, status={}, error={}",
                     trainingId, status, e.getMessage(), e);
