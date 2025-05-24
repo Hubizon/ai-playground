@@ -34,7 +34,7 @@ public class ModelRepository implements IModelRepository {
                         ),
                         model_version_insert AS (
                             INSERT INTO model_versions(model_id, architecture, created_at)
-                                SELECT id, ?, now()
+                                SELECT id, ?::jsonb, now()
                                 FROM model_insert
                                 RETURNING id, model_id, version_number, architecture
                         )
@@ -68,7 +68,7 @@ public class ModelRepository implements IModelRepository {
                                        next_model_version((SELECT MAX(version_number)
                                                                 FROM model_versions
                                                                 WHERE model_id = model_id_fetch.id)),
-                                       ?,
+                                       ?::jsonb,
                                        now()
                                 RETURNING id, model_id, version_number, architecture
                         )
