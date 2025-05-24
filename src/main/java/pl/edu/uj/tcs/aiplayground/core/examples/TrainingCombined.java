@@ -21,8 +21,7 @@ public class TrainingCombined {
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(512,64,true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true)),
-                new LayerConfig(LayerType.SOFTMAX,new EmptyParams())
+                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true))
         );
 
         NeuralNet nn = new NeuralNet(architecture);
@@ -32,7 +31,7 @@ public class TrainingCombined {
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 100,
-                0.1,
+                0.001,
                 datasetType,
                 OptimizerType.ADAM,
                 LossFunctionType.CrossEntropy

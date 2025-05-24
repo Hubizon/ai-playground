@@ -1,5 +1,4 @@
 package pl.edu.uj.tcs.aiplayground.core;
-
 import javafx.util.Pair;
 import org.jooq.JSONB;
 import org.json.JSONArray;
@@ -9,18 +8,19 @@ import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
 import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
-import pl.edu.uj.tcs.aiplayground.core.loss.BCE;
-import pl.edu.uj.tcs.aiplayground.core.loss.CrossEntropy;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
-import pl.edu.uj.tcs.aiplayground.core.loss.MSE;
-import pl.edu.uj.tcs.aiplayground.core.optim.AdamOptimizer;
 import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import java.time.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -103,43 +103,81 @@ public class NeuralNet {
     }
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
+
+        final int batchSize=128;
+        final int numThreads  = Runtime.getRuntime().availableProcessors();;
+        System.out.println("Using "+numThreads+" threads");
+
         //Dataset dataset = dto.dataset().create();
         Dataset dataset = new Dataset("src/main/resources/datasets/mnist_pytorch_dataset.csv");
-        LossFunc loss = dto.lossFunction().create();
+        LossFunc lossFn = dto.lossFunction().create();
         Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
+
+        ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+        Instant t0 = Instant.now();
         double lossValue, lossItem, accuracy;
+        try {
+            for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
+                if (isCancelled.get()) break;
 
-        for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
-            assert dataset != null;
-            int processed = 0;
-            Dataset.DataLoader trainLoader = dataset.getDataLoader("train",32);
-            ArrayList<Pair<Tensor,Tensor>> datapionts;
-            Tensor output;
-            ComputationalGraph graph = new ComputationalGraph();
-            lossValue = 0.0;
+                double epochLoss = 0;
+                int processed   = 0;
+                Dataset.DataLoader loader = dataset.getDataLoader("train", batchSize);
 
-            while(trainLoader.hasNext()) {
-                lossItem =0.0;
-                datapionts = trainLoader.next();
-                optimizer.zeroGradient();
-                graph.clear();
-                for (Pair<Tensor,Tensor> datapoint : datapionts) {
-                    output = forward(datapoint.getKey().transpose(), graph);
-                    lossItem += loss.loss(output,datapoint.getValue().transpose());
+                while (loader.hasNext()) {
+                    List<Pair<Tensor,Tensor>> batch = loader.next();
+                    optimizer.zeroGradient();
+                    List<Future<Double>> futures = new ArrayList<>(batch.size());
+                    for (Pair<Tensor,Tensor> dp : batch) {
+                        futures.add(exec.submit(() -> {
+                            ComputationalGraph g = new ComputationalGraph();
+                            Tensor x    = dp.getKey().transpose();
+                            Tensor y    = dp.getValue().transpose();
+                            Tensor pred = forward(x, g);
+                            double l    = lossFn.loss(pred, y);
+                            g.propagate();
+                            return l;
+                        }));
+                    }
+                    double batchLoss = 0;
+                    for (Future<Double> f : futures) {
+                        batchLoss += f.get();
+                    }
+                    epochLoss += batchLoss;
+                    for (Tensor p : getParams()) {
+                        for (int i = 0; i < p.rows; i++)
+                            for (int j = 0; j < p.cols; j++)
+                                p.gradient[i][j] /= batchSize;
+                    }
+                    if(processed % 4096 == 0) System.out.println(processed+" "+batchLoss);
+                    epochLoss += batchLoss;
+                    optimizer.optimize();
+                    processed+=batchSize;
                 }
-                if(processed % 4096 == 0) System.out.println(processed+" "+lossItem);
-                lossValue += lossItem;
-                graph.propagate();
-                optimizer.optimize();
-                processed+=32;
-            }
 
-            Accuracy acc = new Accuracy();
-            accuracy = acc.eval(dataset,this);
-            if (isCancelled.get())
-                break;
-            TrainingMetricDto metric = new TrainingMetricDto(epoch, lossValue, accuracy);
-            callback.accept(metric);
+                Accuracy acc = new Accuracy();
+                accuracy = acc.eval(dataset,this);
+                if (isCancelled.get())
+                    break;
+                TrainingMetricDto metric = new TrainingMetricDto(epoch, epochLoss, accuracy);
+                callback.accept(metric);
+                Instant t1 = Instant.now();
+                System.out.println("Epoch "+epoch+" took "+Duration.between(t0, t1).toMillis()+" ms");
+                t0 = t1;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            exec.shutdown();
+        }
+    }
+
+    static class BatchResult {
+        final double loss;
+        final List<double[][]> grads;
+        BatchResult(double loss, List<double[][]> grads) {
+            this.loss = loss;
+            this.grads = grads;
         }
     }
 }

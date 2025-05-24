@@ -26,7 +26,8 @@ public class LinearLayer implements Layer {
     }
 
     public LinearLayer(int inputSize, int outputSize, boolean useBias) {
-        matrix = Tensor.randomMatrix(outputSize, inputSize, -1, 1);
+        double bound = Math.sqrt(6.0 / (inputSize + outputSize));
+        matrix = Tensor.randomMatrix(outputSize, inputSize, -bound, bound);
         bias = Tensor.randomMatrix(outputSize, 1, -1, 1);
         params = new ArrayList<>();
         params.add(matrix);
