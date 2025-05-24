@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
 import pl.edu.uj.tcs.aiplayground.core.loss.BCE;
+import pl.edu.uj.tcs.aiplayground.core.loss.CrossEntropy;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.loss.MSE;
 
@@ -16,6 +17,11 @@ public enum LossFunctionType {
         public LossFunc create() {
             return new BCE();
         }
+    },
+    CrossEntropy("CE", "CrossEntropy")
+    {
+        @Override
+                public LossFunc create() {return new CrossEntropy();}
     };
 
     private final String dbKey;

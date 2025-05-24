@@ -16,16 +16,13 @@ public class  Dataset {
     private Map<String, Integer> labelMap;
     private int nextLabel = 0;
 
-    public Dataset() {
+    public Dataset(String filename) {
+        trainData = new ArrayList<>();
+        testData = new ArrayList<>();
         inputShape = new ArrayList<>();
         outputShape = new ArrayList<>();
         labelMap = new HashMap<>();
-    }
-
-    public void load(String filename, float trainTestSplit) {
-        trainData = new ArrayList<>();
-        testData = new ArrayList<>();
-
+        float trainTestSplit = 0.8f;
         ArrayList<double[]> rawInputs = new ArrayList<>();
         ArrayList<double[]> rawOutputs = new ArrayList<>();
 
