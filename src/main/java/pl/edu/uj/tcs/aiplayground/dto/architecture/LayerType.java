@@ -1,16 +1,14 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
-import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
-import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.core.layers.*;
 
 import java.util.function.Function;
 
 public enum LayerType {
     LINEAR(LinearParams.class, params -> new LinearLayer((LinearParams) params)),
     RELU(EmptyParams.class, params -> new ReluLayer()),
-    SIGMOID(EmptyParams.class, params -> new SigmoidLayer());
+    SIGMOID(EmptyParams.class, params -> new SigmoidLayer()),
+    SOFTMAX(EmptyParams.class, params -> new SoftMaxLayer());
 
     private final Class<? extends LayerParams> paramType;
     private final Function<LayerParams, Layer> factory;

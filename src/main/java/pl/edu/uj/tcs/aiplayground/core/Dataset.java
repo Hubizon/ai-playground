@@ -25,7 +25,45 @@ public class  Dataset {
     }
 
     public void load(String filename, float trainTestSplit) {
-       System.out.println("Musiałem naprawić");
+        trainData = new ArrayList<>();
+        testData = new ArrayList<>();
+        labelMap = new HashMap<>();
+
+        ArrayList<Pair<Tensor, Tensor>> allData = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String header = br.readLine(); // skip header
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] tokens = line.split(",");
+                int inputLen = inputShape.get(0);
+                int outputLen = outputShape.get(0);
+
+                double[][] inputValues = new double[1][inputLen];
+                double[][] outputValues = new double[1][outputLen];
+
+                for (int i = 0; i < inputLen; i++) {
+                    inputValues[0][i] = Double.parseDouble(tokens[i]);
+                }
+
+                for (int i = 0; i < outputLen; i++) {
+                    outputValues[0][i] = Double.parseDouble(tokens[i + inputLen]);
+                }
+
+                Tensor input = new Tensor(inputValues, 1, inputLen);
+                Tensor label = new Tensor(outputValues, 1, outputLen);
+
+                allData.add(new Pair<>(input, label));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Collections.shuffle(allData);
+        int splitIndex = (int)(allData.size() * trainTestSplit);
+        trainData = new ArrayList<>(allData.subList(0, splitIndex));
+        testData = new ArrayList<>(allData.subList(splitIndex, allData.size()));
+        size = allData.size();
     }
 
     public void shuffle() {

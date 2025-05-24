@@ -21,10 +21,14 @@ public class ReluLayer implements Layer {
         return new ArrayList<>();
     }
 
-    public String toJson() {
+    public JSONObject toJson() {
         JSONObject json = new JSONObject();
         json.put("type", "ReluLayer");
-        return json.toString();
+        return json;
+    }
+
+    public void loadJson(JSONObject json) {
+
     }
 
     @Override

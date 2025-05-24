@@ -180,4 +180,34 @@ public class Tensor {
         }
         return new Tensor(transposedData, cols, rows);
     }
+
+    public static Tensor Softmax(Tensor input, ComputationalGraph graph) {
+        Tensor result = Tensor.zeros(input.rows, input.cols);
+
+        for (int i = 0; i < input.cols; i++) {
+            double max = Double.NEGATIVE_INFINITY;
+
+            for (int j = 0; j < input.rows; j++) {
+                if (input.data[j][i] > max) {
+                    max = input.data[j][i];
+                }
+            }
+
+            double sum = 0.0;
+            for (int j = 0; j < input.rows; j++) {
+                result.data[j][i] = Math.exp(input.data[j][i] - max);
+                sum += result.data[j][i];
+            }
+
+            for (int j = 0; j < input.rows; j++) {
+                result.data[j][i] /= sum;
+            }
+        }
+
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(input)), "softmax");
+        }
+
+        return result;
+    }
 }
