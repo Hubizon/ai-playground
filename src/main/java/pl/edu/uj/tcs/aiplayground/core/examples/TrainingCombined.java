@@ -21,18 +21,17 @@ public class TrainingCombined {
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(512,64,true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true)),
-                new LayerConfig(LayerType.SOFTMAX,new EmptyParams())
+                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true))
         );
 
         NeuralNet nn = new NeuralNet(architecture);
 
-        DatasetType datasetType = DatasetType.IRIS;
+        DatasetType datasetType = DatasetType.MNIST;
         datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 100,
-                0.1,
+                0.001,
                 datasetType,
                 OptimizerType.ADAM,
                 LossFunctionType.CrossEntropy
