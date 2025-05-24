@@ -119,9 +119,33 @@
 }
 
 .tab-header-background {
-    -fx-background-color: #2E2E2E; /* Make sure header background is yellow */
+    -fx-background-color: #2E2E2E;
 }
 
 .tab-content-area {
-    -fx-background-color: #3C3C3C; /* Content area color */
+    -fx-background-color: #3C3C3C;
+}
+
+/* Dialog styles */
+.dialog-pane {
+    -fx-background-color: #3C3C3C;
+    -fx-border-color: #555;
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: white;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #4C4C4C;
 }

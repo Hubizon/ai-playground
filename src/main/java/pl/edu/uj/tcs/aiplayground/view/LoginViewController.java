@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,12 @@ public class LoginViewController {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
         statusLabel.textProperty().bind(userViewModel.statusMessageProperty());
+
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                onLoginClicked();
+            }
+        });
     }
 
     @FXML

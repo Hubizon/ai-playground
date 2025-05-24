@@ -322,21 +322,35 @@ public class MainViewController {
     }
 
     @FXML
+
     private void onCreateNewModelClicked() {
-        // Show dialog to get model name
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Create New Model");
         dialog.setHeaderText("Enter model name:");
         dialog.setContentText("Name:");
 
+        dialog.setGraphic(null);
+        dialog.setHeaderText(null);
+
+        // Apply styles from CSS
+        dialog.getDialogPane().getStylesheets().add(
+                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+        );
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
+
+        // Style the text field
+        TextField textField = dialog.getEditor();
+        textField.getStyleClass().add("text-field");
+
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(modelName -> {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
-            // The listener on isModelLoadedProperty will handle the tab enabling
         });
+
         if (mainViewModel.isModelLoadedProperty().get()) {
             enableAllTabs();
         }
         enableAllTabs(); //just for testing
     }
+
 }
