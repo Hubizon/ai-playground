@@ -12,13 +12,12 @@ import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
 import pl.edu.uj.tcs.aiplayground.core.TrainingHandler;
 import pl.edu.uj.tcs.aiplayground.dto.*;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
+import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MainViewModel {
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
     private final ModelService modelService;
+    private final TrainingService trainingService;
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
@@ -38,8 +38,9 @@ public class MainViewModel {
     private UserDto user = null;
     private ModelDto model = null;
 
-    public MainViewModel(ModelService modelService) {
+    public MainViewModel(ModelService modelService, TrainingService trainingService) {
         this.modelService = modelService;
+        this.trainingService = trainingService;
     }
 
     private void setupModel() {
@@ -124,7 +125,8 @@ public class MainViewModel {
             LayerParams defaultParams = layer.getParamType().getDeclaredConstructor().newInstance();
             LayerConfig config = new LayerConfig(layer, defaultParams);
             layers.add(config);
-        } catch(NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             logger.error("Failed to add a layer for layer={}, error={}",
                     layer, e.getMessage(), e);
             statusMessage.set("Internal Error");
@@ -253,7 +255,11 @@ public class MainViewModel {
         });
     }
 
-    public void train(Integer maxEpochs, Float learningRate, String dataset, String optimizer, String lossFunction) {
+    public void train(Integer maxEpochs,
+                      Double learningRate,
+                      DatasetType dataset,
+                      OptimizerType optimizer,
+                      LossFunctionType lossFunction) {
         isCancelled.set(false);
         isTrainingInProgress.set(true);
         liveMetrics.clear();
@@ -273,6 +279,7 @@ public class MainViewModel {
                         optimizer,
                         lossFunction
                 );
+                trainingDto.dataset().setTrainingService(trainingService);
                 handler = new TrainingHandler(trainingDto);
                 handler.updateTrainingStatus(StatusName.IN_PROGRESS);
 

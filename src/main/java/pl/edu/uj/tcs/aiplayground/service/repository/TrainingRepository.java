@@ -53,7 +53,7 @@ public class TrainingRepository implements ITrainingRepository {
                             INSERT INTO trainings (model_version_id, dataset_id, optimizer_id, loss_function_id, status_id)
                                 SELECT DEFAULT, dataset_id, optimizer_id, loss_function_id, status_id
                                 FROM training_ids
-                                RETURNING id
+                                RETURNING id);
                         """,
                 trainingDto.dataset(),
                 trainingDto.optimizer(),
@@ -72,5 +72,15 @@ public class TrainingRepository implements ITrainingRepository {
                 status,
                 trainingId
         ).execute();
+    }
+
+    @Override
+    public String getDatasetPathByName(String dbName) {
+        return dsl.fetchOne("""
+                        SELECT path FROM datasets
+                            WHERE name = ?;
+                        """,
+                dbName
+        ).into(String.class);
     }
 }

@@ -4,10 +4,7 @@ import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet.*;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.EmptyParams;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LinearParams;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,10 +26,10 @@ public class TrainingCombined {
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 100000,
-                0.1F,
-                "iris.csv",
-                "Adam",
-                "MSE"
+                0.1,
+                DatasetType.IRIS,
+                OptimizerType.ADAM,
+                LossFunctionType.MSE
         );
 
         AtomicBoolean isCancelled = new AtomicBoolean(false);

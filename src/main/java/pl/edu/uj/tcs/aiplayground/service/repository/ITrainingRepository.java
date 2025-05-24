@@ -14,4 +14,6 @@ public interface ITrainingRepository {
     UUID insertTraining(TrainingDto trainingsRecord);
 
     void updateTrainingStatus(UUID trainingId, String status);
+
+    String getDatasetPathByName(String dbName);
 }
