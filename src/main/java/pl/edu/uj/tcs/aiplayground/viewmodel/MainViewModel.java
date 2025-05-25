@@ -121,16 +121,9 @@ public class MainViewModel {
     }
 
     public void addLayer(LayerType layer) {
-        try {
-            LayerParams defaultParams = layer.getParamType().getDeclaredConstructor().newInstance();
-            LayerConfig config = new LayerConfig(layer, defaultParams);
-            layers.add(config);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
-                 InvocationTargetException e) {
-            logger.error("Failed to add a layer for layer={}, error={}",
-                    layer, e.getMessage(), e);
-            statusMessage.set("Internal Error");
-        }
+        LayerParams defaultParams = layer.getParams();
+        LayerConfig config = new LayerConfig(layer, defaultParams);
+        layers.add(config);
     }
 
     public void removeLayer(int idx) {
