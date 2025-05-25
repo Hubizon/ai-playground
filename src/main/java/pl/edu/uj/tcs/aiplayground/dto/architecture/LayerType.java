@@ -5,18 +5,18 @@ import pl.edu.uj.tcs.aiplayground.core.layers.*;
 import java.util.function.Function;
 
 public enum LayerType {
-    LINEAR("Linear Layer", LinearParams.class, params -> new LinearLayer((LinearParams) params)),
-    RELU("ReLU", EmptyParams.class, params -> new ReluLayer()),
-    SIGMOID("Sigmoid", EmptyParams.class, params -> new SigmoidLayer()),
-    SOFTMAX("Softmax", EmptyParams.class, params -> new SoftMaxLayer());
+    LINEAR("Linear Layer", new LinearParams(), params -> new LinearLayer((LinearParams) params)),
+    RELU("ReLU", new EmptyParams(), params -> new ReluLayer()),
+    SIGMOID("Sigmoid", new EmptyParams(), params -> new SigmoidLayer()),
+    SOFTMAX("Softmax", new EmptyParams(), params -> new SoftMaxLayer());
 
     private final String name;
-    private final Class<? extends LayerParams> paramType;
+    private final LayerParams params;
     private final Function<LayerParams, Layer> factory;
 
-    LayerType(String name, Class<? extends LayerParams> paramType, Function<LayerParams, Layer> factory) {
+    LayerType(String name, LayerParams params, Function<LayerParams, Layer> factory) {
         this.name = name;
-        this.paramType = paramType;
+        this.params = params;
         this.factory = factory;
     }
 
@@ -25,14 +25,11 @@ public enum LayerType {
         return name;
     }
 
-    public Class<? extends LayerParams> getParamType() {
-        return paramType;
+    public LayerParams getParams() {
+        return params;
     }
 
     public Layer createLayer(LayerParams params) {
-        if (!paramType.isInstance(params)) {
-            throw new IllegalArgumentException("Expected " + paramType.getSimpleName() + " but got " + params.getClass().getSimpleName());
-        }
         return factory.apply(params);
     }
 }
