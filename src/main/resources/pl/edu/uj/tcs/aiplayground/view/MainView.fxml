@@ -58,6 +58,9 @@
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
+                    <ListView fx:id="modelsListView"
+                              style="-fx-background-color: #3C3C3C; -fx-text-fill: white;"
+                              prefHeight="200"/>
                 </VBox>
             </content>
         </Tab>
@@ -104,7 +107,6 @@
         </Tab>
     </TabPane>
 
-    <!-- Rest of your FXML remains unchanged -->
     <!-- Center - bar container -->
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
@@ -113,8 +115,8 @@
                     <Label fx:id="modelNameField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
                     <Label fx:id="modelVersionField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
                     <HBox spacing="5" style="-fx-padding: 0 0 0 40;">
-                        <Button fx:id="prevVersionButton" text="←" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
-                        <Button fx:id="nextVersionButton" text="→" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                        <Button fx:id="prevVersionButton" text="←" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                        <Button fx:id="nextVersionButton" text="→" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
                     </HBox>
                 </HBox>
             </HBox>
