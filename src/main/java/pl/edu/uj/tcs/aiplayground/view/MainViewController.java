@@ -45,6 +45,8 @@ public class MainViewController {
     @FXML
     private TabPane leftTabPane;
 
+    private Stage stage;
+
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     private MainViewModel mainViewModel;
@@ -287,13 +289,17 @@ public class MainViewController {
     @FXML
     private void onUserInfoClicked() {
         try {
-            Stage mainStage = new Stage();
+            Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/UserInfoView.fxml"));
             Scene scene = new Scene(loader.load());
 
-            mainStage.setTitle("AI Playground - User info");
-            mainStage.setScene(scene);
-            mainStage.show();
+            UserInfoController controller = loader.getController();
+            controller.initialize(factory);
+            controller.setStage(stage);
+
+            stage.setTitle("AI Playground - User info");
+            stage.setScene(scene);
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -453,6 +459,7 @@ public class MainViewController {
     }
 
     public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     @FXML

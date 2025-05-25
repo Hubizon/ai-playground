@@ -84,16 +84,17 @@ public class UserViewModel {
         return user.get();
     }
 
-    public void updateUser(UpdateUserForm updateUserForm) {
+    public boolean updateUser(UpdateUserForm updateUserForm) {
         try {
             userService.updateUser(user.get().userId(), updateUserForm);
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
-            user.set(null);
+            return false;
         } catch (DatabaseException e) {
             logger.error("Failed to update user for updateUserForm={}, error={}", updateUserForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
-            user.set(null);
+            return false;
         }
+        return true;
     }
 }

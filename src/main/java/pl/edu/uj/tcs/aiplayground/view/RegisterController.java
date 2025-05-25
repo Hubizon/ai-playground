@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 public class RegisterController {
-    private static final Logger logger = LoggerFactory.getLogger(LoginViewController.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
     public TextField usernameField;
     public TextField firstNameField;
     public TextField lastNameField;
