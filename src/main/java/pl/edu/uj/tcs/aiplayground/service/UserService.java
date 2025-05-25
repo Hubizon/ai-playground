@@ -85,7 +85,7 @@ public class UserService {
         }
     }
 
-    public void updateUser(UUID userId, UpdateUserForm updateUserForm) throws UserModificationException {
+    public void updateUser(UUID userId, UpdateUserForm updateUserForm) throws UserModificationException, DatabaseException {
         UserValidation.validateUpdateUserForm(updateUserForm);
 
         if (userRepository.existEmail(updateUserForm.email()))
