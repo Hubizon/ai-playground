@@ -119,6 +119,11 @@
     <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="230">
         <Label text="Training Metrics" style="-fx-font-size: 16; -fx-text-fill: white;"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Loss:" style="-fx-text-fill: white;"/>
+            <Label fx:id="lossField" text="0"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
             <Label text="Accuracy:" style="-fx-text-fill: white;"/>
             <Label fx:id="accuracyField" text="0"
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
@@ -133,10 +138,10 @@
             <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Loss plot" side="BOTTOM"/>
+                    <NumberAxis autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
+                    <NumberAxis autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>
@@ -144,10 +149,10 @@
             <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy plot" side="BOTTOM"/>
+                    <NumberAxis autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
+                    <NumberAxis autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>

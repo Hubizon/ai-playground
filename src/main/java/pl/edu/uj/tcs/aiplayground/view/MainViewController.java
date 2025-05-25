@@ -1,11 +1,14 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
@@ -23,6 +26,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.Optional;
 
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
@@ -35,9 +39,9 @@ public class MainViewController {
 
     private final double SPACER = 200;
     @FXML
-    public LineChart<?, ?> lossChart;
+    public LineChart<Number, Number> lossChart;
     @FXML
-    public LineChart<?, ?> accuracyChart;
+    public LineChart<Number, Number> accuracyChart;
     @FXML
     private TabPane leftTabPane;
 
@@ -69,6 +73,9 @@ public class MainViewController {
     @FXML
     private VBox layerButtonsContainer;
 
+    private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
+
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
@@ -87,9 +94,40 @@ public class MainViewController {
         if (userViewModel.isLoggedIn()) {
             List<String> modelNames = mainViewModel.getUserModelNames(userViewModel.getUser());
             if (modelNames != null && !modelNames.isEmpty()) {
-                // Here you would populate the models list in the UI
+                // TODO populate the models list in the UI
             }
         }
+
+        lossChart.setCreateSymbols(false);
+        accuracyChart.setCreateSymbols(false);
+        lossChart.getData().add(lossSeries);
+        accuracyChart.getData().add(accuracySeries);
+        mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (TrainingMetricDto m : change.getAddedSubList()) {
+                        lossSeries.getData().add(new XYChart.Data<>(m.epoch(), m.loss()));
+                        accuracySeries.getData().add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                    }
+                }
+                if (change.wasRemoved()) {
+                    for (TrainingMetricDto m : change.getRemoved()) {
+                        lossSeries.getData().removeIf(d -> d.getXValue().intValue() == m.epoch());
+                        accuracySeries.getData().removeIf(d -> d.getXValue().intValue() == m.epoch());
+                    }
+                }
+
+                TrainingMetricDto lastMetric = mainViewModel.liveMetricsProperty().isEmpty() ? null :
+                        mainViewModel.liveMetricsProperty().getLast();
+                Platform.runLater(() -> {
+                    if (lastMetric != null) {
+                        epochField.setText(String.valueOf(lastMetric.epoch()));
+                        accuracyField.setText(String.format("%.3f", lastMetric.accuracy()));
+                        lossField.setText(String.format("%.3f", lastMetric.loss()));
+                    }
+                });
+            }
+        });
 
         optimizerComboBox.setItems(FXCollections.observableArrayList(OptimizerType.values()));
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
@@ -299,7 +337,7 @@ public class MainViewController {
 
                     intField.textProperty().addListener((obs, oldVal, newVal) -> {
                         if (newVal.matches("\\d*")) {
-                            updateLayerParams(barContainer, params, paramName,
+                            updateLayerParams(barContainer, paramName,
                                     newVal.isEmpty() ? 0 : Integer.parseInt(newVal));
                         }
                     });
@@ -319,7 +357,7 @@ public class MainViewController {
                     }
 
                     checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                        updateLayerParams(barContainer, params, paramName, newVal);
+                        updateLayerParams(barContainer, paramName, newVal);
                     });
 
                     barContainer.getChildren().addAll(paramLabel, checkBox);
@@ -340,7 +378,7 @@ public class MainViewController {
                     doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
                         if (newVal.matches("[\\d\\.]*")) {
                             try {
-                                updateLayerParams(barContainer, params, paramName,
+                                updateLayerParams(barContainer, paramName,
                                         newVal.isEmpty() ? 0.0 : Double.parseDouble(newVal));
                             } catch (NumberFormatException e) {
                                 // Ignore invalid input
@@ -379,47 +417,9 @@ public class MainViewController {
         }
     }
 
-    private void updateLayerParams(HBox barContainer, LayerParams oldParams,
-                                   String paramName, Object newValue) {
-        try {
-            Class<?> paramsClass = oldParams.getClass();
-
-            // For records, use getRecordComponents() instead of getDeclaredFields()
-            RecordComponent[] components = paramsClass.getRecordComponents();
-            Object[] newValues = new Object[components.length];
-
-            // Get current values using accessor methods
-            for (int i = 0; i < components.length; i++) {
-                Method accessor = components[i].getAccessor();
-                newValues[i] = accessor.invoke(oldParams);
-            }
-
-            // Update the changed parameter
-            String targetName = paramName.replace(" ", "").toLowerCase();
-            for (int i = 0; i < components.length; i++) {
-                if (components[i].getName().equals(targetName)) {
-                    newValues[i] = newValue;
-                    break;
-                }
-            }
-
-            // Get the canonical constructor with proper parameter types
-            Class<?>[] paramTypes = Arrays.stream(components)
-                    .map(RecordComponent::getType)
-                    .toArray(Class<?>[]::new);
-
-            Constructor<?> constructor = paramsClass.getDeclaredConstructor(paramTypes);
-            LayerParams newParams = (LayerParams) constructor.newInstance(newValues);
-
-            // Update in view model
-            int index = barsContainer.getChildren().indexOf(barContainer);
-            if (index >= 0) {
-                mainViewModel.updateLayer(index, newParams);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to update layer params: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void updateLayerParams(HBox barContainer, String paramName, Object newValue) {
+        int index = barsContainer.getChildren().indexOf(barContainer);
+        mainViewModel.updateLayer(index, paramName, newValue);
     }
 
     private void createLayerButtons() {
