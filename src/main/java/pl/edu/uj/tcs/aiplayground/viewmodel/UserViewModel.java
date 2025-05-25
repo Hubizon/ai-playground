@@ -14,7 +14,6 @@ import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class UserViewModel {
@@ -90,6 +89,10 @@ public class UserViewModel {
             userService.updateUser(user.get().userId(), updateUserForm);
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
+            user.set(null);
+        } catch (DatabaseException e) {
+            logger.error("Failed to update user for updateUserForm={}, error={}", updateUserForm, e.getMessage(), e);
+            statusMessage.set("Internal Error");
             user.set(null);
         }
     }
