@@ -18,7 +18,7 @@ public enum LossFunctionType {
             return new BCE();
         }
     },
-    CrossEntropy("CE", "CrossEntropy")
+    CrossEntropy("Cross-Entropy", "Cross Entropy")
     {
         @Override
                 public LossFunc create() {return new CrossEntropy();}

@@ -217,7 +217,8 @@ INSERT INTO loss_functions (name)
 VALUES ('Cross-Entropy'),
        ('Mean Squared Error'),
        ('Harmonic Loss'),
-       ('Binary Cross-Entropy');
+       ('Binary Cross-Entropy'),
+       ('Cross-Entropy');
 
 INSERT INTO events (name, is_income)
 VALUES ('Początkowe Tokeny', TRUE),
