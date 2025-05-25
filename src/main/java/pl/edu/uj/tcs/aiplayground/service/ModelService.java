@@ -4,6 +4,7 @@ import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
+import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
 import pl.edu.uj.tcs.aiplayground.dto.validation.ModelValidation;
 
@@ -43,6 +44,9 @@ public class ModelService {
 
     public ModelDto addModel(ModelForm modelForm) throws DatabaseException, ModelModificationException {
         ModelValidation.validateModelForm(modelForm);
+
+        if (modelRepository.existUserModelName(modelForm.userId(), modelForm.name()))
+            throw new ModelModificationException("Model name must be unique");
 
         try {
             return modelRepository.insertModel(modelForm);

@@ -70,6 +70,7 @@ public class ModelRepository implements IModelRepository {
                                                                 WHERE model_id = model_id_fetch.id)),
                                        ?::jsonb,
                                        now()
+                                FROM model_id_fetch
                                 RETURNING id, model_id, version_number, architecture
                         )
                         SELECT model_id AS modelId,
@@ -143,5 +144,16 @@ public class ModelRepository implements IModelRepository {
                 userId,
                 modelName
         ).into(Integer.class);
+    }
+
+    @Override
+    public boolean existUserModelName(UUID userId, String name) {
+        return !dsl.fetch("""
+            SELECT 1
+            FROM models
+            WHERE user_id = ? AND name = ?;
+            """,
+                userId, name
+        ).isEmpty();
     }
 }
