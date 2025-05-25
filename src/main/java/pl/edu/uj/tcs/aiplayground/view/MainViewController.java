@@ -23,7 +23,6 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -217,11 +216,13 @@ public class MainViewController {
         LayerParams params = layerConfig.params();
         List<String> paramNames = params.getParamNames();
         List<Class<?>> paramTypes = params.getParamTypes();
+        List<Object> paramValues = params.getParamValues();
 
         // Create UI controls for each parameter
         for (int i = 0; i < paramNames.size(); i++) {
             String paramName = paramNames.get(i);
             Class<?> paramType = paramTypes.get(i);
+            Object paramValue = paramValues.get(i);
 
             Label paramLabel = new Label(paramName + ":");
             paramLabel.setStyle("-fx-text-fill: white;");
@@ -231,14 +232,7 @@ public class MainViewController {
                 intField.setPrefWidth(50);
                 intField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
 
-                // Set initial value using reflection
-                try {
-                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                    field.setAccessible(true);
-                    intField.setText(String.valueOf(field.get(params)));
-                } catch (Exception e) {
-                    intField.setText("0"); // Fallback default
-                }
+                intField.setText(String.valueOf(paramValue));
 
                 intField.textProperty().addListener((obs, oldVal, newVal) -> {
                     if (newVal.matches("\\d*")) {
@@ -252,42 +246,13 @@ public class MainViewController {
                 CheckBox checkBox = new CheckBox();
                 checkBox.setStyle("-fx-text-fill: white;");
 
-                // Set initial value using reflection
-                try {
-                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                    field.setAccessible(true);
-                    checkBox.setSelected((Boolean) field.get(params));
-                } catch (Exception e) {
-                    checkBox.setSelected(false); // Fallback default
-                }
+                checkBox.setSelected((Boolean)paramValue);
 
                 checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
                     updateLayerParams(barContainer, paramName, newVal);
                 });
 
                 barContainer.getChildren().addAll(paramLabel, checkBox);
-            } else if (paramType == Double.class || paramType == double.class) {
-                TextField doubleField = new TextField();
-                doubleField.setPrefWidth(50);
-                doubleField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
-
-                // Set initial value using reflection
-                try {
-                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                    field.setAccessible(true);
-                    doubleField.setText(String.valueOf(field.get(params)));
-                } catch (Exception e) {
-                    doubleField.setText("0.0"); // Fallback default
-                }
-
-                doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.matches("[\\d\\.]*")) {
-                        updateLayerParams(barContainer, paramName,
-                                newVal.isEmpty() ? 0.0 : Double.parseDouble(newVal));
-                    }
-                });
-
-                barContainer.getChildren().addAll(paramLabel, doubleField);
             }
         }
 
@@ -307,35 +272,6 @@ public class MainViewController {
         barContainer.getChildren().addAll(rightSpacer, removeButton);
 
         barsContainer.getChildren().add(barContainer);
-    }
-
-    private int getMaxEpoch() {
-        try {
-            int value = Integer.parseInt(maxEpochField.getText());
-            if (value < 0) {
-                System.err.println("Max epoch rate must be between 0");
-                return 10;
-            }
-            return value;
-        } catch (NumberFormatException e) {
-            // Handle the case when the input is not a valid integer
-            System.err.println("Invalid number format in maxEpochField");
-            return 10; // or some default value
-        }
-    }
-
-    private int getBatch() {
-        try {
-            int value = Integer.parseInt(batchField.getText());
-            if (value < 0) {
-                System.err.println("Batch must be between 0");
-                return 8;
-            }
-            return value;
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid number format in bachField");
-            return 8; // or some default value
-        }
     }
 
     private void alertMessage(String message, Boolean isInfo) {
@@ -360,7 +296,7 @@ public class MainViewController {
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
         mainViewModel.train(new TrainingForm(
-                getMaxEpoch(),
+                Integer.parseInt(maxEpochField.getText()),
                 Integer.parseInt(batchField.getText()),
                 Double.parseDouble(learningRateField.getText()),
                 datasetComboBox.getValue(),
@@ -423,7 +359,6 @@ public class MainViewController {
     }
 
     private void clearBars() {
-        barsContainer.getChildren().clear();
         mainViewModel.layersProperty().clear();
     }
 
