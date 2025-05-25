@@ -18,4 +18,6 @@ public interface IModelRepository {
     ModelDto getRecentModel(UUID userId, String modelName);
 
     List<Integer> getModelVersions(UUID userId, String modelName);
+
+    boolean existUserModelName(UUID uuid, String name);
 }

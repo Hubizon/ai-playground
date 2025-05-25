@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.jooq.impl.QOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
@@ -241,19 +242,16 @@ public class MainViewModel {
                     neuralNet.toJson()
             );
             this.model = modelService.addModel(modelForm);
-            isModelLoaded.set(true);
         } catch (ModelModificationException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
-            alertEvent.set(AlertEvent.createAlertEvent("Illegal model name", false));
+            alertEvent.set(AlertEvent.createAlertEvent("Illegal model name: " + e.getMessage(), false));
             this.model = null;
-            isModelLoaded.set(false);
         } catch (DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             this.model = null;
-            isModelLoaded.set(false);
         }
         setupModel();
         updateUserModelNames();
@@ -280,7 +278,7 @@ public class MainViewModel {
         try {
             TrainingValidation.validateTrainingForm(trainingForm);
         } catch(InvalidHyperparametersException e) {
-            alertEvent.set(AlertEvent.createAlertEvent("Invalid hyperparameters", false));
+            alertEvent.set(AlertEvent.createAlertEvent("Invalid hyperparameters: " + e.getMessage(), false));
             return;
         }
 
@@ -291,7 +289,7 @@ public class MainViewModel {
         new Thread(() -> {
             try {
                 NeuralNet net = new NeuralNet(layers);
-                model = modelService.addModel(new ModelForm(user.userId(), model.modelName(), net.toJson()));
+                model = modelService.updateModel(new ModelForm(user.userId(), model.modelName(), net.toJson()));
 
                 TrainingDto trainingDto = trainingForm.toDto(model.modelVersionId());
                 trainingDto.dataset().setTrainingService(trainingService);
@@ -305,12 +303,26 @@ public class MainViewModel {
                 } else {
                     trainingHandler.updateTrainingStatus(StatusName.FINISHED);
                 }
-            } catch (Exception e) {
+            } catch (TrainingException e) {
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusName.ERROR);
                 logger.error("Training error", e);
                 Platform.runLater(() ->
-                    alertEvent.set(AlertEvent.createAlertEvent("Training failed", false))
+                        alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
+                );
+            } catch (DatabaseException e) {
+                if (trainingHandler != null)
+                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
+                logger.error("Internal error", e);
+                Platform.runLater(() ->
+                        alertEvent.set(AlertEvent.createAlertEvent("Internal error", false))
+                );
+            } catch (ModelModificationException e) {
+                if (trainingHandler != null)
+                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
+                logger.error("Illegal hyperparameters", e);
+                Platform.runLater(() ->
+                        alertEvent.set(AlertEvent.createAlertEvent("Illegal hyperparameters: " + e.getMessage(), false))
                 );
             } finally {
                 Platform.runLater(() -> isTrainingInProgress.set(false));
