@@ -38,6 +38,7 @@ public class MainViewModel {
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
     private final ObjectProperty<AlertEvent> alertEvent = new SimpleObjectProperty<>();
+    private final ObjectProperty<StatusName> trainingStatus = new SimpleObjectProperty<>();
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
@@ -105,6 +106,10 @@ public class MainViewModel {
 
     public ObjectProperty<AlertEvent> alertEventProperty() {
         return alertEvent;
+    }
+
+    public ObjectProperty<StatusName> trainingStatusProperty() {
+        return trainingStatus;
     }
 
     private StringProperty modelNameProperty() {
@@ -290,21 +295,15 @@ public class MainViewModel {
 
                 TrainingDto trainingDto = trainingForm.toDto(model.modelVersionId());
                 trainingDto.dataset().setTrainingService(trainingService);
-                trainingHandler = new TrainingHandler(trainingDto);
+                trainingHandler = new TrainingHandler(trainingDto, trainingStatus::set);
                 trainingHandler.updateTrainingStatus(StatusName.IN_PROGRESS);
 
                 runTraining(trainingDto, net, trainingHandler);
 
                 if (isCancelled.get()) {
                     trainingHandler.updateTrainingStatus(StatusName.CANCELLED);
-                    Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Training cancelled", true))
-                    );
                 } else {
                     trainingHandler.updateTrainingStatus(StatusName.FINISHED);
-                    Platform.runLater(() ->
-                            alertEvent.set(AlertEvent.createAlertEvent("Training finished", true))
-                    );
                 }
             } catch (Exception e) {
                 if (trainingHandler != null)
