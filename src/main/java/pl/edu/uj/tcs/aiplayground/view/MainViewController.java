@@ -74,6 +74,10 @@ public class MainViewController {
     private Button runButton;
     @FXML
     private Button cancelButton;
+    @FXML
+    private Button prevVersionButton;
+    @FXML
+    private Button nextVersionButton;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -204,6 +208,20 @@ public class MainViewController {
                 alertMessage(newValue.message(), newValue.isInfo());
             }
         });
+
+
+        prevVersionButton.disableProperty().bind(
+                mainViewModel.isModelLoadedProperty().not()
+                        .or(mainViewModel.isPreviousVersionProperty().not())
+        );
+
+        nextVersionButton.disableProperty().bind(
+                mainViewModel.isModelLoadedProperty().not()
+                        .or(mainViewModel.isNextVersionProperty().not())
+        );
+
+        prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
+        nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
