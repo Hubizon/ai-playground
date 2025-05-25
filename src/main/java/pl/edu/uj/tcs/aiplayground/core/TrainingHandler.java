@@ -1,5 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
+import javafx.beans.value.ChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.StatusName;
@@ -11,15 +12,20 @@ import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class TrainingHandler {
     private static final Logger logger = LoggerFactory.getLogger(TrainingHandler.class);
     private final TrainingService trainingService;
+    private final Consumer<StatusName> statusListener;
     private UUID trainingId = null;
     private TrainingMetricDto recentMetric;
 
-    public TrainingHandler(TrainingService trainingService, TrainingDto trainingDto) {
+    public TrainingHandler(TrainingService trainingService,
+                           TrainingDto trainingDto,
+                           Consumer<StatusName> statusListener) {
         this.trainingService = trainingService;
+        this.statusListener = statusListener;
 
         try {
             trainingId = trainingService.addNewTraining(trainingDto);
@@ -29,7 +35,11 @@ public class TrainingHandler {
     }
 
     public TrainingHandler(TrainingDto trainingDto) {
-        this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto);
+        this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, null);
+    }
+
+    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusName> statusListener) {
+        this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, statusListener);
     }
 
     public void addNewTrainingMetric(TrainingMetricDto trainingMetricDto) {
@@ -46,6 +56,8 @@ public class TrainingHandler {
     public void updateTrainingStatus(StatusName status) {
         try {
             trainingService.updateTrainingStatus(trainingId, status);
+            if (statusListener != null)
+                statusListener.accept(status);
         } catch (DatabaseException e) {
             logger.error("Failed to update the status for for trainingId={}, status={}, error={}",
                     trainingId, status, e.getMessage(), e);
