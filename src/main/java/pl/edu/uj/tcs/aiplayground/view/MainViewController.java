@@ -18,6 +18,9 @@ import javafx.scene.control.TextInputDialog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
+import java.util.Arrays;
 import java.util.Optional;
 
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
@@ -379,36 +382,43 @@ public class MainViewController {
     private void updateLayerParams(HBox barContainer, LayerParams oldParams,
                                    String paramName, Object newValue) {
         try {
-            // Create new params instance with updated value
             Class<?> paramsClass = oldParams.getClass();
-            Field[] fields = paramsClass.getDeclaredFields();
-            Object[] newValues = new Object[fields.length];
 
-            // Copy existing values
-            for (int i = 0; i < fields.length; i++) {
-                fields[i].setAccessible(true);
-                newValues[i] = fields[i].get(oldParams);
+            // For records, use getRecordComponents() instead of getDeclaredFields()
+            RecordComponent[] components = paramsClass.getRecordComponents();
+            Object[] newValues = new Object[components.length];
+
+            // Get current values using accessor methods
+            for (int i = 0; i < components.length; i++) {
+                Method accessor = components[i].getAccessor();
+                newValues[i] = accessor.invoke(oldParams);
             }
 
-            // Update the changed field
-            String fieldName = paramName.replace(" ", "").toLowerCase();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getName().equals(fieldName)) {
+            // Update the changed parameter
+            String targetName = paramName.replace(" ", "").toLowerCase();
+            for (int i = 0; i < components.length; i++) {
+                if (components[i].getName().equals(targetName)) {
                     newValues[i] = newValue;
                     break;
                 }
             }
 
-            // Create new instance
-            Constructor<?> constructor = paramsClass.getConstructors()[0];
-            LayerParams newParams = (LayerParams) constructor.newInstance();//newValue needed - mainViewModel is NOT being updated properly!
+            // Get the canonical constructor with proper parameter types
+            Class<?>[] paramTypes = Arrays.stream(components)
+                    .map(RecordComponent::getType)
+                    .toArray(Class<?>[]::new);
+
+            Constructor<?> constructor = paramsClass.getDeclaredConstructor(paramTypes);
+            LayerParams newParams = (LayerParams) constructor.newInstance(newValues);
 
             // Update in view model
             int index = barsContainer.getChildren().indexOf(barContainer);
-            mainViewModel.updateLayer(index, newParams);
-
+            if (index >= 0) {
+                mainViewModel.updateLayer(index, newParams);
+            }
         } catch (Exception e) {
             System.err.println("Failed to update layer params: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
