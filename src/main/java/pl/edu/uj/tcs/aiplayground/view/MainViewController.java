@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -293,6 +294,15 @@ public class MainViewController {
         barContainer.getChildren().addAll(rightSpacer, removeButton);
 
         barsContainer.getChildren().add(barContainer);
+
+        //scrolling to the bottom of layer (newly added)
+        Parent parent = barsContainer.getParent();
+        while (parent != null && !(parent instanceof ScrollPane)) {
+            parent = parent.getParent();
+        }
+        if (parent != null) {
+            ((ScrollPane) parent).setVvalue(1.0);
+        }
     }
 
     private void alertMessage(String message, Boolean isInfo) {
