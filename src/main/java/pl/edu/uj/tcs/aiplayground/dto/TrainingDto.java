@@ -9,6 +9,7 @@ import java.util.UUID;
 public record TrainingDto(
         UUID modelVersionId,
         Integer maxEpochs,
+        Integer batchSize,
         Double learningRate,
         DatasetType dataset,
         OptimizerType optimizer,

@@ -134,12 +134,12 @@ public class ModelRepository implements IModelRepository {
     @Override
     public List<Integer> getModelVersions(UUID userId, String modelName) {
         return dsl.fetch("""
-            SELECT mvi.version_number
-            FROM model_versions mvi
-            JOIN models m ON m.id = mvi.model_id
-            WHERE m.user_id = ? AND m.name = ?
-            ORDER BY mvi.version_number;
-            """,
+                        SELECT mvi.version_number
+                        FROM model_versions mvi
+                        JOIN models m ON m.id = mvi.model_id
+                        WHERE m.user_id = ? AND m.name = ?
+                        ORDER BY mvi.version_number;
+                        """,
                 userId,
                 modelName
         ).into(Integer.class);

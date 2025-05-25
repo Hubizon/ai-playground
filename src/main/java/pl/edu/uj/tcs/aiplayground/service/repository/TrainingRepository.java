@@ -44,17 +44,17 @@ public class TrainingRepository implements ITrainingRepository {
     @Override
     public UUID insertTraining(TrainingDto trainingDto) {
         return dsl.fetchOne("""
-        INSERT INTO trainings (model_version_id, learning_rate, dataset_id, optimizer, loss_function, status)
-        VALUES (
-            ?,
-            ?,
-            (SELECT id FROM datasets WHERE name = ?),
-            (SELECT id FROM optimizers WHERE name = ?),
-            (SELECT id FROM loss_functions WHERE name = ?),
-            (SELECT id FROM statuses WHERE name = ?)
-        )
-        RETURNING id;
-        """,
+                        INSERT INTO trainings (model_version_id, learning_rate, dataset_id, optimizer, loss_function, status)
+                        VALUES (
+                            ?,
+                            ?,
+                            (SELECT id FROM datasets WHERE name = ?),
+                            (SELECT id FROM optimizers WHERE name = ?),
+                            (SELECT id FROM loss_functions WHERE name = ?),
+                            (SELECT id FROM statuses WHERE name = ?)
+                        )
+                        RETURNING id;
+                        """,
                 trainingDto.modelVersionId(),
                 trainingDto.learningRate(),
                 trainingDto.dataset().getDbKey(),
@@ -89,9 +89,9 @@ public class TrainingRepository implements ITrainingRepository {
     @Override
     public void shareTraining(UUID trainingId, Double accuracy, Double loss) {
         dsl.query("""
-            INSERT INTO public_results (training_id, accuracy, loss)
-            VALUES (?, ?, ?)
-            ON CONFLICT (training_id) DO NOTHING
-        """, trainingId, accuracy, loss).execute();
+                    INSERT INTO public_results (training_id, accuracy, loss)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT (training_id) DO NOTHING
+                """, trainingId, accuracy, loss).execute();
     }
 }

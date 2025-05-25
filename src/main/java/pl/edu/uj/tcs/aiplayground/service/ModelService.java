@@ -5,7 +5,7 @@ import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
 import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
-import pl.edu.uj.tcs.aiplayground.service.validation.ModelValidation;
+import pl.edu.uj.tcs.aiplayground.dto.validation.ModelValidation;
 
 import java.util.List;
 import java.util.UUID;

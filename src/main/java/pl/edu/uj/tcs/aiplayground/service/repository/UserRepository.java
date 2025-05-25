@@ -98,13 +98,13 @@ public class UserRepository implements IUserRepository {
     @Override
     public void updateUser(UUID userId, UpdateUserForm updateUserForm) {
         dsl.query("""
-            UPDATE users
-            SET email = ?,
-                password_hash = ?,
-                country_id = (SELECT id FROM countries WHERE name = ?),
-                birth_date = ?
-            WHERE id = ?
-            """,
+                        UPDATE users
+                        SET email = ?,
+                            password_hash = ?,
+                            country_id = (SELECT id FROM countries WHERE name = ?),
+                            birth_date = ?
+                        WHERE id = ?
+                        """,
                 updateUserForm.email(),
                 updateUserForm.password(),
                 updateUserForm.country(),

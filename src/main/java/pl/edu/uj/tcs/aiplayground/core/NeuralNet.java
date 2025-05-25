@@ -13,6 +13,8 @@ import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
+
 import java.time.*;
 
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public class NeuralNet {
                 .toList();
     }
 
-    public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) {
+    public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
 
         final int batchSize=8;
         final int numThreads  = Runtime.getRuntime().availableProcessors();;
@@ -165,7 +167,7 @@ public class NeuralNet {
                 t0 = t1;
             }
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new TrainingException(e);
         } finally {
             exec.shutdown();
         }

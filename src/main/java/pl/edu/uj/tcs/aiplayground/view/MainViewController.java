@@ -5,7 +5,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -15,38 +14,30 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.scene.control.TextInputDialog;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.RecordComponent;
-import java.util.Arrays;
-import java.util.Optional;
-
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
+import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Optional;
 
 public class MainViewController {
 
     private final double SPACER = 200;
+    private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
     public LineChart<Number, Number> accuracyChart;
     @FXML
     private TabPane leftTabPane;
-
     private Stage stage;
-
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     private MainViewModel mainViewModel;
@@ -75,13 +66,11 @@ public class MainViewController {
     @FXML
     private VBox layerButtonsContainer;
 
-    private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
-    private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
-
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
+        this.mainViewModel.setUser(userViewModel.getUser());
 
         // Initially select "My models" tab
         leftTabPane.getSelectionModel().select(1); // "My models" tab
@@ -89,14 +78,6 @@ public class MainViewController {
         for (Tab tab : leftTabPane.getTabs()) {
             if (!"My models".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
-            }
-        }
-
-        // Check if user is logged in and load models
-        if (userViewModel.isLoggedIn()) {
-            List<String> modelNames = mainViewModel.getUserModelNames(userViewModel.getUser());
-            if (modelNames != null && !modelNames.isEmpty()) {
-                // TODO populate the models list in the UI
             }
         }
 
@@ -180,6 +161,129 @@ public class MainViewController {
             return null;
         }));
         createLayerButtons();
+
+        mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
+            while (change.next()) {
+                if (!change.wasReplaced() && change.wasAdded()) {
+                    for (LayerConfig config : change.getAddedSubList())
+                        addLayerBar(config);
+                } else if (!change.wasReplaced() && change.wasRemoved()) {
+                    int from = change.getFrom();
+                    int to = change.getTo();
+                    for (int i = from; i <= to; i++)
+                        barsContainer.getChildren().remove(i);
+                }
+            }
+        });
+
+        mainViewModel.alertEventProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && !newValue.message().isEmpty()) {
+                alertMessage(newValue.message(), newValue.isInfo());
+            }
+        });
+    }
+
+    private void addLayerBar(LayerConfig layerConfig) {
+        HBox barContainer = new HBox();
+        barContainer.setStyle("-fx-background-color: #444; -fx-padding: 15; -fx-spacing: 10;");
+        barContainer.setPrefHeight(40);
+
+        Label nameLabel = new Label(layerConfig.type().toString());
+        nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
+
+        LayerParams params = layerConfig.params();
+        List<String> paramNames = params.getParamNames();
+        List<Class<?>> paramTypes = params.getParamTypes();
+
+        // Create UI controls for each parameter
+        for (int i = 0; i < paramNames.size(); i++) {
+            String paramName = paramNames.get(i);
+            Class<?> paramType = paramTypes.get(i);
+
+            Label paramLabel = new Label(paramName + ":");
+            paramLabel.setStyle("-fx-text-fill: white;");
+
+            if (paramType == Integer.class || paramType == int.class) {
+                TextField intField = new TextField();
+                intField.setPrefWidth(50);
+                intField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
+
+                // Set initial value using reflection
+                try {
+                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
+                    field.setAccessible(true);
+                    intField.setText(String.valueOf(field.get(params)));
+                } catch (Exception e) {
+                    intField.setText("0"); // Fallback default
+                }
+
+                intField.textProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.matches("\\d*")) {
+                        updateLayerParams(barContainer, paramName,
+                                newVal.isEmpty() ? 0 : Integer.parseInt(newVal));
+                    }
+                });
+
+                barContainer.getChildren().addAll(paramLabel, intField);
+            } else if (paramType == Boolean.class || paramType == boolean.class) {
+                CheckBox checkBox = new CheckBox();
+                checkBox.setStyle("-fx-text-fill: white;");
+
+                // Set initial value using reflection
+                try {
+                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
+                    field.setAccessible(true);
+                    checkBox.setSelected((Boolean) field.get(params));
+                } catch (Exception e) {
+                    checkBox.setSelected(false); // Fallback default
+                }
+
+                checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                    updateLayerParams(barContainer, paramName, newVal);
+                });
+
+                barContainer.getChildren().addAll(paramLabel, checkBox);
+            } else if (paramType == Double.class || paramType == double.class) {
+                TextField doubleField = new TextField();
+                doubleField.setPrefWidth(50);
+                doubleField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
+
+                // Set initial value using reflection
+                try {
+                    Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
+                    field.setAccessible(true);
+                    doubleField.setText(String.valueOf(field.get(params)));
+                } catch (Exception e) {
+                    doubleField.setText("0.0"); // Fallback default
+                }
+
+                doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.matches("[\\d\\.]*")) {
+                        updateLayerParams(barContainer, paramName,
+                                newVal.isEmpty() ? 0.0 : Double.parseDouble(newVal));
+                    }
+                });
+
+                barContainer.getChildren().addAll(paramLabel, doubleField);
+            }
+        }
+
+        Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+
+        Button removeButton = new Button("remove");
+        removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
+        removeButton.setOnAction(e -> {
+            int index = barsContainer.getChildren().indexOf(barContainer);
+            mainViewModel.removeLayer(index);
+        });
+
+        barContainer.getChildren().addAll(leftSpacer, nameLabel);
+        barContainer.getChildren().addAll(rightSpacer, removeButton);
+
+        barsContainer.getChildren().add(barContainer);
     }
 
     private int getMaxEpoch() {
@@ -211,23 +315,12 @@ public class MainViewController {
         }
     }
 
-    private double getLearningRate() {
-        try {
-            double value = Double.parseDouble(learningRateField.getText());
-            if (value < 0.0 || value > 1.0) {
-                System.err.println("Learning rate must be between 0.0 and 1.0");
-                return 0.01; // Default fallback
-            }
-            return value;
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid learning rate format");
-            return 0.01; // Default fallback
-        }
-    }
-
-    @FXML
-    private void pop_up_warning_missing_comboBox_selection(String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
+    private void alertMessage(String message, Boolean isInfo) {
+        Alert alert;
+        if (isInfo)
+            alert = new Alert(Alert.AlertType.INFORMATION);
+        else
+            alert = new Alert(AlertType.WARNING);
         alert.setTitle("Missing Selection");
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -242,33 +335,20 @@ public class MainViewController {
 
     @FXML
     private void onRunBarClicked() {
-        if (datasetComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("You must select a dataset");
-            return;
-        }
-        if (optimizerComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("You must select a optimizer");
-            return;
-        }
-        if (lossComboBox.getValue() == null) {
-            pop_up_warning_missing_comboBox_selection("You must select a loss");
-            return;
-        }
-        if (mainViewModel.layersProperty().isEmpty()) {
-            pop_up_warning_missing_comboBox_selection("You must add at least one layer");
-            return;
-        }
         System.out.println("Run button clicked - training started");
-        mainViewModel.train(getMaxEpoch(),
-                getLearningRate(),
+        mainViewModel.train(new TrainingForm(
+                getMaxEpoch(),
+                Integer.parseInt(batchField.getText()),
+                Double.parseDouble(learningRateField.getText()),
                 datasetComboBox.getValue(),
                 optimizerComboBox.getValue(),
-                lossComboBox.getValue());
+                lossComboBox.getValue())
+        );
     }
 
     @FXML
-    private void onPauseBarClicked() {
-        System.out.println("Pause button clicked - training stopped");
+    private void onCancelBarClicked() {
+        System.out.println("Cancel button clicked - training stopped");
         mainViewModel.stopTraining();
     }
 
@@ -305,124 +385,6 @@ public class MainViewController {
         }
     }
 
-    private void addLayerBar(LayerType layerType) {
-        HBox barContainer = new HBox();
-        barContainer.setStyle("-fx-background-color: #444; -fx-padding: 15; -fx-spacing: 10;");
-        barContainer.setPrefHeight(40);
-
-        Label nameLabel = new Label(layerType.toString());
-        nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
-
-        try {
-            // Get params using the new layerType.getParams() method
-            LayerParams params = layerType.getParams();
-            List<String> paramNames = params.getParamNames();
-            List<Class<?>> paramTypes = params.getParamTypes();
-
-            // Create UI controls for each parameter
-            for (int i = 0; i < paramNames.size(); i++) {
-                String paramName = paramNames.get(i);
-                Class<?> paramType = paramTypes.get(i);
-
-                Label paramLabel = new Label(paramName + ":");
-                paramLabel.setStyle("-fx-text-fill: white;");
-
-                if (paramType == Integer.class || paramType == int.class) {
-                    TextField intField = new TextField();
-                    intField.setPrefWidth(50);
-                    intField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
-
-                    // Set initial value using reflection
-                    try {
-                        Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                        field.setAccessible(true);
-                        intField.setText(String.valueOf(field.get(params)));
-                    } catch (Exception e) {
-                        intField.setText("0"); // Fallback default
-                    }
-
-                    intField.textProperty().addListener((obs, oldVal, newVal) -> {
-                        if (newVal.matches("\\d*")) {
-                            updateLayerParams(barContainer, paramName,
-                                    newVal.isEmpty() ? 0 : Integer.parseInt(newVal));
-                        }
-                    });
-
-                    barContainer.getChildren().addAll(paramLabel, intField);
-                } else if (paramType == Boolean.class || paramType == boolean.class) {
-                    CheckBox checkBox = new CheckBox();
-                    checkBox.setStyle("-fx-text-fill: white;");
-
-                    // Set initial value using reflection
-                    try {
-                        Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                        field.setAccessible(true);
-                        checkBox.setSelected((Boolean) field.get(params));
-                    } catch (Exception e) {
-                        checkBox.setSelected(false); // Fallback default
-                    }
-
-                    checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                        updateLayerParams(barContainer, paramName, newVal);
-                    });
-
-                    barContainer.getChildren().addAll(paramLabel, checkBox);
-                } else if (paramType == Double.class || paramType == double.class) {
-                    TextField doubleField = new TextField();
-                    doubleField.setPrefWidth(50);
-                    doubleField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
-
-                    // Set initial value using reflection
-                    try {
-                        Field field = params.getClass().getDeclaredField(paramName.replace(" ", "").toLowerCase());
-                        field.setAccessible(true);
-                        doubleField.setText(String.valueOf(field.get(params)));
-                    } catch (Exception e) {
-                        doubleField.setText("0.0"); // Fallback default
-                    }
-
-                    doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
-                        if (newVal.matches("[\\d\\.]*")) {
-                            try {
-                                updateLayerParams(barContainer, paramName,
-                                        newVal.isEmpty() ? 0.0 : Double.parseDouble(newVal));
-                            } catch (NumberFormatException e) {
-                                // Ignore invalid input
-                            }
-                        }
-                    });
-
-                    barContainer.getChildren().addAll(paramLabel, doubleField);
-                }
-            }
-
-            Region leftSpacer = new Region();
-            Region rightSpacer = new Region();
-            HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-            HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-
-            Button removeButton = new Button("remove");
-            removeButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white;");
-            removeButton.setOnAction(e -> {
-                // Get the index BEFORE removing
-                int index = barsContainer.getChildren().indexOf(barContainer);
-                barsContainer.getChildren().remove(barContainer);
-                mainViewModel.removeLayer(index); // Use the pre-removal index
-            });
-
-            barContainer.getChildren().addAll(leftSpacer, nameLabel);
-            barContainer.getChildren().addAll(rightSpacer, removeButton);
-
-            barsContainer.getChildren().add(barContainer);
-
-            // Add the layer to the view model
-            mainViewModel.addLayer(layerType);
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Cannot create params for " + layerType, ex);
-        }
-    }
-
     private void updateLayerParams(HBox barContainer, String paramName, Object newValue) {
         int index = barsContainer.getChildren().indexOf(barContainer);
         mainViewModel.updateLayer(index, paramName, newValue);
@@ -431,7 +393,7 @@ public class MainViewController {
     private void createLayerButtons() {
         for (LayerType type : LayerType.values()) {
             Button layerButton = new Button("Add " + type.toString().toLowerCase() + " layer");
-            layerButton.setOnAction(e -> addLayerBar(type));
+            layerButton.setOnAction(e -> mainViewModel.addLayer(type));
             layerButton.setStyle("-fx-background-color: #3C3C3C; -fx-text-fill: white;");
             layerButtonsContainer.getChildren().add(layerButton);
         }
