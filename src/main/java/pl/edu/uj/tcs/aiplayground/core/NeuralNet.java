@@ -4,15 +4,13 @@ import org.jooq.JSONB;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
-import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
-import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.core.layers.*;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
 import java.time.*;
@@ -51,16 +49,20 @@ public class NeuralNet {
             String type = layerJson.getString("type");
             Layer layer;
             switch (type) {
-                case "linear":
+                case "LinearLayer":
                     layer = new LinearLayer();
                     layer.loadJson(layerJson);
                     break;
-                case "relu":
+                case "ReluLayer":
                     layer = new ReluLayer();
                     layer.loadJson(layerJson);
                     break;
-                case "sigmoid":
+                case "SigmoidLayer":
                     layer = new SigmoidLayer();
+                    layer.loadJson(layerJson);
+                    break;
+                case "SoftMax":
+                    layer = new SoftMaxLayer();
                     layer.loadJson(layerJson);
                     break;
                 default:
@@ -75,7 +77,7 @@ public class NeuralNet {
         JSONArray layersArray = new JSONArray();
 
         for (Layer layer : layers) {
-            layersArray.put(new JSONObject(layer.toJson()));
+            layersArray.put(layer.toJson());
         }
         jsonObject.put("layers", layersArray);
 

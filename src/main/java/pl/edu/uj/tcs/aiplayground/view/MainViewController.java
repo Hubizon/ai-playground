@@ -191,9 +191,8 @@ public class MainViewController {
                         addLayerBar(config);
                 } else if (!change.wasReplaced() && change.wasRemoved()) {
                     int from = change.getFrom();
-                    int to = change.getTo();
-                    for (int i = from; i <= to; i++)
-                        barsContainer.getChildren().remove(i);
+                    int to = from + change.getRemovedSize();
+                    barsContainer.getChildren().subList(from, to).clear();
                 }
             }
         });
