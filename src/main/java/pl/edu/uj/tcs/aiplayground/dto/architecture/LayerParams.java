@@ -13,7 +13,13 @@ import java.util.List;
 public sealed interface LayerParams permits LinearParams, EmptyParams {
     List<String> getParamNames();
 
-    List<Class<?>> getParamTypes();
+    default List<Class<?>> getParamTypes() {
+        List<Class<?>> types = new ArrayList<>();
+        for (RecordComponent rc : this.getClass().getRecordComponents()) {
+            types.add(rc.getType());
+        }
+        return types;
+    }
 
     default List<Object> getParamValues() {
         RecordComponent[] components = this.getClass().getRecordComponents();
@@ -59,7 +65,34 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
         }
     }
 
-    JSONObject toJson();
+    default JSONObject toJson() {
+        List<String> names = getParamNames();
+        List<Object> values = getParamValues();
+        int size = names.size();
 
-    LayerParams loadFromJson(JSONObject json);
+        JSONObject json = new JSONObject();
+        for (int i = 0; i < size; i++) {
+            json.put(names.get(i), values.get(i));
+        }
+        return json;
+    }
+
+    default LayerParams loadFromJson(JSONObject json) {
+        Class<?> rc = this.getClass();
+        List<String> names = getParamNames();
+        List<Class<?>> types = getParamTypes();
+        int size = names.size();
+        Object[] args = new Object[size];
+        for (int i = 0; i < size; i++) {
+            args[i] = json.get(names.get(i));
+        }
+
+        try {
+            Constructor<?> ctor = rc.getDeclaredConstructor(types.toArray(new Class<?>[0]));
+            return (LayerParams) ctor.newInstance(args);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
+                 IllegalAccessException e) {
+            throw new RuntimeException(e); // TODO
+        }
+    }
 }

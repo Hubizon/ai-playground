@@ -23,6 +23,6 @@ public class ReluLayer implements Layer {
 
     @Override
     public LayerConfig toConfig() {
-        return new LayerConfig(LayerType.LINEAR, new EmptyParams());
+        return new LayerConfig(LayerType.RELU, new EmptyParams());
     }
 }
