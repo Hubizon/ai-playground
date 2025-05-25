@@ -66,9 +66,8 @@
             <content>
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Layers" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-                    <Button text="Add linear layer" onAction="#onAddLinearBarClicked"/>
-                    <Button text="Add sigmoid layer" onAction="#onAddSigmoidBarClicked"/>
-                    <Button text="Add relu layer" onAction="#onAddReluBarClicked"/>
+                    <VBox fx:id="layerButtonsContainer" spacing="5">
+                    </VBox>
                     <Button text="Clear" onAction="#onClearBarClicked"/>
                 </VBox>
             </content>
