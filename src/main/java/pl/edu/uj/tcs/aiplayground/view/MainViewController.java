@@ -24,6 +24,7 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -93,7 +94,7 @@ public class MainViewController {
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
@@ -266,7 +267,7 @@ public class MainViewController {
                 CheckBox checkBox = new CheckBox();
                 checkBox.setStyle("-fx-text-fill: white;");
 
-                checkBox.setSelected((Boolean)paramValue);
+                checkBox.setSelected((Boolean) paramValue);
 
                 checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
                     updateLayerParams(barContainer, paramName, newVal);
@@ -426,6 +427,7 @@ public class MainViewController {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
         });
     }
+
     private void initializeModelsList() {
         modelsListView.setItems(mainViewModel.userModelNamesProperty());
         modelsListView.getStyleClass().add("custom-list-view");
