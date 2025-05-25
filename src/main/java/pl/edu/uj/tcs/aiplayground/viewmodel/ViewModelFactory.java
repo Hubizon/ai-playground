@@ -1,18 +1,17 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
 import org.jooq.DSLContext;
+import pl.edu.uj.tcs.aiplayground.service.LeaderboardService;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
-import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
-import pl.edu.uj.tcs.aiplayground.service.repository.ModelRepository;
-import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
-import pl.edu.uj.tcs.aiplayground.service.repository.UserRepository;
+import pl.edu.uj.tcs.aiplayground.service.repository.*;
 
 public class ViewModelFactory {
     private final DSLContext dsl;
     private final UserViewModel userViewModel;
     private final MainViewModel mainViewModel;
+    private final LeaderboardViewModel leaderboardViewModel;
 
     public ViewModelFactory() {
         this.dsl = JooqFactory.getDSLContext();
@@ -26,6 +25,10 @@ public class ViewModelFactory {
         var trainingRepository = new TrainingRepository(dsl);
         var trainingService = new TrainingService(trainingRepository);
         this.mainViewModel = new MainViewModel(modelService, trainingService);
+
+        var leaderboardRepository = new LeaderboardRepository(dsl);
+        var leadeboardService = new LeaderboardService(leaderboardRepository);
+        this.leaderboardViewModel = new LeaderboardViewModel(leadeboardService);
     }
 
     public UserViewModel getUserViewModel() {

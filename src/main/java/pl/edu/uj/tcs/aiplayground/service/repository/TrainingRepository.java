@@ -85,4 +85,13 @@ public class TrainingRepository implements ITrainingRepository {
                 dbName
         ).into(String.class);
     }
+
+    @Override
+    public void shareTraining(UUID trainingId, Double accuracy, Double loss) {
+        dsl.query("""
+            INSERT INTO public_results (training_id, accuracy, loss)
+            VALUES (?, ?, ?)
+            ON CONFLICT (training_id) DO NOTHING
+        """, trainingId, accuracy, loss).execute();
+    }
 }
