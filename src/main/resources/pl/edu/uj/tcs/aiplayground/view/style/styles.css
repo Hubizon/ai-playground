@@ -95,6 +95,37 @@
     -fx-border-color: #777;
 }
 
+.combo-box:disabled {
+    -fx-opacity: 1.0;
+    -fx-text-fill: white;
+}
+
+.combo-box:disabled .list-cell {
+    -fx-text-fill: white;
+}
+
+.combo-box:disabled .arrow-button {
+    -fx-opacity: 0.0;
+}
+
+.date-picker:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: transparent; /* Grey background */
+}
+
+.date-picker:disabled .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: transparent; /* Grey background */
+}
+
+.date-picker:disabled .arrow-button {
+    -fx-opacity: 0.0;
+}
+
+.date-picker:disabled .arrow {
+    -fx-background-color: transparent;
+}
+
 .number-field {
     -fx-background-color: #444444;
     -fx-text-fill: white;

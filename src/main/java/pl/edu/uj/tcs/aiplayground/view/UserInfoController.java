@@ -1,5 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -10,10 +11,11 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 public class UserInfoController {
     @FXML
-    private PasswordField passwordInfoField;
+    private PasswordField passwordField;
     @FXML
     private Button showPasswordButton;
-
+    @FXML
+    private TextField visiblePasswordField;
     @FXML
     private TextField usernameInfoField;
     @FXML
@@ -26,8 +28,15 @@ public class UserInfoController {
     private ComboBox<String> countryInfoComboBox;
     @FXML
     private DatePicker birthDateInfoDatePicker;
+    @FXML
+    private Button editInfoButton;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button cancelButton;
 
     private boolean passwordVisible = false;
+    private boolean editMode = false;
     private Stage stage;
 
     private ViewModelFactory factory;
@@ -36,6 +45,8 @@ public class UserInfoController {
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
+
+        countryInfoComboBox.setItems(FXCollections.observableArrayList(userViewModel.getCountryNames()));
 
         UserDto user = userViewModel.getUser();
         if (user != null) {
@@ -46,6 +57,11 @@ public class UserInfoController {
             countryInfoComboBox.setValue(user.countryName());
             birthDateInfoDatePicker.setValue(user.birthDate());
         }
+        countryInfoComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                System.out.println("Selected new country in user info: " + newVal);
+            }
+        });
     }
 
     public void setStage(Stage stage) {
@@ -54,40 +70,94 @@ public class UserInfoController {
 
     @FXML
     private void handleShowPassword() {
-        if (!passwordVisible) {
+        if (!editMode) return;
+
+        passwordVisible = !passwordVisible;
+
+        if (passwordVisible) {
             // Show password
-            String password = passwordInfoField.getText();
-            passwordInfoField.setPromptText(password);
-            passwordInfoField.clear();
+            String password = passwordField.getText();
+            visiblePasswordField.setText(password);
+            visiblePasswordField.setManaged(true);
+            visiblePasswordField.setVisible(true);
+            passwordField.setManaged(false);
+            passwordField.setVisible(false);
             showPasswordButton.setText("Hide Password");
         } else {
             // Hide password
-            String password = passwordInfoField.getPromptText();
-            passwordInfoField.setText(password);
-            passwordInfoField.setPromptText("");
+            String password = visiblePasswordField.getText();
+            passwordField.setText(password);
+            passwordField.setManaged(true);
+            passwordField.setVisible(true);
+            visiblePasswordField.setManaged(false);
+            visiblePasswordField.setVisible(false);
             showPasswordButton.setText("Show Password");
         }
-        passwordVisible = !passwordVisible;
     }
 
+    @FXML
+    private void onEditInfoClick() {
+        editMode = true;
+        updateEditability();
+    }
+
+    @FXML
     public void onSaveClick() {
+        String password = passwordVisible ? visiblePasswordField.getText() : passwordField.getText();
+
         UpdateUserForm updateUserForm = new UpdateUserForm(
                 emailInfoField.getText(),
-                passwordInfoField.getText(),
+                password,
                 countryInfoComboBox.getValue(),
                 birthDateInfoDatePicker.getValue()
         );
         boolean isSuccess = userViewModel.updateUser(updateUserForm);
-        if (!isSuccess) {
+        if (isSuccess) {
+            editMode = false;
+            updateEditability();
+            if (stage != null) {
+                stage.close();
+            }
+        } else {
             // TODO
-        } else if (stage != null) {
-            stage.close();
         }
     }
 
+    @FXML
     public void onCancelClick() {
-        if (stage != null) {
-            stage.close();
+        // Reset to original values
+        UserDto user = userViewModel.getUser();
+        if (user != null) {
+            emailInfoField.setText(user.email());
+            passwordField.setText(""); // Clear password for security
+            visiblePasswordField.setText("");
+            countryInfoComboBox.setValue(user.countryName());
+            birthDateInfoDatePicker.setValue(user.birthDate());
         }
+
+        editMode = false;
+        updateEditability();
+
+        if (passwordVisible) {
+            handleShowPassword(); // Switch back to password field if visible
+        }
+    }
+
+    private void updateEditability() {
+        usernameInfoField.setEditable(editMode);
+        firstNameInfoField.setEditable(editMode);
+        lastNameInfoField.setEditable(editMode);
+
+        emailInfoField.setEditable(editMode);
+        passwordField.setEditable(editMode);
+        visiblePasswordField.setEditable(editMode);
+        countryInfoComboBox.setDisable(!editMode);
+        birthDateInfoDatePicker.setDisable(!editMode);
+        showPasswordButton.setDisable(!editMode);
+
+        // Toggle button visibility
+        editInfoButton.setDisable(editMode);
+        saveButton.setDisable(!editMode);
+        cancelButton.setDisable(!editMode);
     }
 }

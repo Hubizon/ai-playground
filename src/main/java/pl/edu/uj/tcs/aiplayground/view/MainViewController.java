@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -50,6 +51,10 @@ public class MainViewController {
     @FXML
     private Label epochField;
     @FXML
+    private Label modelNameField;
+    @FXML
+    private Label modelVersionField;
+    @FXML
     private TextField maxEpochField;
     @FXML
     private TextField batchField;
@@ -65,12 +70,17 @@ public class MainViewController {
     private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
     @FXML
     private VBox layerButtonsContainer;
+    @FXML
+    private Button runButton;
+    @FXML
+    private Button cancelButton;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
+
 
         // Initially select "My models" tab
         leftTabPane.getSelectionModel().select(1); // "My models" tab
@@ -160,7 +170,20 @@ public class MainViewController {
             }
             return null;
         }));
+        modelNameField.textProperty().bind(
+                Bindings.when(mainViewModel.isModelLoadedProperty())
+                        .then(mainViewModel.modelNameProperty())
+                        .otherwise("model not loaded")
+        );
+        modelVersionField.textProperty().bind(
+                Bindings.when(mainViewModel.isModelLoadedProperty())
+                        .then(Bindings.concat(" v", mainViewModel.modelVersionProperty()))
+                        .otherwise("")
+        );
         createLayerButtons();
+        runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
+        cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
+
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {
@@ -310,7 +333,7 @@ public class MainViewController {
             }
             return value;
         } catch (NumberFormatException e) {
-            System.err.println("Invalid number format in maxEpochField");
+            System.err.println("Invalid number format in bachField");
             return 8; // or some default value
         }
     }

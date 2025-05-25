@@ -1,17 +1,21 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LossFunctionType;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
+import pl.edu.uj.tcs.jooq.tables.Countries;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -24,15 +28,18 @@ public class RegisterController {
     public TextField emailField;
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
+    public TextField visiblePasswordField;
 
     @FXML
     private PasswordField passwordField;
     @FXML
     private Button showPasswordButton;
+    @FXML
+    private ComboBox<String> countryComboBox;
 
     private Stage stage;
 
-    private boolean passwordVisible = false;
+    private boolean passwordVisible;
 
     public RegisterController() {
     }
@@ -40,6 +47,16 @@ public class RegisterController {
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.userViewModel = factory.getUserViewModel();
+        countryComboBox.setItems(FXCollections.observableArrayList(userViewModel.getCountryNames()));
+        countryComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                System.out.println("Selected Country during registration: " + newVal);
+            }
+        });
+        passwordVisible = false;
+        visiblePasswordField.setManaged(false);
+        visiblePasswordField.setVisible(false);
+        showPasswordButton.setText("Show Password");
     }
 
     public void setStage(Stage stage) {
@@ -48,20 +65,27 @@ public class RegisterController {
 
     @FXML
     private void handleShowPassword() {
-        if (!passwordVisible) {
+        passwordVisible = !passwordVisible;
+
+        if (passwordVisible) {
             // Show password
             String password = passwordField.getText();
-            passwordField.setPromptText(password);
-            passwordField.clear();
+            visiblePasswordField.setText(password);
+            visiblePasswordField.setManaged(true);
+            visiblePasswordField.setVisible(true);
+            passwordField.setManaged(false);
+            passwordField.setVisible(false);
             showPasswordButton.setText("Hide Password");
         } else {
             // Hide password
-            String password = passwordField.getPromptText();
+            String password = visiblePasswordField.getText();
             passwordField.setText(password);
-            passwordField.setPromptText("");
+            passwordField.setManaged(true);
+            passwordField.setVisible(true);
+            visiblePasswordField.setManaged(false);
+            visiblePasswordField.setVisible(false);
             showPasswordButton.setText("Show Password");
         }
-        passwordVisible = !passwordVisible;
     }
 
     private void openMainWindow() {
@@ -84,13 +108,15 @@ public class RegisterController {
 
     @FXML
     private void onRegisterClicked() {
+        String password = passwordVisible ? visiblePasswordField.getText() : passwordField.getText();
+
         RegisterForm form = new RegisterForm(
                 usernameField.getText(),
                 firstNameField.getText(),
                 lastNameField.getText(),
                 emailField.getText(),
-                passwordField.getText(),
-                "Polska",
+                password,
+                countryComboBox.getValue(),
                 LocalDate.of(2000, 1, 1));
         boolean isRegistered = userViewModel.register(form);
 
@@ -100,6 +126,13 @@ public class RegisterController {
             }
         } else {
             System.out.println("Register failed: " + userViewModel.statusMessageProperty().get());
+        }
+    }
+
+    @FXML
+    public void onCancelClick() {
+        if (stage != null) {
+            stage.close();
         }
     }
 }

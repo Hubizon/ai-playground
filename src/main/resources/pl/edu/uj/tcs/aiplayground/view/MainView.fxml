@@ -18,8 +18,8 @@
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-                        <Button text="Run" onAction="#onRunBarClicked"/>
-                        <Button text="Cancel" onAction="#onCancelBarClicked"/>
+                        <Button fx:id="runButton" text="Run" onAction="#onRunBarClicked"/>
+                        <Button fx:id="cancelButton" text="Cancel" onAction="#onCancelBarClicked"/>
                     </HBox>
                     <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -107,6 +107,12 @@
     <!-- Rest of your FXML remains unchanged -->
     <!-- Center - bar container -->
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+        <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+            <HBox spacing="5" alignment="TOP_CENTER">
+                <Label fx:id="modelNameField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
+                <Label fx:id="modelVersionField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
             </HBox>

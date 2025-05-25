@@ -112,11 +112,11 @@ public class MainViewModel {
         return trainingStatus;
     }
 
-    private StringProperty modelNameProperty() {
+    public StringProperty modelNameProperty() {
         return modelName;
     }
 
-    private IntegerProperty modelVersionProperty() {
+    public IntegerProperty modelVersionProperty() {
         return modelVersion;
     }
 
