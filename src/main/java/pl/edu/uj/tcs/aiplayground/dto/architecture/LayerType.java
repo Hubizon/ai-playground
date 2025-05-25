@@ -5,7 +5,7 @@ import pl.edu.uj.tcs.aiplayground.core.layers.*;
 import java.util.function.Function;
 
 public enum LayerType {
-    LINEAR("Linear Layer", new LinearParams(), params -> new LinearLayer((LinearParams) params)),
+    LINEAR("Linear", new LinearParams(), params -> new LinearLayer((LinearParams) params)),
     RELU("ReLU", new EmptyParams(), params -> new ReluLayer()),
     SIGMOID("Sigmoid", new EmptyParams(), params -> new SigmoidLayer()),
     SOFTMAX("Softmax", new EmptyParams(), params -> new SoftMaxLayer());

@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.jooq.impl.QOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
@@ -39,7 +38,7 @@ public class MainViewModel {
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
     private final ObjectProperty<AlertEvent> alertEvent = new SimpleObjectProperty<>();
-    private final ObjectProperty<StatusName> trainingStatus = new SimpleObjectProperty<>();
+    private final ObjectProperty<StatusType> trainingStatus = new SimpleObjectProperty<>();
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
@@ -109,7 +108,7 @@ public class MainViewModel {
         return alertEvent;
     }
 
-    public ObjectProperty<StatusName> trainingStatusProperty() {
+    public ObjectProperty<StatusType> trainingStatusProperty() {
         return trainingStatus;
     }
 
@@ -290,36 +289,37 @@ public class MainViewModel {
             try {
                 NeuralNet net = new NeuralNet(layers);
                 model = modelService.updateModel(new ModelForm(user.userId(), model.modelName(), net.toJson()));
+                Platform.runLater(this::setupModel);
 
                 TrainingDto trainingDto = trainingForm.toDto(model.modelVersionId());
                 trainingDto.dataset().setTrainingService(trainingService);
                 trainingHandler = new TrainingHandler(trainingDto, trainingStatus::set);
-                trainingHandler.updateTrainingStatus(StatusName.IN_PROGRESS);
+                trainingHandler.updateTrainingStatus(StatusType.IN_PROGRESS);
 
                 runTraining(trainingDto, net, trainingHandler);
 
-                if (isCancelled.get()) {
-                    trainingHandler.updateTrainingStatus(StatusName.CANCELLED);
+                if (isCancelled.get()) { // TODO to powinno być tutaj a nie po stronie core?
+                    trainingHandler.updateTrainingStatus(StatusType.CANCELLED);
                 } else {
-                    trainingHandler.updateTrainingStatus(StatusName.FINISHED);
+                    trainingHandler.updateTrainingStatus(StatusType.FINISHED);
                 }
             } catch (TrainingException e) {
                 if (trainingHandler != null)
-                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
+                    trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Training error", e);
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
                 );
             } catch (DatabaseException e) {
                 if (trainingHandler != null)
-                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
+                    trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Internal error", e);
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Internal error", false))
                 );
             } catch (ModelModificationException e) {
                 if (trainingHandler != null)
-                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
+                    trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Illegal hyperparameters", e);
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Illegal hyperparameters: " + e.getMessage(), false))

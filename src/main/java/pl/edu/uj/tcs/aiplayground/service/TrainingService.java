@@ -1,6 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
-import pl.edu.uj.tcs.aiplayground.dto.StatusName;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
@@ -24,7 +24,7 @@ public class TrainingService {
         }
     }
 
-    public void updateTrainingStatus(UUID trainingId, StatusName status) throws DatabaseException {
+    public void updateTrainingStatus(UUID trainingId, StatusType status) throws DatabaseException {
         try {
             trainingRepository.updateTrainingStatus(trainingId, status);
         } catch (Exception e) {

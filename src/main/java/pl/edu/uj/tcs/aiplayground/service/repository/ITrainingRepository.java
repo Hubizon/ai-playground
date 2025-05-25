@@ -1,6 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
-import pl.edu.uj.tcs.aiplayground.dto.StatusName;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 
@@ -14,7 +14,7 @@ public interface ITrainingRepository {
 
     UUID insertTraining(TrainingDto trainingsRecord);
 
-    void updateTrainingStatus(UUID trainingId, StatusName status);
+    void updateTrainingStatus(UUID trainingId, StatusType status);
 
     String getDatasetPathByName(String dbName);
 
