@@ -21,16 +21,6 @@ public class ReluLayer implements Layer {
         return new ArrayList<>();
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("type", "ReluLayer");
-        return json;
-    }
-
-    public void loadJson(JSONObject json) {
-
-    }
-
     @Override
     public LayerConfig toConfig() {
         return new LayerConfig(LayerType.LINEAR, new EmptyParams());

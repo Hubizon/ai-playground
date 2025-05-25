@@ -33,34 +33,18 @@ public class JSONtest {
         );
 
         NeuralNet nn = new NeuralNet(architecture);
-        System.out.println(nn.toJson());
         NeuralNet nn2 = new NeuralNet(nn.toJson());
-        System.out.println(nn2.toJson());
         assertEquals(nn.toJson(),nn2.toJson());
 
-        DatasetType datasetType = DatasetType.IRIS;
-        datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
-        TrainingDto dto = new TrainingDto(
-                UUID.randomUUID(),
-                10,
-                32,
-                0.001,
-                datasetType,
-                OptimizerType.ADAM,
-                LossFunctionType.CrossEntropy
+        List<LayerConfig> architecture2 = List.of(
+                new LayerConfig(LayerType.LINEAR, new LinearParams(4,162222, false)),
+                new LayerConfig(LayerType.RELU, new EmptyParams()),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(16222,16,true)),
+                new LayerConfig(LayerType.SOFTMAX, new EmptyParams())
         );
 
-        AtomicBoolean isCancelled = new AtomicBoolean(false);
-        Consumer<TrainingMetricDto> callback = metric -> {
-            System.out.println("Epoch " + metric.epoch() +
-                    ": Loss = " + metric.loss() +
-                    ", Accuracy = " + metric.accuracy());
-        };
-
-        try {
-            nn2.train(dto, isCancelled, callback);
-        } catch (TrainingException e) {
-            e.printStackTrace();
-        }
+        NeuralNet nn3 = new NeuralNet(architecture);
+        NeuralNet nn4 = new NeuralNet(nn3.toJson());
+        assertEquals(nn3.toJson(),nn4.toJson());
     }
 }

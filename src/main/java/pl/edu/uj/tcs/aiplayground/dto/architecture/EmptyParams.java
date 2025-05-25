@@ -1,5 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
+import org.json.JSONObject;
+
 import java.util.List;
 
 public record EmptyParams() implements LayerParams {
@@ -10,5 +12,15 @@ public record EmptyParams() implements LayerParams {
 
     public List<Class<?>> getParamTypes() {
         return List.of();
+    }
+
+    @Override
+    public JSONObject toJson() {
+        return new JSONObject();
+    }
+
+    @Override
+    public LayerParams loadFromJson(JSONObject json) {
+        return new EmptyParams();
     }
 }

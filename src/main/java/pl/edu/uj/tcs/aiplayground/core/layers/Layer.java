@@ -12,9 +12,5 @@ public interface Layer {
 
     ArrayList<Tensor> getParams();
 
-    JSONObject toJson();
-
-    void loadJson(JSONObject json);
-
     LayerConfig toConfig();
 }

@@ -1,5 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,4 +58,8 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
             throw new RuntimeException(); // TODO
         }
     }
+
+    JSONObject toJson();
+
+    LayerParams loadFromJson(JSONObject json);
 }

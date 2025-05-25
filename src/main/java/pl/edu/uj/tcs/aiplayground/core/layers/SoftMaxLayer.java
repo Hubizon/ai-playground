@@ -25,18 +25,6 @@ public class SoftMaxLayer implements Layer {
     }
 
     @Override
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("type", "SoftMax");
-        return json;
-    }
-
-    @Override
-    public void loadJson(JSONObject json) {
-        // No parameters to load
-    }
-
-    @Override
     public LayerConfig toConfig() {
         return new LayerConfig(LayerType.SOFTMAX, new EmptyParams());
     }

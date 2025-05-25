@@ -50,28 +50,6 @@ public class LinearLayer implements Layer {
         return params;
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("type", "LinearLayer");
-        json.put("inputSize", matrix.cols);
-        json.put("outputSize", matrix.rows);
-        json.put("useBias", params.contains(bias));
-        return json;
-    }
-
-    public void loadJson(JSONObject json) {
-        int inputSize = json.getInt("inputSize");
-        int outputSize = json.getInt("outputSize");
-        boolean useBias = json.getBoolean("useBias");
-        this.matrix = Tensor.randomMatrix(outputSize, inputSize, -1, 1);
-        this.params = new ArrayList<>();
-        this.params.add(this.matrix);
-        if (useBias) {
-            this.bias = Tensor.randomMatrix(outputSize, 1, -1, 1);
-            this.params.add(this.bias);
-        }
-    }
-
     @Override
     public LayerConfig toConfig() {
         return new LayerConfig(LayerType.LINEAR, new LinearParams(inputSize, outputSize, useBias));

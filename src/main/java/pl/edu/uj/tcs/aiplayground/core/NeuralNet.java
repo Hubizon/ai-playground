@@ -10,13 +10,16 @@ import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
 import java.time.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,7 +32,6 @@ public class NeuralNet {
     public List<Layer> layers = new ArrayList<>();
 
     public NeuralNet() {
-        // TODO
     }
 
     public NeuralNet(List<LayerConfig> configs) {
@@ -39,46 +41,46 @@ public class NeuralNet {
     }
 
     public NeuralNet(JSONB architecture) {
-        String jsonString = architecture.data(); // Get the JSON string from JSONB
+        String jsonString = architecture.data();
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray layersArray = jsonObject.getJSONArray("layers");
 
         this.layers = new ArrayList<>();
+
         for (int i = 0; i < layersArray.length(); i++) {
             JSONObject layerJson = layersArray.getJSONObject(i);
-            String type = layerJson.getString("type");
-            Layer layer;
-            switch (type) {
-                case "LinearLayer":
-                    layer = new LinearLayer();
-                    layer.loadJson(layerJson);
-                    break;
-                case "ReluLayer":
-                    layer = new ReluLayer();
-                    layer.loadJson(layerJson);
-                    break;
-                case "SigmoidLayer":
-                    layer = new SigmoidLayer();
-                    layer.loadJson(layerJson);
-                    break;
-                case "SoftMax":
-                    layer = new SoftMaxLayer();
-                    layer.loadJson(layerJson);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown layer type: " + type);
-            }
-            this.layers.add(layer);
+
+            String typeStr = layerJson.getString("type");
+            JSONObject paramsJson = layerJson.optJSONObject("params");
+
+            LayerType type = Arrays.stream(LayerType.values())
+                    .filter(t -> t.toString().equalsIgnoreCase(typeStr))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown layer type: " + typeStr));
+
+            LayerParams params = type.getParams().loadFromJson(paramsJson);;
+            Layer layer = new LayerConfig(type, params).toLayer();
+            layers.add(layer);
         }
     }
 
     public JSONB toJson() {
-        JSONObject jsonObject = new JSONObject();
         JSONArray layersArray = new JSONArray();
 
         for (Layer layer : layers) {
-            layersArray.put(layer.toJson());
+            LayerConfig config = layer.toConfig();
+
+            JSONObject layerJson = new JSONObject();
+            layerJson.put("type", config.type().toString());
+
+            JSONObject paramsJson = config.params().toJson();
+            layerJson.put("params", paramsJson);
+
+
+            layersArray.put(layerJson);
         }
+
+        JSONObject jsonObject = new JSONObject();
         jsonObject.put("layers", layersArray);
 
         return JSONB.jsonb(jsonObject.toString());
@@ -175,12 +177,9 @@ public class NeuralNet {
         }
     }
 
-    static class BatchResult {
-        final double loss;
-        final List<double[][]> grads;
-        BatchResult(double loss, List<double[][]> grads) {
-            this.loss = loss;
-            this.grads = grads;
-        }
+    public static Optional<LayerType> getLayerTypeFor(Layer layer) {
+        return Arrays.stream(LayerType.values())
+                .filter(t -> t.createLayer(t.getParams()).getClass().equals(layer.getClass()))
+                .findFirst();
     }
 }
