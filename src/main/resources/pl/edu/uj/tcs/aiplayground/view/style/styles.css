@@ -110,12 +110,12 @@
 
 .date-picker:disabled {
     -fx-opacity: 1.0;
-    -fx-background-color: transparent; /* Grey background */
+    -fx-background-color: transparent;
 }
 
 .date-picker:disabled .text-field {
     -fx-text-fill: white;
-    -fx-background-color: transparent; /* Grey background */
+    -fx-background-color: transparent;
 }
 
 .date-picker:disabled .arrow-button {
@@ -157,7 +157,7 @@
     -fx-background-color: #3C3C3C;
 }
 
-/* Dialog styles */
+
 .dialog-pane {
     -fx-background-color: #3C3C3C;
     -fx-border-color: #555;
@@ -179,4 +179,39 @@
 
 .dialog-pane .button:hover {
     -fx-background-color: #4C4C4C;
+}
+
+
+/*model list*/
+.custom-list-view {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.custom-list-view .list-cell {
+    -fx-background-color: #353535;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.custom-list-view .list-cell:filled:hover {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+}
+
+.custom-list-view .list-cell:filled:selected {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+}
+
+.custom-list-view .list-cell:empty {
+    -fx-background-color: #555;
+    -fx-border-color: transparent;
+}
+
+.custom-list-view .scroll-bar {
+    -fx-opacity: 0;
+    -fx-pref-width: 0; /*hiding scrollbars*/
+    -fx-pref-height: 0;
 }

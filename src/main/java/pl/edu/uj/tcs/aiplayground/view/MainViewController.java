@@ -22,7 +22,8 @@ import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
-
+import javafx.scene.control.ListView;
+import javafx.scene.input.MouseEvent;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,6 +74,12 @@ public class MainViewController {
     private Button runButton;
     @FXML
     private Button cancelButton;
+    @FXML
+    private Button prevVersionButton;
+    @FXML
+    private Button nextVersionButton;
+    @FXML
+    private ListView<String> modelsListView;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -81,8 +88,9 @@ public class MainViewController {
         this.mainViewModel.setUser(userViewModel.getUser());
 
 
-        // Initially select "My models" tab
         leftTabPane.getSelectionModel().select(1); // "My models" tab
+
+        initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
             if (!"My models".equals(tab.getText())) {
@@ -159,7 +167,7 @@ public class MainViewController {
             return null;
         }));
         learningRateField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*(\\.\\d*)?")) { // Allows digits and optional decimal
+            if (!newValue.matches("\\d*(\\.\\d*)?")) {
                 learningRateField.setText(oldValue);
             }
         });
@@ -202,6 +210,20 @@ public class MainViewController {
                 alertMessage(newValue.message(), newValue.isInfo());
             }
         });
+
+
+        prevVersionButton.disableProperty().bind(
+                mainViewModel.isModelLoadedProperty().not()
+                        .or(mainViewModel.isPreviousVersionProperty().not())
+        );
+
+        nextVersionButton.disableProperty().bind(
+                mainViewModel.isModelLoadedProperty().not()
+                        .or(mainViewModel.isNextVersionProperty().not())
+        );
+
+        prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
+        nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
@@ -217,7 +239,6 @@ public class MainViewController {
         List<Class<?>> paramTypes = params.getParamTypes();
         List<Object> paramValues = params.getParamValues();
 
-        // Create UI controls for each parameter
         for (int i = 0; i < paramNames.size(); i++) {
             String paramName = paramNames.get(i);
             Class<?> paramType = paramTypes.get(i);
@@ -403,6 +424,19 @@ public class MainViewController {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(modelName -> {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
+        });
+    }
+    private void initializeModelsList() {
+        modelsListView.setItems(mainViewModel.userModelNamesProperty());
+        modelsListView.getStyleClass().add("custom-list-view");
+
+        modelsListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                String selectedModel = modelsListView.getSelectionModel().getSelectedItem();
+                if (selectedModel != null) {
+                    mainViewModel.setModel(userViewModel.getUser(), selectedModel);
+                }
+            }
         });
     }
 }
