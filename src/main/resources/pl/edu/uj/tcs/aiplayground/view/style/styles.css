@@ -110,12 +110,12 @@
 
 .date-picker:disabled {
     -fx-opacity: 1.0;
-    -fx-background-color: transparent; /* Grey background */
+    -fx-background-color: transparent;
 }
 
 .date-picker:disabled .text-field {
     -fx-text-fill: white;
-    -fx-background-color: transparent; /* Grey background */
+    -fx-background-color: transparent;
 }
 
 .date-picker:disabled .arrow-button {
@@ -157,7 +157,7 @@
     -fx-background-color: #3C3C3C;
 }
 
-/* Dialog styles */
+
 .dialog-pane {
     -fx-background-color: #3C3C3C;
     -fx-border-color: #555;
@@ -179,4 +179,77 @@
 
 .dialog-pane .button:hover {
     -fx-background-color: #4C4C4C;
+}
+
+
+
+/*model list*/
+/* Custom ListView styling */
+.custom-list-view {
+    -fx-background-color: #3C3C3C; /* Background of the entire ListView */
+    -fx-text-fill: white; /* Text color */
+}
+
+/* Cell styling */
+.custom-list-view .list-cell {
+    -fx-background-color: #353535; /* Background of each cell */
+    -fx-text-fill: white; /* Text color in cells */
+}
+
+.custom-list-view .list-cell:filled:hover {
+    -fx-background-color: #3C3C3C; /* Hover color */
+    -fx-text-fill: white;
+}
+
+.custom-list-view .list-cell:filled:selected {
+    -fx-background-color: #3C3C3C; /* Selected item color */
+    -fx-text-fill: white;
+}
+
+.custom-list-view .list-cell:empty {
+    -fx-background-color: #555; /* Empty cells */
+    -fx-border-color: transparent; /* Remove borders */
+}
+
+/* Custom scrollbar styling */
+.custom-list-view .scroll-bar:vertical {
+    -fx-background-color: #3C3C3C;
+}
+
+.custom-list-view .scroll-bar:vertical .track {
+    -fx-background-color: #3C3C3C;
+}
+
+.custom-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent; /* Red color */
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0.5em;
+}
+
+.custom-list-view .scroll-bar:vertical .increment-button,
+.custom-list-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.custom-list-view .scroll-bar:vertical .increment-arrow,
+.custom-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+/* Hide horizontal scrollbar */
+.custom-list-view .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.custom-list-view .scroll-bar:horizontal .track,
+.custom-list-view .scroll-bar:horizontal .thumb {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
 }

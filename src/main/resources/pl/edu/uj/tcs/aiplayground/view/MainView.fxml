@@ -59,8 +59,9 @@
                     <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
                     <ListView fx:id="modelsListView"
+                              styleClass="custom-list-view"
                               style="-fx-background-color: #3C3C3C; -fx-text-fill: white;"
-                              prefHeight="200"/>
+                              prefHeight="350"/>
                 </VBox>
             </content>
         </Tab>

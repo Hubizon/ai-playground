@@ -429,7 +429,7 @@ public class MainViewController {
     }
     private void initializeModelsList() {
         modelsListView.setItems(mainViewModel.userModelNamesProperty());
-        modelsListView.setStyle("-fx-control-inner-background: #3C3C3C; -fx-text-fill: white;");
+        modelsListView.getStyleClass().add("custom-list-view");
 
         modelsListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
