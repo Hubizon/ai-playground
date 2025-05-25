@@ -1,10 +1,10 @@
 package pl.edu.uj.tcs.aiplayground.core.examples;
 
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
-import pl.edu.uj.tcs.aiplayground.core.NeuralNet.*;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
@@ -31,6 +31,7 @@ public class TrainingCombined {
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 1,
+                32,
                 0.001,
                 datasetType,
                 OptimizerType.ADADELTA,
@@ -44,6 +45,10 @@ public class TrainingCombined {
                     ", Accuracy = " + metric.accuracy());
         };
 
-        nn.train(dto, isCancelled, callback);
+        try {
+            nn.train(dto, isCancelled, callback);
+        } catch (TrainingException e) {
+            e.printStackTrace();
+        }
     }
 }

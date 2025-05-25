@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;
 import pl.edu.uj.tcs.aiplayground.service.LeaderboardService;
-import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
 

@@ -40,6 +40,7 @@ public class TrainingCombined {
                 UUID.randomUUID(),
                 100,
                 0.1F,
+                32,
                 "iris.csv",
                 "SGD",
                 "MSE"

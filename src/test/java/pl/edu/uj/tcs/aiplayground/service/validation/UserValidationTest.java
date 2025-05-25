@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.service.validation;
 import org.junit.jupiter.api.Test;
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.validation.UserValidation;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 
 import java.time.LocalDate;

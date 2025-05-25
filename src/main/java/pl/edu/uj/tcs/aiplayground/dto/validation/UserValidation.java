@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.service.validation;
+package pl.edu.uj.tcs.aiplayground.dto.validation;
 
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;

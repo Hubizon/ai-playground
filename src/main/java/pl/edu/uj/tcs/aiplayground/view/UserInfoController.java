@@ -1,6 +1,5 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -9,21 +8,24 @@ import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.time.LocalDate;
-import java.util.Date;
-
 public class UserInfoController {
     @FXML
     private PasswordField passwordInfoField;
     @FXML
     private Button showPasswordButton;
 
-    @FXML private TextField usernameInfoField;
-    @FXML private TextField firstNameInfoField;
-    @FXML private TextField lastNameInfoField;
-    @FXML private TextField emailInfoField;
-    @FXML private ComboBox<String> countryInfoComboBox;
-    @FXML private DatePicker birthDateInfoDatePicker;
+    @FXML
+    private TextField usernameInfoField;
+    @FXML
+    private TextField firstNameInfoField;
+    @FXML
+    private TextField lastNameInfoField;
+    @FXML
+    private TextField emailInfoField;
+    @FXML
+    private ComboBox<String> countryInfoComboBox;
+    @FXML
+    private DatePicker birthDateInfoDatePicker;
 
     private boolean passwordVisible = false;
     private Stage stage;
@@ -78,8 +80,7 @@ public class UserInfoController {
         boolean isSuccess = userViewModel.updateUser(updateUserForm);
         if (!isSuccess) {
             // TODO
-        }
-        else if (stage != null) {
+        } else if (stage != null) {
             stage.close();
         }
     }

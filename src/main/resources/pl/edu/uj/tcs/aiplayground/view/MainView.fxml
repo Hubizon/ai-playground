@@ -19,7 +19,7 @@
                     <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
                         <Button text="Run" onAction="#onRunBarClicked"/>
-                        <Button text="Pause" onAction="#onPauseBarClicked"/>
+                        <Button text="Cancel" onAction="#onCancelBarClicked"/>
                     </HBox>
                     <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -43,7 +43,7 @@
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Label text="Batch:" style="-fx-text-fill: white;"/>
-                        <TextField fx:id="batchField" text=""
+                        <TextField fx:id="batchField" text="8"
                                    style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
