@@ -1,9 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
-import pl.edu.uj.tcs.aiplayground.core.optim.AdamOptimizer;
-import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
-import pl.edu.uj.tcs.aiplayground.core.optim.SGDOptimizer;
+import pl.edu.uj.tcs.aiplayground.core.optim.*;
 
 import java.util.ArrayList;
 
@@ -18,6 +16,27 @@ public enum OptimizerType {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdamOptimizer(params, learningRate);
+        }
+    },
+
+    ADAGRAD("AdaGrad","AdaGrad Optimizer") {
+        @Override
+        public Optimizer create(ArrayList < Tensor > params,double learningRate){
+            return new AdaGradOptimizer(params, learningRate);
+        }
+    },
+
+    ADADELTA("AdaDelta","AdaDelta Optimizer") {
+        @Override
+        public Optimizer create (ArrayList < Tensor > params,double learningRate){
+            return new AdaDeltaOptimizer(params, learningRate);
+        }
+    },
+
+    RMSPROP("RMSProp","RMSProp Optimizer") {
+        @Override
+        public Optimizer create (ArrayList < Tensor > params,double learningRate){
+            return new RMSPropOptimizer(params, learningRate);
         }
     };
 

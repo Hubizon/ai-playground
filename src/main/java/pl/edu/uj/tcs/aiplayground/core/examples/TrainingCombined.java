@@ -30,10 +30,10 @@ public class TrainingCombined {
         datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
-                100,
+                1,
                 0.001,
                 datasetType,
-                OptimizerType.ADAM,
+                OptimizerType.ADADELTA,
                 LossFunctionType.CrossEntropy
         );
 

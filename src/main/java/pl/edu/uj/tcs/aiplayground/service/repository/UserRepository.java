@@ -2,9 +2,11 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("ConstantConditions")
 public class UserRepository implements IUserRepository {
@@ -91,5 +93,23 @@ public class UserRepository implements IUserRepository {
                     WHERE id = ?
                 """, countryId
         ).into(String.class);
+    }
+
+    @Override
+    public void updateUser(UUID userId, UpdateUserForm updateUserForm) {
+        dsl.query("""
+            UPDATE users
+            SET email = ?,
+                password_hash = ?,
+                country_id = (SELECT id FROM countries WHERE name = ?),
+                birth_date = ?
+            WHERE id = ?
+            """,
+                updateUserForm.email(),
+                updateUserForm.password(),
+                updateUserForm.country(),
+                updateUserForm.birthDate(),
+                userId
+        ).execute();
     }
 }
