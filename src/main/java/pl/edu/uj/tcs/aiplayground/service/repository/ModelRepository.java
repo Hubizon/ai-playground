@@ -18,7 +18,7 @@ public class ModelRepository implements IModelRepository {
     @Override
     public List<String> getUserModelNames(UUID userId) {
         return dsl.fetch("""
-                SELECT id FROM models
+                SELECT name FROM models
                     WHERE user_id = ?;
                 """, userId
         ).into(String.class);

@@ -62,6 +62,7 @@ public class MainViewModel {
     }
 
     private void updateUserModelNames() {
+        userModelNames.clear();
         try {
             userModelNames.addAll(modelService.getUserModelNames(user.userId()));
         } catch (DatabaseException e) {
