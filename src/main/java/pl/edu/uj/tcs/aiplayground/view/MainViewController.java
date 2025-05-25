@@ -269,6 +269,9 @@ public class MainViewController {
         Label nameLabel = new Label(layerType.toString());
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;");
 
+        Region leftSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        barContainer.getChildren().addAll(leftSpacer, nameLabel);
         try {
             // Get params using the new layerType.getParams() method
             LayerParams params = layerType.getParams();
@@ -352,9 +355,9 @@ public class MainViewController {
                 }
             }
 
-            Region leftSpacer = new Region();
+
+
             Region rightSpacer = new Region();
-            HBox.setHgrow(leftSpacer, Priority.ALWAYS);
             HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
             Button removeButton = new Button("remove");
@@ -366,7 +369,7 @@ public class MainViewController {
                 mainViewModel.removeLayer(index); // Use the pre-removal index
             });
 
-            barContainer.getChildren().addAll(leftSpacer, nameLabel);
+
             barContainer.getChildren().addAll(rightSpacer, removeButton);
 
             barsContainer.getChildren().add(barContainer);
@@ -381,6 +384,8 @@ public class MainViewController {
 
     private void updateLayerParams(HBox barContainer, LayerParams oldParams,
                                    String paramName, Object newValue) {
+
+        //oldParams.updated(paramName, newValue)
         try {
             Class<?> paramsClass = oldParams.getClass();
 
