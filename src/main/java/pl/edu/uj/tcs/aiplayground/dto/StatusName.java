@@ -3,7 +3,7 @@ package pl.edu.uj.tcs.aiplayground.dto;
 public enum StatusName {
     QUEUE("Queue"),
     IN_PROGRESS("In Progress"),
-    FINISHED("Ukończony"),
+    FINISHED("Finished"),
     ERROR("Error"),
     CANCELLED("Cancelled");
 

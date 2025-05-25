@@ -26,6 +26,9 @@ public class LinearLayer implements Layer {
     }
 
     public LinearLayer(int inputSize, int outputSize, boolean useBias) {
+        this.inputSize = inputSize;
+        this.outputSize = outputSize;
+        this.useBias = useBias;
         double bound = Math.sqrt(6.0 / (inputSize + outputSize));
         matrix = Tensor.randomMatrix(outputSize, inputSize, -bound, bound);
         bias = Tensor.randomMatrix(outputSize, 1, -1, 1);
@@ -39,7 +42,8 @@ public class LinearLayer implements Layer {
     }
 
     public Tensor forward(Tensor input, ComputationalGraph graph) {
-        return Tensor.add(Tensor.matMul(matrix,input, graph), bias, graph);
+        if( useBias) return Tensor.add(Tensor.matMul(matrix,input, graph), bias, graph);
+        else return Tensor.matMul(matrix,input, graph);
     }
 
     public ArrayList<Tensor> getParams() {

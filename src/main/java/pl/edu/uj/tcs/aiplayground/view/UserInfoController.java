@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
@@ -25,6 +26,7 @@ public class UserInfoController {
     @FXML private DatePicker birthDateInfoDatePicker;
 
     private boolean passwordVisible = false;
+    private Stage stage;
 
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
@@ -42,6 +44,10 @@ public class UserInfoController {
             countryInfoComboBox.setValue(user.countryName());
             birthDateInfoDatePicker.setValue(user.birthDate());
         }
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     @FXML
@@ -69,10 +75,18 @@ public class UserInfoController {
                 countryInfoComboBox.getValue(),
                 birthDateInfoDatePicker.getValue()
         );
-        userViewModel.updateUser(updateUserForm);
+        boolean isSuccess = userViewModel.updateUser(updateUserForm);
+        if (!isSuccess) {
+            // TODO
+        }
+        else if (stage != null) {
+            stage.close();
+        }
     }
 
     public void onCancelClick() {
-        // TODO
+        if (stage != null) {
+            stage.close();
+        }
     }
 }

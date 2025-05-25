@@ -132,9 +132,11 @@ public class MainViewModel {
         layers.remove(idx);
     }
 
-    public void updateLayer(int idx, LayerParams layerParams) {
+    public void updateLayer(int idx, String paramName, Object newValue) {
         LayerType type = layers.get(idx).type();
-        layers.set(idx, new LayerConfig(type, layerParams));
+        LayerParams oldParams = layers.get(idx).params();
+        LayerParams newParams = oldParams.updated(paramName, newValue);
+        layers.set(idx, new LayerConfig(type, newParams));
     }
 
     public boolean isLoggedIn() {
