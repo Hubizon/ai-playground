@@ -21,6 +21,7 @@ import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainViewModel {
@@ -37,6 +38,7 @@ public class MainViewModel {
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
     private UserDto user = null;
     private ModelDto model = null;
+    private TrainingHandler trainingHandler = null;
 
     public MainViewModel(ModelService modelService, TrainingService trainingService) {
         this.modelService = modelService;
@@ -235,7 +237,11 @@ public class MainViewModel {
             setUser(null);
             isModelLoaded.set(false);
         }
-//        setupModel();
+        setupModel();
+    }
+
+    public void shareTraining() {
+
     }
 
     public void stopTraining() {
@@ -261,8 +267,6 @@ public class MainViewModel {
         liveMetrics.clear();
 
         new Thread(() -> {
-            TrainingHandler handler = null;
-
             try {
                 NeuralNet net = new NeuralNet(layers);
                 model = modelService.addModel(new ModelForm(user.userId(), model.modelName(), net.toJson()));
@@ -276,21 +280,21 @@ public class MainViewModel {
                         lossFunction
                 );
                 trainingDto.dataset().setTrainingService(trainingService);
-                handler = new TrainingHandler(trainingDto);
-                handler.updateTrainingStatus(StatusName.IN_PROGRESS);
+                trainingHandler = new TrainingHandler(trainingDto);
+                trainingHandler.updateTrainingStatus(StatusName.IN_PROGRESS);
 
-                runTraining(trainingDto, net, handler);
+                runTraining(trainingDto, net, trainingHandler);
 
                 if (isCancelled.get()) {
-                    handler.updateTrainingStatus(StatusName.CANCELLED);
+                    trainingHandler.updateTrainingStatus(StatusName.CANCELLED);
                     Platform.runLater(() -> statusMessage.set("Training cancelled."));
                 } else {
-                    handler.updateTrainingStatus(StatusName.FINISHED);
+                    trainingHandler.updateTrainingStatus(StatusName.FINISHED);
                     Platform.runLater(() -> statusMessage.set("Training finished."));
                 }
             } catch (Exception e) {
-                if (handler != null)
-                    handler.updateTrainingStatus(StatusName.ERROR);
+                if (trainingHandler != null)
+                    trainingHandler.updateTrainingStatus(StatusName.ERROR);
                 Platform.runLater(() -> {
                     logger.error("Training error", e);
                     statusMessage.set("Training failed.");

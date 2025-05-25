@@ -55,4 +55,12 @@ public class TrainingService {
             throw new DatabaseException(e);
         }
     }
+
+    public void shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
+        try {
+            trainingRepository.shareTraining(trainingId, accuracy, loss);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
 }

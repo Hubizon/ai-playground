@@ -16,6 +16,7 @@ public class TrainingHandler {
     private static final Logger logger = LoggerFactory.getLogger(TrainingHandler.class);
     private final TrainingService trainingService;
     private UUID trainingId = null;
+    private TrainingMetricDto recentMetric;
 
     public TrainingHandler(TrainingService trainingService, TrainingDto trainingDto) {
         this.trainingService = trainingService;
@@ -32,6 +33,8 @@ public class TrainingHandler {
     }
 
     public void addNewTrainingMetric(TrainingMetricDto trainingMetricDto) {
+        recentMetric = trainingMetricDto;
+
         try {
             trainingService.addNewTrainingMetric(trainingId, trainingMetricDto);
         } catch (DatabaseException e) {
@@ -46,6 +49,15 @@ public class TrainingHandler {
         } catch (DatabaseException e) {
             logger.error("Failed to update the status for for trainingId={}, status={}, error={}",
                     trainingId, status, e.getMessage(), e);
+        }
+    }
+
+    public void shareTraining() {
+        try {
+            trainingService.shareTraining(trainingId, recentMetric.accuracy(), recentMetric.loss());
+        } catch (DatabaseException e) {
+            logger.error("Failed to share training for trainingId={}, error={}",
+                    trainingId, e.getMessage(), e);
         }
     }
 }
