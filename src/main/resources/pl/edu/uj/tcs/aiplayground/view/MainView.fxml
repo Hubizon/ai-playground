@@ -125,8 +125,9 @@
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
             </HBox>
-            <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
-            </VBox>
+            <ScrollPane fitToWidth="true" style="-fx-background-color: #3C3C3C;">
+                <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;"/>
+            </ScrollPane>
         </VBox>
     </VBox>
 

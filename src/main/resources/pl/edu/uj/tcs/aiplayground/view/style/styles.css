@@ -206,7 +206,7 @@
 }
 
 .custom-list-view .list-cell:empty {
-    -fx-background-color: #555;
+    -fx-background-color: #3C3C3C;
     -fx-border-color: transparent;
 }
 
@@ -214,4 +214,25 @@
     -fx-opacity: 0;
     -fx-pref-width: 0; /*hiding scrollbars*/
     -fx-pref-height: 0;
+}
+
+
+.scroll-pane {
+    -fx-hbar-policy: never;
+    -fx-vbar-policy: never; /*hides scrollbar*/
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: #3C3C3C;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: #3C3C3C;
 }
