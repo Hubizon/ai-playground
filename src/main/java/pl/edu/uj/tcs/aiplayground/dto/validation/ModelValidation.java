@@ -8,6 +8,6 @@ public class ModelValidation {
 
     public static void validateModelForm(ModelForm modelForm) throws ModelModificationException {
         if (!modelForm.name().matches(MODEL_NAME_REGEX))
-            throw new ModelModificationException("Invalid core name");
+            throw new ModelModificationException("Invalid model name");
     }
 }

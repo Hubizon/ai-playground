@@ -19,23 +19,23 @@ public enum OptimizerType {
         }
     },
 
-    ADAGRAD("AdaGrad","AdaGrad Optimizer") {
+    ADAGRAD("AdaGrad", "AdaGrad Optimizer") {
         @Override
-        public Optimizer create(ArrayList < Tensor > params,double learningRate){
+        public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdaGradOptimizer(params, learningRate);
         }
     },
 
-    ADADELTA("AdaDelta","AdaDelta Optimizer") {
+    ADADELTA("AdaDelta", "AdaDelta Optimizer") {
         @Override
-        public Optimizer create (ArrayList < Tensor > params,double learningRate){
+        public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdaDeltaOptimizer(params, learningRate);
         }
     },
 
-    RMSPROP("RMSProp","RMSProp Optimizer") {
+    RMSPROP("RMSProp", "RMSProp Optimizer") {
         @Override
-        public Optimizer create (ArrayList < Tensor > params,double learningRate){
+        public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new RMSPropOptimizer(params, learningRate);
         }
     };

@@ -18,10 +18,11 @@ public enum LossFunctionType {
             return new BCE();
         }
     },
-    CrossEntropy("Cross-Entropy", "Cross Entropy")
-    {
+    CrossEntropy("Cross-Entropy", "Cross Entropy") {
         @Override
-                public LossFunc create() {return new CrossEntropy();}
+        public LossFunc create() {
+            return new CrossEntropy();
+        }
     };
 
     private final String dbKey;

@@ -1,9 +1,8 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
-import javafx.beans.value.ChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.uj.tcs.aiplayground.dto.StatusName;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
@@ -17,13 +16,13 @@ import java.util.function.Consumer;
 public class TrainingHandler {
     private static final Logger logger = LoggerFactory.getLogger(TrainingHandler.class);
     private final TrainingService trainingService;
-    private final Consumer<StatusName> statusListener;
+    private final Consumer<StatusType> statusListener;
     private UUID trainingId = null;
     private TrainingMetricDto recentMetric;
 
     public TrainingHandler(TrainingService trainingService,
                            TrainingDto trainingDto,
-                           Consumer<StatusName> statusListener) {
+                           Consumer<StatusType> statusListener) {
         this.trainingService = trainingService;
         this.statusListener = statusListener;
 
@@ -38,7 +37,7 @@ public class TrainingHandler {
         this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, null);
     }
 
-    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusName> statusListener) {
+    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) {
         this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, statusListener);
     }
 
@@ -53,7 +52,7 @@ public class TrainingHandler {
         }
     }
 
-    public void updateTrainingStatus(StatusName status) {
+    public void updateTrainingStatus(StatusType status) {
         try {
             trainingService.updateTrainingStatus(trainingId, status);
             if (statusListener != null)

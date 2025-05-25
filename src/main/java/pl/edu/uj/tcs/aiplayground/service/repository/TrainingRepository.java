@@ -1,7 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
-import pl.edu.uj.tcs.aiplayground.dto.StatusName;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @SuppressWarnings("ConstantConditions")
 public class TrainingRepository implements ITrainingRepository {
-    private static final StatusName DEFAULT_STATUS = StatusName.QUEUE;
+    private static final StatusType DEFAULT_STATUS = StatusType.QUEUE;
     private final DSLContext dsl;
 
     public TrainingRepository(DSLContext dslContext) {
@@ -65,7 +65,7 @@ public class TrainingRepository implements ITrainingRepository {
     }
 
     @Override
-    public void updateTrainingStatus(UUID trainingId, StatusName status) {
+    public void updateTrainingStatus(UUID trainingId, StatusType status) {
         dsl.query("""
                         UPDATE trainings
                             SET status = (SELECT id FROM statuses WHERE name = ?)
