@@ -182,74 +182,36 @@
 }
 
 
-
 /*model list*/
-/* Custom ListView styling */
 .custom-list-view {
-    -fx-background-color: #3C3C3C; /* Background of the entire ListView */
-    -fx-text-fill: white; /* Text color */
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
 }
 
-/* Cell styling */
 .custom-list-view .list-cell {
-    -fx-background-color: #353535; /* Background of each cell */
-    -fx-text-fill: white; /* Text color in cells */
+    -fx-background-color: #353535;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
 }
 
 .custom-list-view .list-cell:filled:hover {
-    -fx-background-color: #3C3C3C; /* Hover color */
+    -fx-background-color: #3C3C3C;
     -fx-text-fill: white;
 }
 
 .custom-list-view .list-cell:filled:selected {
-    -fx-background-color: #3C3C3C; /* Selected item color */
+    -fx-background-color: #3C3C3C;
     -fx-text-fill: white;
 }
 
 .custom-list-view .list-cell:empty {
-    -fx-background-color: #555; /* Empty cells */
-    -fx-border-color: transparent; /* Remove borders */
+    -fx-background-color: #555;
+    -fx-border-color: transparent;
 }
 
-/* Custom scrollbar styling */
-.custom-list-view .scroll-bar:vertical {
-    -fx-background-color: #3C3C3C;
-}
-
-.custom-list-view .scroll-bar:vertical .track {
-    -fx-background-color: #3C3C3C;
-}
-
-.custom-list-view .scroll-bar:vertical .thumb {
-    -fx-background-color: transparent; /* Red color */
-    -fx-background-insets: 0, 1, 2;
-    -fx-background-radius: 0.5em;
-}
-
-.custom-list-view .scroll-bar:vertical .increment-button,
-.custom-list-view .scroll-bar:vertical .decrement-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0 0 0 0;
-}
-
-.custom-list-view .scroll-bar:vertical .increment-arrow,
-.custom-list-view .scroll-bar:vertical .decrement-arrow {
-    -fx-shape: " ";
-    -fx-padding: 0;
-}
-
-/* Hide horizontal scrollbar */
-.custom-list-view .scroll-bar:horizontal {
+.custom-list-view .scroll-bar {
     -fx-opacity: 0;
+    -fx-pref-width: 0; /*hiding scrollbars*/
     -fx-pref-height: 0;
-    -fx-min-height: 0;
-    -fx-max-height: 0;
-}
-
-.custom-list-view .scroll-bar:horizontal .track,
-.custom-list-view .scroll-bar:horizontal .thumb {
-    -fx-opacity: 0;
-    -fx-pref-height: 0;
-    -fx-min-height: 0;
-    -fx-max-height: 0;
 }
