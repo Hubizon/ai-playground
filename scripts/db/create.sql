@@ -233,7 +233,7 @@ VALUES ('Image Recognition'),
 INSERT INTO optimizers (name)
 VALUES ('Adam'),
        ('SGD'),
-       ('RMSprop'),
+       ('RMSProp'),
        ('AdaDelta'),
        ('AdaGrad');
 
