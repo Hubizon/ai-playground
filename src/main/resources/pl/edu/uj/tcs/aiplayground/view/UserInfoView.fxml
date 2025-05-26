@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
-      fx:controller="pl.edu.uj.tcs.aiplayground.controller.UserInfoController"
+      fx:controller="pl.edu.uj.tcs.aiplayground.view.UserInfoController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       styleClass="metrics-panel" spacing="10">
 
@@ -16,35 +16,34 @@
         </padding>
 
         <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <TextField fx:id="usernameInfoField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false"/>
 
         <Label text="First Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <TextField fx:id="firstNameInfoField" GridPane.rowIndex="1" GridPane.columnIndex="1" editable="false"/>
 
         <Label text="Last Name:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <TextField fx:id="lastNameInfoField" GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
 
-        <Label text="Gmail:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailInfoField" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
 
         <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
         <HBox spacing="5" GridPane.rowIndex="4" GridPane.columnIndex="1">
-            <PasswordField fx:id="passwordField"/>
-            <Button text="Show Password" onAction="#handleShowPassword"/>
+            <PasswordField fx:id="passwordField" editable="false"/>
+            <TextField fx:id="visiblePasswordField" managed="false" visible="false" editable="false"/>
+            <Button fx:id="showPasswordButton" text="Show Password" prefWidth="110" onAction="#handleShowPassword" disable="true"/>
         </HBox>
 
         <Label text="Country:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <ComboBox GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="countryInfoComboBox" GridPane.rowIndex="5" GridPane.columnIndex="1" editable="false" disable="true"/>
 
         <Label text="Birth Date:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <DatePicker GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
-        <Label text="Account Created At:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-        <Label text="2023-01-01" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+        <DatePicker fx:id="birthDateInfoDatePicker" GridPane.rowIndex="6" GridPane.columnIndex="1" editable="false" disable="true"/>
     </GridPane>
 
     <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10;">
-        <Button text="Save" style="-fx-font-weight: bold;"/>
-        <Button text="Cancel"/>
+        <Button fx:id="editInfoButton" text="Edit Info" style="-fx-font-weight: bold;" onAction="#onEditInfoClick"/>
+        <Button fx:id="saveButton" text="Save" style="-fx-font-weight: bold;" onAction="#onSaveClick" disable="true"/>
+        <Button fx:id="cancelButton" text="Cancel" onAction="#onCancelClick" disable="true"/>
     </HBox>
 </VBox>

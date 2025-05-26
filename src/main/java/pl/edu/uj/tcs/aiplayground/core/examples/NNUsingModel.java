@@ -82,7 +82,6 @@ public class NNUsingModel {
                 }
             }
         }
-        net.save("model.json");
 
     }
 }

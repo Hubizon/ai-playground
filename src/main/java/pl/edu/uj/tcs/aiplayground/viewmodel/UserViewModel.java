@@ -7,10 +7,11 @@ import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.util.List;
@@ -77,5 +78,23 @@ public class UserViewModel {
             user.set(null);
         }
         return false;
+    }
+
+    public UserDto getUser() {
+        return user.get();
+    }
+
+    public boolean updateUser(UpdateUserForm updateUserForm) {
+        try {
+            userService.updateUser(user.get().userId(), updateUserForm);
+        } catch (UserModificationException e) {
+            statusMessage.set(e.getMessage());
+            return false;
+        } catch (DatabaseException e) {
+            logger.error("Failed to update user for updateUserForm={}, error={}", updateUserForm, e.getMessage(), e);
+            statusMessage.set("Internal Error");
+            return false;
+        }
+        return true;
     }
 }

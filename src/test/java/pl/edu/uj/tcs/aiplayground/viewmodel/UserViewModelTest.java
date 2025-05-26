@@ -3,9 +3,9 @@ package pl.edu.uj.tcs.aiplayground.viewmodel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
+import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
+import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
-import pl.edu.uj.tcs.aiplayground.form.LoginForm;
-import pl.edu.uj.tcs.aiplayground.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import java.time.LocalDate;

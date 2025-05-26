@@ -1,9 +1,10 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.repository.ITrainingRepository;
+import pl.edu.uj.tcs.aiplayground.service.repository.ITrainingRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +24,7 @@ public class TrainingService {
         }
     }
 
-    public void updateTrainingStatus(UUID trainingId, String status) throws DatabaseException {
+    public void updateTrainingStatus(UUID trainingId, StatusType status) throws DatabaseException {
         try {
             trainingRepository.updateTrainingStatus(trainingId, status);
         } catch (Exception e) {
@@ -42,6 +43,22 @@ public class TrainingService {
     public List<TrainingMetricDto> getTrainingMetrics(UUID trainingId) throws DatabaseException {
         try {
             return trainingRepository.getTrainingMetrics(trainingId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public String getDatasetPathByName(String dbName) throws DatabaseException {
+        try {
+            return trainingRepository.getDatasetPathByName(dbName);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public void shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
+        try {
+            trainingRepository.shareTraining(trainingId, accuracy, loss);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
