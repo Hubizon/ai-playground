@@ -176,12 +176,6 @@ public class MainViewModel {
         return null;
     }
 
-    public Integer getModelVersionNumber() {
-        if (isModelLoaded.get())
-            return model.versionNumber();
-        return null;
-    }
-
     public void setPreviousVersion() {
         if (!isPreviousVersion.get())
             return;
@@ -228,7 +222,6 @@ public class MainViewModel {
             logger.error("Failed to get the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
-            this.model = null;
         }
         setupModel();
     }
@@ -246,12 +239,10 @@ public class MainViewModel {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Illegal model name: " + e.getMessage(), false));
-            this.model = null;
         } catch (DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
-            this.model = null;
         }
         setupModel();
         updateUserModelNames();

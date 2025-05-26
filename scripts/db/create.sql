@@ -4,8 +4,6 @@ DROP TABLE IF EXISTS training_metrics CASCADE;
 DROP TABLE IF EXISTS trainings CASCADE;
 DROP TABLE IF EXISTS token_history CASCADE;
 DROP TABLE IF EXISTS model_versions CASCADE;
-DROP TABLE IF EXISTS currencies CASCADE;
-DROP TABLE IF EXISTS custom_event_prices;
 DROP TABLE IF EXISTS models CASCADE;
 DROP TABLE IF EXISTS user_roles CASCADE;
 DROP TABLE IF EXISTS datasets CASCADE;
@@ -241,6 +239,7 @@ VALUES
        ('Canada'),
        ('Australia'),
        ('Japan'),
+       ('China'),
        ('India'),
        ('Brazil'),
        ('Mexico'),
