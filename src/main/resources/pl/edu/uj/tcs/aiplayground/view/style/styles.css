@@ -201,7 +201,7 @@
 }
 
 .custom-list-view .list-cell:filled:selected {
-    -fx-background-color: #3C3C3C;
+    -fx-background-color: #3C3C3C; /*it blends in, but at least looks clean*/
     -fx-text-fill: white;
 }
 
