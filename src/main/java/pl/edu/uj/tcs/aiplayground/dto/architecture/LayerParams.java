@@ -39,11 +39,12 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
 
     default LayerParams updated(String name, Object value) {
         Class<?> rc = this.getClass();
+        List<String> names = getParamNames();
 
         RecordComponent[] comps = rc.getRecordComponents();
         int idx = -1;
         for (int i = 0; i < comps.length; i++) {
-            if (getParamNames().get(i).equals(name))
+            if (names.get(i).equals(name))
                 idx = i;
         }
 
@@ -51,14 +52,9 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
             Object[] args = new Object[comps.length];
             for (int i = 0; i < comps.length; i++)
                 args[i] = comps[i].getAccessor().invoke(this);
-
             args[idx] = value;
 
-            Constructor<?> ctor = rc.getDeclaredConstructor(
-                    Arrays.stream(comps)
-                            .map(RecordComponent::getType)
-                            .toArray(Class[]::new)
-            );
+            Constructor<?> ctor = rc.getDeclaredConstructor(getParamTypes().toArray(new Class<?>[0]));
             return (LayerParams) ctor.newInstance(args);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(); // TODO
@@ -80,7 +76,6 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
     default LayerParams loadFromJson(JSONObject json) {
         Class<?> rc = this.getClass();
         List<String> names = getParamNames();
-        List<Class<?>> types = getParamTypes();
         int size = names.size();
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
@@ -88,7 +83,7 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
         }
 
         try {
-            Constructor<?> ctor = rc.getDeclaredConstructor(types.toArray(new Class<?>[0]));
+            Constructor<?> ctor = rc.getDeclaredConstructor(getParamTypes().toArray(new Class<?>[0]));
             return (LayerParams) ctor.newInstance(args);
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
                  IllegalAccessException e) {

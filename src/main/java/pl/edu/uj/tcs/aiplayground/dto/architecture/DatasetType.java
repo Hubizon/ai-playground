@@ -8,7 +8,7 @@ import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 
 public enum DatasetType {
     IRIS("Iris", "Iris dataset"),
-    MOONS("Moon", "Moons dataset"),
+    MOONS("Moons", "Moons dataset"),
     BLOBS("Blobs", "Blobs dataset"),
     CIRCLES("Circles", "Circles dataset"),
     MNIST("MNIST", "MNIST dataset");

@@ -17,11 +17,18 @@ DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
+CREATE TABLE currencies
+(
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    conversion_rate double precision --ile potrzebujemy, żeby kupić jednego dolara
+);
 
 CREATE TABLE countries
 (
     id   SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    name VARCHAR(100) NOT NULL,
+    currency INT REFERENCES currencies DEFAULT 1
 );
 
 CREATE TABLE categories
@@ -33,20 +40,24 @@ CREATE TABLE categories
 CREATE TABLE optimizers
 (
     id   SERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    price double precision
 );
 
 CREATE TABLE loss_functions
 (
     id   SERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    price double precision
 );
 
 CREATE TABLE events
 (
     id        SERIAL PRIMARY KEY,
     name      VARCHAR(50) NOT NULL,
-    is_income BOOLEAN     NOT NULL
+    base_price INTEGER,
+    training_related boolean NOT NULL,
+    model_related boolean NOT NULL
 );
 
 CREATE TABLE statuses
@@ -144,19 +155,12 @@ CREATE TABLE datasets
     name        VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
     category_id INT                 NOT NULL REFERENCES categories (id),
-    created_at  TIMESTAMPTZ      DEFAULT now()
+    created_at  TIMESTAMPTZ      DEFAULT now(),
+    price double precision DEFAULT 1
+
 );
 
-CREATE TABLE token_history
-(
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES users (id),
-    amount      INT  NOT NULL,
-    event_type  INT  NOT NULL REFERENCES events (id),
-    description TEXT,
-    timestamp   TIMESTAMPTZ      DEFAULT now(),
-    CHECK (amount != 0)
-);
+
 
 CREATE TABLE trainings
 (
@@ -166,6 +170,7 @@ CREATE TABLE trainings
     learning_rate    REAL                           NOT NULL,
     optimizer        INT                            NOT NULL REFERENCES optimizers (id),
     loss_function    INT                            NOT NULL REFERENCES loss_functions (id),
+    epochs           INT NOT NULL,
     status           INT                            NOT NULL REFERENCES statuses (id),
     started_at       TIMESTAMPTZ      DEFAULT now() NOT NULL,
     finished_at      TIMESTAMPTZ,
@@ -185,6 +190,19 @@ CREATE TABLE training_metrics
     CHECK (accuracy >= 0.0 AND accuracy <= 1.0)
 );
 
+CREATE TABLE token_history
+(
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES users (id),
+    amount      INT  NOT NULL,
+    event_type  INT  NOT NULL REFERENCES events (id),
+    description TEXT,
+    timestamp   TIMESTAMPTZ      DEFAULT now(),
+    training_id UUID REFERENCES trainings,
+    model_id UUID REFERENCES models
+        CHECK (amount != 0)
+);
+
 CREATE TABLE public_results
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -195,12 +213,29 @@ CREATE TABLE public_results
     CHECK (accuracy >= 0.0 AND accuracy <= 1.0)
 );
 
+CREATE TABLE custom_event_prices
+(
+  event_id INTEGER REFERENCES events,
+  role_id INTEGER REFERENCES roles,
+  price double precision
+);
+
+INSERT INTO currencies (name,conversion_rate)
+VALUES ('dolar',1),
+    ('złoty',4),
+    ('euro', 0.9),
+    ('funt', 0.8),
+    ('Juan', 8);
+
+INSERT INTO countries (name, currency)
+VALUES ('Poland',2),
+       ('Germany',3),
+       ('USA',1),
+       ('United Kingdom',4),
+       ('China',5),
+       ('France',3);
 INSERT INTO countries (name)
-VALUES ('Poland'),
-       ('Germany'),
-       ('USA'),
-       ('United Kingdom'),
-       ('France'),
+VALUES
        ('Canada'),
        ('Australia'),
        ('Japan'),
@@ -230,31 +265,31 @@ VALUES ('Image Recognition'),
        ('Reinforcement Learning'),
        ('Generative Models');
 
-INSERT INTO optimizers (name)
-VALUES ('Adam'),
-       ('SGD'),
-       ('RMSprop'),
-       ('AdaDelta'),
-       ('AdaGrad');
+INSERT INTO optimizers (name,price)
+VALUES ('Adam',1.5),
+       ('SGD',1),
+       ('RMSprop',1.2),
+       ('AdaDelta',1.2),
+       ('AdaGrad',1.2);
 
-INSERT INTO loss_functions (name)
-VALUES ('Mean Squared Error'),
-       ('Harmonic Loss'),
-       ('Binary Cross-Entropy'),
-       ('Cross-Entropy');
+INSERT INTO loss_functions (name,price)
+VALUES ('Mean Squared Error',1),
+       ('Harmonic Loss',1.05),
+       ('Binary Cross-Entropy',1.1),
+       ('Cross-Entropy',1.2);
 
-INSERT INTO events (name, is_income)
-VALUES ('3rd Place Global', TRUE),
-       ('3rd Place Country', TRUE),
-       ('2nd Place Global', TRUE),
-       ('2nd Place Country', TRUE),
-       ('1st Place Global', TRUE),
-       ('1st Place Country', TRUE),
-       ('Model Creation', FALSE),
-       ('Saving New Model Version', FALSE),
-       ('Model Training', FALSE),
-       ('Model Stopping', FALSE),
-       ('Application Login', FALSE);
+INSERT INTO events (name, base_price,training_related,model_related)
+VALUES ('3rd Place Global', 100,TRUE, FALSE),
+       ('3rd Place Country', 50,TRUE, FALSE),
+       ('2nd Place Global', 200,TRUE, FALSE),
+       ('2nd Place Country', 100,TRUE, FALSE),
+       ('1st Place Global', 500,TRUE,FALSE),
+       ('1st Place Country', 250,TRUE, FALSE),
+       ('Model Creation', -50,FALSE, TRUE),
+       ('Saving New Model Version', -20,FALSE, TRUE),
+       ('Model Training', -10,TRUE,FALSE),
+       ('Model Stopping', -5,TRUE,FALSE),
+       ('Application Login', -1,FALSE, FALSE);
 
 INSERT INTO statuses (name, description)
 VALUES ('Queue', 'The training is waiting to start.'),
@@ -272,30 +307,53 @@ WITH inserted_users AS (
     INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
                        birth_date) VALUES ('admin', 'admin', 'admin', 'admin@admin.com',
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
+                                           '2000-01-01'),
+                                          ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
+                                           '1960-01-01'),
+                                          ('hubizon', 'Hubert', 'Jastrzębski', 'hubizon@mail.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
+                                           '2004-02-29'),
+                                          ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
                                            '2000-01-01')
         RETURNING id, username)
 
 INSERT
 INTO user_roles (user_id, role_id, is_active)
 VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
-        (SELECT id FROM roles WHERE name = 'Administrator'), TRUE);
+       (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
+       (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
+       (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'Igas'),
+        (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
 
-INSERT INTO datasets (name, description, category_id)
+INSERT INTO custom_event_prices (event_id, role_id, price)
+VALUES ((SELECT id FROM events WHERE name = 'Application Login'),
+        (SELECT id FROM roles WHERE name = 'Administrator'),
+        0),
+       ((SELECT id FROM events WHERE name = 'Model Training'),
+       (SELECT id FROM roles WHERE name = 'Premium User'),
+    -5);
+
+INSERT INTO datasets (name, description, category_id, price)
 VALUES ('Iris',
         'A classic dataset for classification, containing 3 classes of 50 instances each, where each class refers to a type of iris plant.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data')),
+        (SELECT id FROM categories WHERE name = 'Tabular Data'),1),
        ('Moons',
         'A synthetic dataset for binary classification, shaped like two interleaving half-circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data')),
+        (SELECT id FROM categories WHERE name = 'Tabular Data'),1),
        ('Blobs',
         'A synthetic dataset for clustering, consisting of isotropic Gaussian blobs.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data')),
+        (SELECT id FROM categories WHERE name = 'Tabular Data'),1),
        ('Circles',
         'A synthetic dataset for binary classification, shaped like two concentric circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data')),
+        (SELECT id FROM categories WHERE name = 'Tabular Data'),1),
        ('MNIST',
         'A large database of handwritten digits commonly used for training image processing systems.',
-        (SELECT id FROM categories WHERE name = 'Image Recognition'));
+        (SELECT id FROM categories WHERE name = 'Image Recognition'),10);
 
 ALTER TABLE datasets
     ADD COLUMN path TEXT;
@@ -311,5 +369,36 @@ begin
     return version_number + 1;
 end;
 $$;
+
+CREATE OR REPLACE FUNCTION give_basic_role() RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO user_roles VALUES (NEW.id, (SELECT id FROM roles WHERE name = 'Basic User'), now(), True);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER give_basic_role AFTER INSERT ON users
+    FOR EACH ROW EXECUTE PROCEDURE give_basic_role();
+
+CREATE OR REPLACE FUNCTION calculate_training_cost(rec RECORD)
+    RETURNS double precision AS $$
+DECLARE
+    loss_function_cost double precision;
+    optimizer_cost double precision;
+    dataset_cost double precision;
+    model_cost INTEGER;
+BEGIN
+    SELECT price INTO loss_function_cost FROM loss_functions WHERE id = rec.loss_function;
+    SELECT price INTO optimizer_cost FROM optimizers WHERE id = rec.optimizer;
+    SELECT price INTO dataset_cost FROM datasets WHERE id = rec.dataset_id;
+    SELECT count(*)
+    INTO model_cost
+    FROM model_versions m,
+        jsonb_each(m.architecture)
+    WHERE m.id = rec.model_version_id;
+    RETURN sqrt(loss_function_cost*optimizer_cost*dataset_cost*rec.epochs*model_cost);
+END;
+$$ LANGUAGE plpgsql;
 
 COMMIT;
