@@ -492,6 +492,7 @@ event_price := calculate_event_price(NEW.user_id, model_creation_event_id);
 
 IF user_balance < event_price THEN
     RAISE EXCEPTION 'Insufficient tokens to create a model. Current balance: %, required: %', user_balance, event_price;
+    RETURN NULL; --TODO: print exception message as error in MainView
 END IF;
 
 RETURN NEW;
@@ -558,6 +559,7 @@ user_balance := get_user_token_balance(model_user_id);
     IF user_balance < training_cost THEN
         RAISE EXCEPTION 'Insufficient tokens to start training. Current balance: %, required: %',
                         user_balance, training_cost;
+       RETURN NULL; --TODO: print exception message as error in MainView
 END IF;
 
 RETURN NEW;
