@@ -401,8 +401,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COMMIT;
-
+--COMMIT;
 
 CREATE OR REPLACE FUNCTION get_user_token_balance(user_id_param UUID)
 RETURNS INTEGER AS $$
@@ -741,3 +740,5 @@ CREATE OR REPLACE TRIGGER trigger_set_default_epochs
     BEFORE INSERT ON trainings
     FOR EACH ROW
     EXECUTE FUNCTION set_default_epochs();
+
+COMMIT;
