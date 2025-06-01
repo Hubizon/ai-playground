@@ -517,7 +517,7 @@ v_price := calculate_event_price(NEW.user_id, v_event_id);
 INSERT INTO token_history (user_id, amount, event_type, description, model_id)
 VALUES (
            NEW.user_id,
-           v_price,
+           -v_price,
            v_event_id,
            'Model Creation: ' || NEW.name,
            NEW.id
@@ -601,7 +601,7 @@ WHERE mv.id = NEW.model_version_id;
 training_cost := calculate_training_cost(NEW);
 event_price := calculate_event_price(model_user_id, training_event_id);
 
-total_cost := CEIL(training_cost + event_price);
+total_cost := CEIL(training_cost - event_price); --event price < 0 thats why "-"
 
 INSERT INTO token_history (
     user_id,
@@ -612,7 +612,7 @@ INSERT INTO token_history (
     model_id
 ) VALUES (
              model_user_id,
-             total_cost,
+             -total_cost,
              training_event_id,
              'Model Training: ' || model_name || ' version #' || version_number,
              NEW.id,
