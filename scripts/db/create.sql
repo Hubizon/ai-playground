@@ -626,7 +626,7 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     EXECUTE FUNCTION update_token_history_after_public_results();
 
 
--- :TODO remove trigger_set_default_epochs trigger
+-- :TODO remove trigger_set_default_epochs trigger and set trainings.epochs to IS NOT NULL
 --just for now, before the null problem in training.epochs is fixed
 CREATE OR REPLACE FUNCTION set_default_epochs()
 RETURNS TRIGGER AS $$
