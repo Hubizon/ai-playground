@@ -494,7 +494,7 @@ event_price := calculate_event_price(NEW.user_id, model_creation_event_id);
 
     user_balance := get_user_token_balance(NEW.user_id);
 
-IF user_balance < event_price THEN
+IF user_balance < -event_price THEN -- "-" because model creation price is negative
     RAISE EXCEPTION 'Insufficient tokens to create a model. Current balance: %, required: %', user_balance, event_price;
     RETURN NULL; --TODO: print exception message as error in MainView
 END IF;
@@ -517,7 +517,7 @@ v_price := calculate_event_price(NEW.user_id, v_event_id);
 INSERT INTO token_history (user_id, amount, event_type, description, model_id)
 VALUES (
            NEW.user_id,
-           -v_price,
+           v_price,
            v_event_id,
            'Model Creation: ' || NEW.name,
            NEW.id
@@ -556,11 +556,11 @@ WHERE mv.id = NEW.model_version_id;
 
 event_price := calculate_event_price(model_user_id,training_event_id);
 
-training_cost := calculate_training_cost(NEW) + event_price;
+training_cost := -calculate_training_cost(NEW) + event_price;
 
 user_balance := get_user_token_balance(model_user_id);
 
-    IF user_balance < training_cost THEN
+    IF user_balance < -training_cost THEN
         RAISE EXCEPTION 'Insufficient tokens to start training. Current balance: %, required: %',
                         user_balance, training_cost;
        RETURN NULL; --TODO: print exception message as error in MainView
@@ -598,10 +598,10 @@ FROM model_versions mv
          JOIN models m ON mv.model_id = m.id
 WHERE mv.id = NEW.model_version_id;
 
-training_cost := calculate_training_cost(NEW);
+training_cost := -calculate_training_cost(NEW);
 event_price := calculate_event_price(model_user_id, training_event_id);
 
-total_cost := CEIL(training_cost - event_price); --event price < 0 thats why "-"
+total_cost := CEIL(training_cost + event_price);
 
 INSERT INTO token_history (
     user_id,
@@ -612,7 +612,7 @@ INSERT INTO token_history (
     model_id
 ) VALUES (
              model_user_id,
-             -total_cost,
+             total_cost,
              training_event_id,
              'Model Training: ' || model_name || ' version #' || version_number,
              NEW.id,
