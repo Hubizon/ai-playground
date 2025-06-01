@@ -97,7 +97,7 @@ public class MainViewController {
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
@@ -443,6 +443,25 @@ public class MainViewController {
         result.ifPresent(modelName -> {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
         });
+    }
+
+    @FXML
+    private void onBuyTokensClicked() {
+        try {
+            Stage stage = new Stage();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/TokenShopView.fxml"));
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm());
+            TokenShopController controller = loader.getController();
+            controller.initialize(factory);
+            controller.setStage(stage);
+
+            stage.setTitle("AI Playground - Buy Tokens");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initializeModelsList() {
