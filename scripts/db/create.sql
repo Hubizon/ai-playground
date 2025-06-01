@@ -170,7 +170,7 @@ CREATE TABLE trainings
     learning_rate    REAL                           NOT NULL,
     optimizer        INT                            NOT NULL REFERENCES optimizers (id),
     loss_function    INT                            NOT NULL REFERENCES loss_functions (id),
-    epochs           INT NOT NULL,
+    epochs           INT,
     status           INT                            NOT NULL REFERENCES statuses (id),
     started_at       TIMESTAMPTZ      DEFAULT now() NOT NULL,
     finished_at      TIMESTAMPTZ,
@@ -501,7 +501,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION update_token_history_after_model_creation()
+CREATE OR REPLACE FUNCTION update_token_history_afetr_model_creation()
 RETURNS TRIGGER AS $$
 
 DECLARE
@@ -515,7 +515,7 @@ VALUES (
            NEW.user_id,
            v_price,
            v_event_id,
-           'Model creation: ' || NEW.name,
+           'Model Creation: ' || NEW.name,
            NEW.id
        );
 RETURN NEW;
@@ -530,7 +530,104 @@ CREATE OR REPLACE TRIGGER enforce_min_tokens_for_model_creation
 CREATE OR REPLACE TRIGGER update_token_history_after_model_creation
     AFTER INSERT ON models
     FOR EACH ROW
-    EXECUTE FUNCTION update_token_history_after_model_creation();
+    EXECUTE FUNCTION update_token_history_afetr_model_creation();
+
+
+CREATE OR REPLACE FUNCTION check_user_tokens_before_training()
+RETURNS TRIGGER AS $$
+DECLARE
+    user_balance INTEGER;
+    training_event_id INTEGER;
+    training_cost DOUBLE PRECISION;
+    event_price DOUBLE PRECISION;
+    model_user_id UUID;
+BEGIN
+SELECT id INTO training_event_id FROM events WHERE name = 'Model Training';
+
+
+SELECT m.user_id INTO model_user_id
+FROM model_versions mv
+         JOIN models m ON mv.model_id = m.id
+WHERE mv.id = NEW.model_version_id;
+
+event_price := calculate_event_price(model_user_id,training_event_id);
+
+training_cost := calculate_training_cost(NEW) + event_price;
+
+user_balance := get_user_token_balance(model_user_id);
+
+    IF user_balance < training_cost THEN
+        RAISE EXCEPTION 'Insufficient tokens to start training. Current balance: %, required: %',
+                        user_balance, training_cost;
+END IF;
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_token_history_after_training()
+RETURNS TRIGGER AS $$
+DECLARE
+    training_event_id INTEGER;
+    training_cost DOUBLE PRECISION;
+    event_price DOUBLE PRECISION;
+    total_cost INTEGER;
+    v_model_id UUID;
+    model_user_id UUID;
+    model_name TEXT;
+    version_number TEXT;
+BEGIN
+SELECT id INTO training_event_id FROM events WHERE name = 'Model Training';
+
+SELECT
+    m.id,
+    m.user_id,
+    m.name,
+    mv.version_number
+INTO
+    v_model_id,
+    model_user_id,
+    model_name,
+    version_number
+FROM model_versions mv
+         JOIN models m ON mv.model_id = m.id
+WHERE mv.id = NEW.model_version_id;
+
+training_cost := calculate_training_cost(NEW);
+event_price := calculate_event_price(model_user_id, training_event_id);
+
+total_cost := CEIL(training_cost + event_price);
+
+INSERT INTO token_history (
+    user_id,
+    amount,
+    event_type,
+    description,
+    training_id,
+    model_id
+) VALUES (
+             model_user_id,
+             total_cost,
+             training_event_id,
+             'Model Training: ' || model_name || ' version #' || version_number,
+             NEW.id,
+             v_model_id
+         );
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER enforce_min_tokens_for_training
+    BEFORE INSERT ON trainings
+    FOR EACH ROW
+    EXECUTE FUNCTION check_user_tokens_before_training();
+
+CREATE OR REPLACE TRIGGER update_token_history_after_starting_model_training
+    AFTER INSERT ON trainings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_token_history_after_training();
+
 
 CREATE OR REPLACE FUNCTION update_token_history_after_public_results()
 RETURNS TRIGGER AS $$
@@ -626,7 +723,7 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     EXECUTE FUNCTION update_token_history_after_public_results();
 
 
--- :TODO remove trigger_set_default_epochs trigger and set trainings.epochs to IS NOT NULL
+-- :TODO fix trainings.epochs so that trigger_set_default_epochs can be removed and set trainings.epochs back to NOT NULL
 --just for now, before the null problem in training.epochs is fixed
 CREATE OR REPLACE FUNCTION set_default_epochs()
 RETURNS TRIGGER AS $$
