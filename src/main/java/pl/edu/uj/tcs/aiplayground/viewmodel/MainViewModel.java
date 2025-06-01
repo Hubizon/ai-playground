@@ -14,10 +14,7 @@ import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
 import pl.edu.uj.tcs.aiplayground.dto.validation.TrainingValidation;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
-import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
-import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
+import pl.edu.uj.tcs.aiplayground.exception.*;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 
@@ -239,7 +236,11 @@ public class MainViewModel {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Illegal model name: " + e.getMessage(), false));
-        } catch (DatabaseException e) {
+        } catch(InsufficientTokensException e) {
+            logger.error("Failed to create the model for user={}, modelName={}, error={}",
+                    user, modelName, e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Insufficient tokens: " + e.getMessage(), false));
+        } catch(DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
@@ -302,7 +303,14 @@ public class MainViewModel {
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
                 );
-            } catch (DatabaseException e) {
+            } catch(InsufficientTokensException e) {
+                if (trainingHandler != null)
+                    trainingHandler.updateTrainingStatus(StatusType.ERROR);
+                logger.error("Insufficient Tokens", e);
+                Platform.runLater(() ->
+                        alertEvent.set(AlertEvent.createAlertEvent("Insufficient Tokens: " + e.getMessage(), false))
+                );
+            } catch(DatabaseException e) {
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Internal error", e);

@@ -6,6 +6,8 @@ import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
@@ -22,22 +24,24 @@ public class TrainingHandler {
 
     public TrainingHandler(TrainingService trainingService,
                            TrainingDto trainingDto,
-                           Consumer<StatusType> statusListener) {
+                           Consumer<StatusType> statusListener) throws InsufficientTokensException {
         this.trainingService = trainingService;
         this.statusListener = statusListener;
 
         try {
             trainingId = trainingService.addNewTraining(trainingDto);
+        } catch (InsufficientTokensException e) {
+            throw e;
         } catch (DatabaseException e) {
             logger.error("Failed to create training for core={}, error={}", trainingDto, e.getMessage(), e);
         }
     }
 
-    public TrainingHandler(TrainingDto trainingDto) {
+    public TrainingHandler(TrainingDto trainingDto) throws InsufficientTokensException {
         this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, null);
     }
 
-    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) {
+    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) throws InsufficientTokensException {
         this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, statusListener);
     }
 

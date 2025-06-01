@@ -1,9 +1,13 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import org.jooq.exception.DataAccessException;
+import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import pl.edu.uj.tcs.aiplayground.service.repository.ITrainingRepository;
 
 import java.util.List;
@@ -16,10 +20,18 @@ public class TrainingService {
         this.trainingRepository = trainingRepository;
     }
 
-    public UUID addNewTraining(TrainingDto trainingDto) throws DatabaseException {
+    public UUID addNewTraining(TrainingDto trainingDto) throws DatabaseException, InsufficientTokensException {
         try {
             return trainingRepository.insertTraining(trainingDto);
-        } catch (Exception e) {
+        } catch(DataAccessException e) {
+            if (e.getCause() instanceof org.postgresql.util.PSQLException) {
+                PSQLException ex = (PSQLException) e.getCause();
+                if ("P0002".equals(ex.getSQLState())) {
+                    throw new InsufficientTokensException(ex.getServerErrorMessage().getMessage());
+                }
+            }
+            throw e;
+        } catch(Exception e) {
             throw new DatabaseException(e);
         }
     }

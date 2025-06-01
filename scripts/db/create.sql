@@ -401,7 +401,7 @@ BEGIN
     FROM model_versions m,
         jsonb_each(m.architecture)
     WHERE m.id = rec.model_version_id;
-    RETURN sqrt(loss_function_cost * optimizer_cost * dataset_cost * rec.max_epochs * model_cost);
+    RETURN sqrt(100 * loss_function_cost * optimizer_cost * dataset_cost * rec.max_epochs * model_cost);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -494,9 +494,9 @@ event_price := calculate_event_price(NEW.user_id, model_creation_event_id);
 
     user_balance := get_user_token_balance(NEW.user_id);
 
-IF user_balance < -event_price THEN -- "-" because model creation price is negative
-    RAISE EXCEPTION 'Insufficient tokens to create a model. Current balance: %, required: %', user_balance, event_price;
-    RETURN NULL; --TODO: print exception message as error in MainView
+IF user_balance < -event_price THEN --event_price<0, that is why "-"
+    RAISE EXCEPTION 'Insufficient tokens to create a model. Current balance: %, required: %', user_balance, event_price
+        USING ERRCODE = 'P0001';
 END IF;
 
 RETURN NEW;
@@ -560,10 +560,10 @@ training_cost := -calculate_training_cost(NEW) + event_price;
 
 user_balance := get_user_token_balance(model_user_id);
 
-    IF user_balance < -training_cost THEN
+    IF user_balance < -training_cost THEN --training_cost<0, that is why "-"
         RAISE EXCEPTION 'Insufficient tokens to start training. Current balance: %, required: %',
-                        user_balance, training_cost;
-       RETURN NULL; --TODO: print exception message as error in MainView
+                        user_balance, training_cost
+            USING ERRCODE = 'P0002';
 END IF;
 
 RETURN NEW;
