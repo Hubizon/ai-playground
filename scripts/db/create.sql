@@ -15,6 +15,8 @@ DROP TABLE IF EXISTS loss_functions CASCADE;
 DROP TABLE IF EXISTS optimizers CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
+DROP TABLE IF EXISTS currencies CASCADE;
+DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
 CREATE TABLE currencies
