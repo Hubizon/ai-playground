@@ -1,11 +1,6 @@
-/* --- General Styles --- */
 .root {
     -fx-font-family: "Segoe UI", sans-serif;
-    -fx-background-color: #2E2E2E; /* Overall application background */
-    -fx-text-fill: white;
-}
-
-.label {
+    -fx-background-color: #2E2E2E;
     -fx-text-fill: white;
 }
 
@@ -31,6 +26,10 @@
     -fx-padding: 5;
 }
 
+.label {
+    -fx-text-fill: white;
+}
+
 .vbox {
     -fx-spacing: 10;
 }
@@ -45,7 +44,6 @@
     -fx-background-color: #3C3C3C;
 }
 
-/* --- ComboBox Styles --- */
 .combo-box {
     -fx-background-color: #3C3C3C;
     -fx-mark-color: white;
@@ -110,7 +108,6 @@
     -fx-opacity: 0.0;
 }
 
-/* --- DatePicker Styles --- */
 .date-picker:disabled {
     -fx-opacity: 1.0;
     -fx-background-color: transparent;
@@ -129,7 +126,6 @@
     -fx-background-color: transparent;
 }
 
-/* --- NumberField Styles --- */
 .number-field {
     -fx-background-color: #444444;
     -fx-text-fill: white;
@@ -140,39 +136,30 @@
     -fx-alignment: CENTER_RIGHT;
 }
 
-/* --- TabPane Styles (Crucial for the white areas) --- */
-.tab-pane {
-    -fx-background-color: #2E2E2E; /* Background of the whole TabPane */
+.tab-label {
+    -fx-text-fill: white;
 }
 
-.tab-pane .tab-header-area {
-    -fx-background-color: #2E2E2E; /* Background of the header bar itself */
-}
-
-.tab-pane .tab-header-area .tab-header-background {
-    -fx-background-color: #2E2E2E; /* Ensure this is also dark */
-}
-
-.tab-pane .tab {
-    -fx-background-color: #3C3C3C; /* Default tab background (unselected) */
+.tab {
+    -fx-background-color: #3C3C3C;
     -fx-background-insets: 0 1 0 1, 0, 0;
 }
 
-.tab-pane .tab:selected {
-    -fx-background-color: #555; /* Selected tab background */
+.tab:selected {
+    -fx-background-color: #555;
 }
 
-.tab-pane .tab-content-area {
-    -fx-background-color: #3C3C3C; /* The content area behind the VBox */
+.tab-header-background {
+    -fx-background-color: #2E2E2E;
 }
 
-.tab-label {
-    -fx-text-fill: white; /* Text color for tab labels */
+.tab-content-area {
+    -fx-background-color: #3C3C3C;
 }
 
-/* --- Dialog Pane Styles --- */
+
 .dialog-pane {
-    -fx-background-color: #2E2E2E; /* Overall dialog background */
+    -fx-background-color: #3C3C3C;
     -fx-border-color: #555;
     -fx-border-width: 1px;
 }
@@ -194,7 +181,8 @@
     -fx-background-color: #4C4C4C;
 }
 
-/* --- Model List Styles --- */
+
+/*model list*/
 .custom-list-view {
     -fx-background-color: #3C3C3C;
     -fx-text-fill: white;
@@ -228,7 +216,7 @@
     -fx-pref-height: 0;
 }
 
-/* --- ScrollPane Styles --- */
+
 .scroll-pane {
     -fx-hbar-policy: never;
     -fx-vbar-policy: never; /*hides scrollbar*/
@@ -248,64 +236,222 @@
 .scroll-pane .viewport {
     -fx-background-color: #3C3C3C;
 }
+.token-shop-root {
+    -fx-background-color: #2E2E2E;
+}
 
-/* --- Token Shop Specific Styles --- */
-#price100TokensLabel,
-#price250TokensLabel,
-#price500TokensLabel,
-#price1000TokensLabel,
-#price2500TokensLabel,
-#price5000TokensLabel,
-#price10000TokensLabel,
-#price25000TokensLabel,
-#price50000TokensLabel,
-#currentTokensLabel {
-    -fx-text-fill: #90CAF9; /* A light blue, visually distinct but fits the dark theme */
+
+/* Specific styles for Token Shop labels to ensure white text */
+.token-shop-root .label {
+    -fx-text-fill: white;
+}
+
+/* Specific styles for Token Shop buttons if needed (otherwise they'll inherit .button) */
+.token-shop-root .button {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10;
+    -fx-cursor: hand;
+}
+.token-shop-root .button:hover {
+    -fx-background-color: #4C4C4C;
+}
+
+
+/* Main title for the Token Shop */
+.title-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 10px 0;
+}
+
+/* Label for "Current Tokens:" */
+.label-bold {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* Value label for current tokens (the number) */
+.value-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #90CAF9; /* Light blue for emphasis */
+}
+
+/* --- ComboBox Styles within Token Shop --- */
+.token-shop-root .combo-box {
+    -fx-background-color: #3C3C3C;
+    -fx-mark-color: white;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-border-width: 1;
+}
+
+.token-shop-root .combo-box .list-cell {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+    -fx-padding: 3 5;
+}
+
+.token-shop-root .combo-box .list-view {
+    -fx-background-color: #3C3C3C;
+    -fx-background-insets: 0;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 5, 0, 0, 0);
+}
+
+.token-shop-root .combo-box .list-view .list-cell:hover {
+    -fx-background-color: #555;
+}
+
+.token-shop-root .combo-box .list-view .list-cell:selected {
+    -fx-background-color: #666;
+}
+
+.token-shop-root .combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.token-shop-root .combo-box .arrow {
+    -fx-background-color: white;
+}
+
+.token-shop-root .combo-box:focused {
+    -fx-border-color: #777;
+}
+
+/* --- TabPane Styles within Token Shop --- */
+.token-shop-root .tab-pane {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.token-shop-root .tab-pane .tab-header-area {
+    -fx-background-color: #2E2E2E;
+    -fx-padding: 0;
+}
+
+.token-shop-root .tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #2E2E2E;
+}
+
+.token-shop-root .tab-pane .tab {
+    -fx-background-color: #3C3C3C;
+    -fx-background-insets: 0 1 0 1;
+    -fx-border-color: #2E2E2E;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 8 15;
+}
+
+.token-shop-root .tab-pane .tab:selected {
+    -fx-background-color: #555;
+    -fx-border-color: #90CAF9;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.token-shop-root .tab-pane .tab-content-area {
+    -fx-background-color: #3C3C3C;
+    -fx-border-color: #555;
+    -fx-border-width: 1px;
+    -fx-border-insets: 0;
+    -fx-padding: 0;
+}
+
+/* Text color for tab labels */
+.token-shop-root .tab-pane .tab-label {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
 
-.vbox-tab-content {
-    -fx-background-color: #3C3C3C; /* Set background directly */
-    -fx-padding: 20;
-    -fx-spacing: 15;
+.token-shop-root .tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
 }
 
-.buy-now-button {
-    -fx-background-color: #007bff;
+/* Labels for the amount (e.g., "Buy 100 Tokens") inside tabs */
+.amount-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* Labels for the price inside tabs */
+.price-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #90CAF9; /* Consistent light blue for prices */
+    -fx-padding: 10px 0;
+}
+
+/* Buy button style */
+.buy-button {
+    -fx-background-color: #28a745; /* Green */
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 30px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.buy-button:hover {
+    -fx-background-color: #218838; /* Darker green on hover */
+}
+
+/* Info button style */
+.info-button {
+    -fx-background-color: #6c757d; /* Grey */
     -fx-text-fill: white;
     -fx-font-size: 16px;
-    -fx-padding: 10 20;
-    -fx-background-radius: 3;
-    -fx-border-color: #007bff;
-    -fx-border-radius: 3;
-}
-
-.buy-now-button:hover {
-    -fx-background-color: #0056b3;
-    -fx-border-color: #0056b3;
-}
-
-.info-button {
-    -fx-background-color: #6c757d;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-padding: 8 15;
-    -fx-background-radius: 3;
-    -fx-border-color: #6c757d;
-    -fx-border-radius: 3;
+    -fx-padding: 8px 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
 }
 
 .info-button:hover {
-    -fx-background-color: #5a6268;
-    -fx-border-color: #5a6268;
+    -fx-background-color: #5a6268; /* Darker grey on hover */
 }
 
-/* New: Style for the main content VBox when used inside a dialog */
-.dialog-pane-content {
-    -fx-background-color: #2E2E2E; /* Use the main root background color */
+/* Styles for VBox inside tabs (where amount, price, button are) */
+.token-tab-content {
+    -fx-background-color: #3C3C3C; /* Explicit background for content area */
+    -fx-padding: 20px;
+    -fx-alignment: center; /* Center content within the tab */
 }
 
-/* NEW: Force tab text color to white if .tab-label isn't enough */
-.tab .tab-label {
+/* --- Dialog Pane Styles specific to Token Shop alerts --- */
+/* (This applies to the dialogs launched from TokenShopController) */
+.dialog-pane {
+    -fx-background-color: #2E2E2E; /* Overall dialog background */
+    -fx-border-color: #555;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: white; /* Ensure labels inside dialog are white */
+}
+
+.dialog-pane .button {
+    -fx-background-color: #3C3C3C;
     -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #4C4C4C;
 }

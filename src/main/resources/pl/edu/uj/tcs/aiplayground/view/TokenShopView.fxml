@@ -1,120 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="pl.edu.uj.tcs.aiplayground.view.TokenShopController"
-      styleClass="dialog-pane-content"> <padding>
+<VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.uj.tcs.aiplayground.view.TokenShopController"
+      styleClass="token-shop-root"> <padding>
     <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
 </padding>
 
-    <Label text="Buy Tokens">
-        <font>
-            <Font size="24.0" />
-        </font>
-    </Label>
+    <Label fx:id="tokenShopTitle" text="Token Shop" styleClass="title-label" />
 
-    <HBox alignment="CENTER_RIGHT" spacing="10.0">
-        <Label text="Your current tokens:"/>
-        <Label fx:id="currentTokensLabel" text="0"/>
-        <Region HBox.hgrow="ALWAYS" />
-        <Label text="Currency:"/>
-        <ComboBox fx:id="currencyComboBox" promptText="Select Currency"/>
+    <HBox alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
+        <Label text="Current Tokens:" styleClass="label-bold" />
+        <Label fx:id="currentTokensLabel" text="0" styleClass="value-label" HBox.hgrow="ALWAYS" />
+        <HBox fx:id="currencySelectorBox" alignment="CENTER_RIGHT" spacing="10.0">
+            <Label text="Currency:" />
+            <ComboBox fx:id="currencyComboBox" promptText="Select Currency" />
+        </HBox>
     </HBox>
 
-    <TabPane fx:id="tokenTabPane" tabClosingPolicy="UNAVAILABLE">
-        <Tab text="100 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 100 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price100TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy100Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="250 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 250 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price250TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy250Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="500 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 500 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price500TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy500Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="1000 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 1000 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price1000TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy1000Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="2500 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 2500 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price2500TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy2500Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="5000 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 5000 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price5000TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy5000Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="10000 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 10000 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price10000TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy10000Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="25000 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 25000 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price25000TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy25000Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
-        <Tab text="50000 Tokens">
-            <content>
-                <VBox alignment="CENTER" spacing="15.0" styleClass="vbox-tab-content">
-                    <Label text="Get 50000 AI Tokens" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Label fx:id="price50000TokensLabel" text="Price: N/A"/>
-                    <Button text="Buy Now" onAction="#handleBuy50000Tokens" styleClass="buy-now-button"/>
-                    <Button text="More Info" onAction="#handleInfo" styleClass="info-button"/>
-                </VBox>
-            </content>
-        </Tab>
+    <TabPane fx:id="tokenTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
     </TabPane>
+
+    <HBox alignment="CENTER" spacing="10.0">
+        <Button text="Info" onAction="#handleInfo" styleClass="info-button"/>
+    </HBox>
 </VBox>
