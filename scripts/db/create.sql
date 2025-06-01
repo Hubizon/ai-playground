@@ -402,3 +402,132 @@ END;
 $$ LANGUAGE plpgsql;
 
 COMMIT;
+
+
+CREATE OR REPLACE FUNCTION get_user_token_balance(user_id_param UUID)
+RETURNS INTEGER AS $$
+DECLARE
+initial_tokens INTEGER;
+    token_changes INTEGER;
+    current_balance INTEGER;
+BEGIN
+SELECT r.initial_tokens INTO initial_tokens
+FROM user_roles ur
+         JOIN roles r ON ur.role_id = r.id
+WHERE ur.user_id = user_id_param AND ur.is_active = TRUE
+ORDER BY ur.assigned_at DESC
+    LIMIT 1;
+
+IF initial_tokens IS NULL THEN
+        RETURN 0;
+END IF;
+
+SELECT COALESCE(SUM(th.amount), 0) INTO token_changes
+FROM token_history th
+WHERE th.user_id = user_id_param;
+
+current_balance := initial_tokens + token_changes;
+
+--should never occur
+IF current_balance < 0 THEN
+current_balance := 0;
+END IF;
+
+RETURN current_balance;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION calculate_event_price(
+    p_user_id UUID,
+    p_event_id INTEGER
+) RETURNS DOUBLE PRECISION AS $$
+DECLARE
+v_role_id INTEGER;
+    v_custom_price DOUBLE PRECISION;
+    v_base_price INTEGER;
+    v_final_price DOUBLE PRECISION;
+BEGIN
+
+SELECT ur.role_id INTO v_role_id
+FROM user_roles ur
+WHERE ur.user_id = p_user_id AND ur.is_active = TRUE
+ORDER BY ur.assigned_at DESC
+    LIMIT 1;
+
+IF v_role_id IS NULL THEN
+        RAISE EXCEPTION 'User % has no active role', p_user_id;
+END IF;
+
+ SELECT COALESCE(
+(SELECT cep.price
+FROM custom_event_prices cep
+WHERE cep.event_id = p_event_id AND cep.role_id = v_role_id),
+(SELECT e.base_price
+FROM events e
+WHERE e.id = p_event_id)
+) INTO v_final_price;
+
+IF v_final_price IS NULL THEN
+        RAISE EXCEPTION 'No price found for event %', p_event_id;
+END IF;
+
+RETURN v_final_price;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION check_user_tokens_before_model_creation()
+RETURNS TRIGGER AS $$
+DECLARE
+    user_balance INTEGER;
+    model_creation_event_id INTEGER;
+    event_price DOUBLE PRECISION;
+BEGIN
+SELECT id INTO model_creation_event_id FROM events WHERE name = 'Model Creation';
+event_price := calculate_event_price(NEW.user_id, model_creation_event_id);
+
+
+    user_balance := get_user_token_balance(NEW.user_id);
+
+IF user_balance < event_price THEN
+    RAISE EXCEPTION 'Insufficient tokens to create a model. Current balance: %, required: %', user_balance, event_price;
+END IF;
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION update_token_history_after_model_creation()
+RETURNS TRIGGER AS $$
+
+DECLARE
+v_event_id INTEGER;
+v_price DOUBLE PRECISION;
+BEGIN
+SELECT id INTO v_event_id FROM events WHERE name = 'Model Creation';
+v_price := calculate_event_price(NEW.user_id, v_event_id);
+INSERT INTO token_history (user_id, amount, event_type, description, model_id)
+VALUES (
+           NEW.user_id,
+           v_price,
+           v_event_id,
+           'Model creation: ' || NEW.name,
+           NEW.id
+       );
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER enforce_min_tokens_for_model_creation
+    BEFORE INSERT ON models
+    FOR EACH ROW
+    EXECUTE FUNCTION check_user_tokens_before_model_creation();
+
+CREATE OR REPLACE TRIGGER update_token_history_after_model_creation
+    AFTER INSERT ON models
+    FOR EACH ROW
+    EXECUTE FUNCTION update_token_history_after_model_creation();
