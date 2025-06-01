@@ -149,6 +149,10 @@
             <Label fx:id="epochField" text="0"
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="Share" onAction="#onShareButtonClicked"/>
+        </HBox>
+
 
         <VBox style="-fx-padding: 10 0 0 0;">
             <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"

@@ -206,7 +206,7 @@ CREATE TABLE token_history
 CREATE TABLE public_results
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID             NOT NULL REFERENCES trainings (id),
+    training_id UUID             NOT NULL REFERENCES trainings (id) UNIQUE,
     accuracy    DOUBLE PRECISION NOT NULL,
     loss        DOUBLE PRECISION NOT NULL,
     shared_at   TIMESTAMPTZ      DEFAULT now(),
@@ -531,3 +531,116 @@ CREATE OR REPLACE TRIGGER update_token_history_after_model_creation
     AFTER INSERT ON models
     FOR EACH ROW
     EXECUTE FUNCTION update_token_history_after_model_creation();
+
+CREATE OR REPLACE FUNCTION update_token_history_after_public_results()
+RETURNS TRIGGER AS $$
+DECLARE
+v_user_id UUID;
+    v_country_id INTEGER;
+    v_country_rank INTEGER;
+    v_global_rank INTEGER;
+    v_event_id INTEGER;
+    v_price DOUBLE PRECISION;
+    v_training_id UUID;
+    v_description TEXT;
+BEGIN
+SELECT u.id, u.country_id INTO v_user_id, v_country_id
+FROM trainings t
+         JOIN model_versions mv ON t.model_version_id = mv.id
+         JOIN models m ON mv.model_id = m.id
+         JOIN users u ON m.user_id = u.id
+WHERE t.id = NEW.training_id;
+
+SELECT COUNT(*) + 1 INTO v_country_rank
+FROM public_results pr
+         JOIN trainings t ON pr.training_id = t.id
+         JOIN model_versions mv ON t.model_version_id = mv.id
+         JOIN models m ON mv.model_id = m.id
+         JOIN users u ON m.user_id = u.id
+WHERE u.country_id = v_country_id
+  AND pr.accuracy > NEW.accuracy;
+
+SELECT COUNT(*) + 1 INTO v_global_rank
+FROM public_results pr
+         JOIN trainings t ON pr.training_id = t.id
+         JOIN model_versions mv ON t.model_version_id = mv.id
+         JOIN models m ON mv.model_id = m.id
+         JOIN users u ON m.user_id = u.id
+WHERE pr.accuracy > NEW.accuracy;
+
+-- award for country rank
+IF v_country_rank = 1 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '1st Place Country');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '1st place in country with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+ELSIF v_country_rank = 2 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '2nd Place Country');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '2nd place in country with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+ELSIF v_country_rank = 3 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '3rd Place Country');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '3rd place in country with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+END IF;
+
+-- award for global rank
+    IF v_global_rank = 1 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '1st Place Global');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '1st place globally with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+ELSIF v_global_rank = 2 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '2nd Place Global');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '2nd place globally with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+ELSIF v_global_rank = 3 THEN
+        v_event_id := (SELECT id FROM events WHERE name = '3rd Place Global');
+        v_price := calculate_event_price(v_user_id, v_event_id);
+        v_description := '3rd place globally with accuracy: ' || NEW.accuracy;
+
+INSERT INTO token_history (user_id, amount, event_type, description, training_id)
+VALUES (v_user_id, v_price, v_event_id, v_description, NEW.training_id);
+END IF;
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
+    AFTER INSERT ON public_results
+    FOR EACH ROW
+    EXECUTE FUNCTION update_token_history_after_public_results();
+
+
+-- :TODO remove trigger_set_default_epochs trigger
+--just for now, before the null problem in training.epochs is fixed
+CREATE OR REPLACE FUNCTION set_default_epochs()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if epochs is NULL and set it to 10 as default
+    IF NEW.epochs IS NULL THEN
+        NEW.epochs := 10;
+END IF;
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_set_default_epochs
+    BEFORE INSERT ON trainings
+    FOR EACH ROW
+    EXECUTE FUNCTION set_default_epochs();

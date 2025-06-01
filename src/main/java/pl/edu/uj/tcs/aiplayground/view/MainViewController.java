@@ -81,6 +81,8 @@ public class MainViewController {
     @FXML
     private Button nextVersionButton;
     @FXML
+    private Button shareButon;
+    @FXML
     private ListView<String> modelsListView;
 
     public void initialize(ViewModelFactory factory) {
@@ -411,6 +413,11 @@ public class MainViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    @FXML
+    private void onShareButtonClicked(){
+        mainViewModel.shareTraining();
     }
 
     @FXML
