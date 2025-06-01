@@ -44,13 +44,13 @@ public class TrainingRepository implements ITrainingRepository {
     @Override
     public UUID insertTraining(TrainingDto trainingDto) {
         return dsl.fetchOne("""
-                        INSERT INTO trainings (model_version_id, learning_rate, dataset_id, optimizer, loss_function, status)
+                        INSERT INTO trainings (model_version_id, learning_rate, dataset_id, optimizer, loss_function, max_epochs, batch_size, status)
                         VALUES (
-                            ?,
-                            ?,
+                            ?, ?,
                             (SELECT id FROM datasets WHERE name = ?),
                             (SELECT id FROM optimizers WHERE name = ?),
                             (SELECT id FROM loss_functions WHERE name = ?),
+                            ?, ?,
                             (SELECT id FROM statuses WHERE name = ?)
                         )
                         RETURNING id;
@@ -60,6 +60,8 @@ public class TrainingRepository implements ITrainingRepository {
                 trainingDto.dataset().getDbKey(),
                 trainingDto.optimizer().getDbKey(),
                 trainingDto.lossFunction().getDbKey(),
+                trainingDto.maxEpochs(),
+                trainingDto.batchSize(),
                 DEFAULT_STATUS.getName()
         ).into(UUID.class);
     }
@@ -72,6 +74,17 @@ public class TrainingRepository implements ITrainingRepository {
                                 WHERE id = ?;
                         """,
                 status.getName(),
+                trainingId
+        ).execute();
+    }
+
+    @Override
+    public void finishTraining(UUID trainingId) {
+        dsl.query("""
+                        UPDATE trainings
+                            SET finished_at = NOW()
+                                WHERE id = ?;
+                        """,
                 trainingId
         ).execute();
     }

@@ -23,4 +23,6 @@ public interface IUserRepository {
     String getCountryNameById(Integer countryId);
 
     void updateUser(UUID userId, UpdateUserForm updateUserForm);
+
+    int userTokenCount(UUID userId);
 }

@@ -38,4 +38,8 @@ public class ViewModelFactory {
     public MainViewModel getMainViewModel() {
         return mainViewModel;
     }
+
+    public LeaderboardViewModel getLeaderboardViewModel() {
+        return leaderboardViewModel;
+    }
 }

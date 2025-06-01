@@ -16,6 +16,8 @@ public interface ITrainingRepository {
 
     void updateTrainingStatus(UUID trainingId, StatusType status);
 
+    void finishTraining(UUID trainingId);
+
     String getDatasetPathByName(String dbName);
 
     void shareTraining(UUID trainingId, Double accuracy, Double loss);

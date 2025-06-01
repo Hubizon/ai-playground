@@ -95,7 +95,15 @@ public class UserService {
         UpdateUserForm registerFormHashed = updateUserForm.withHashedPassword(hashedPassword);
 
         try {
-            userRepository.updateUser(userId, updateUserForm);
+            userRepository.updateUser(userId, registerFormHashed);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public int userTokenCount(UUID userId) throws DatabaseException {
+        try {
+            return userRepository.userTokenCount(userId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

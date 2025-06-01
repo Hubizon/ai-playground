@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS currencies CASCADE;
 DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
+
 CREATE TABLE currencies
 (
     id   SERIAL PRIMARY KEY,
@@ -172,7 +173,8 @@ CREATE TABLE trainings
     learning_rate    REAL                           NOT NULL,
     optimizer        INT                            NOT NULL REFERENCES optimizers (id),
     loss_function    INT                            NOT NULL REFERENCES loss_functions (id),
-    epochs           INT,
+    max_epochs       INT                            NOT NULL,
+    batch_size       INT                            NOT NULL,
     status           INT                            NOT NULL REFERENCES statuses (id),
     started_at       TIMESTAMPTZ      DEFAULT now() NOT NULL,
     finished_at      TIMESTAMPTZ,
@@ -399,7 +401,7 @@ BEGIN
     FROM model_versions m,
         jsonb_each(m.architecture)
     WHERE m.id = rec.model_version_id;
-    RETURN sqrt(loss_function_cost*optimizer_cost*dataset_cost*rec.epochs*model_cost);
+    RETURN sqrt(loss_function_cost * optimizer_cost * dataset_cost * rec.max_epochs * model_cost);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -724,25 +726,5 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     AFTER INSERT ON public_results
     FOR EACH ROW
     EXECUTE FUNCTION update_token_history_after_public_results();
-
-
--- :TODO fix trainings.epochs so that trigger_set_default_epochs can be removed and set trainings.epochs back to NOT NULL
---just for now, before the null problem in training.epochs is fixed
-CREATE OR REPLACE FUNCTION set_default_epochs()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Check if epochs is NULL and set it to 10 as default
-    IF NEW.epochs IS NULL THEN
-        NEW.epochs := 10;
-END IF;
-
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trigger_set_default_epochs
-    BEFORE INSERT ON trainings
-    FOR EACH ROW
-    EXECUTE FUNCTION set_default_epochs();
 
 COMMIT;

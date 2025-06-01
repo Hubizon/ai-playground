@@ -27,6 +27,8 @@ public class TrainingService {
     public void updateTrainingStatus(UUID trainingId, StatusType status) throws DatabaseException {
         try {
             trainingRepository.updateTrainingStatus(trainingId, status);
+            if (status.getIsFinished())
+                trainingRepository.finishTraining(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
