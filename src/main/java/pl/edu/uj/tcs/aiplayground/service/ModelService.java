@@ -2,6 +2,7 @@ package pl.edu.uj.tcs.aiplayground.service;
 
 import javafx.util.Pair;
 import org.jooq.exception.DataAccessException;
+import org.postgresql.core.Tuple;
 import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
@@ -100,11 +101,33 @@ public class ModelService {
         }
     }
 
-    public Pair<TrainingDto, List<TrainingMetricDto>> getTrainingDataForModel(UUID modelVersionId) throws DatabaseException {
+    public UUID getTrainingIdForModel(UUID modelVersionId) throws DatabaseException {
         try {
-            TrainingDto trainingDto = modelRepository.getTrainingForModel(modelVersionId);
-            List<TrainingMetricDto> metrics = modelRepository.getMetricsForModel(modelVersionId);
-            return new Pair<>(trainingDto, metrics);
+            return modelRepository.getTrainingIdForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public TrainingDto getTrainingForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            return modelRepository.getTrainingForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            return modelRepository.getMetricsForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public boolean hasUserAlreadySharedTraining(UUID trainingId) throws DatabaseException {
+        try {
+            return modelRepository.hasUserAlreadySharedTraining(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

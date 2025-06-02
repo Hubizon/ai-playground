@@ -23,6 +23,16 @@ public class TrainingHandler {
     private TrainingMetricDto recentMetric;
 
     public TrainingHandler(TrainingService trainingService,
+                           Consumer<StatusType> statusListener,
+                           UUID trainingId,
+                           TrainingMetricDto recentMetric) {
+        this.trainingService = trainingService;
+        this.statusListener = statusListener;
+        this.trainingId = trainingId;
+        this.recentMetric = recentMetric;
+    }
+
+    public TrainingHandler(TrainingService trainingService,
                            TrainingDto trainingDto,
                            Consumer<StatusType> statusListener) throws InsufficientTokensException {
         this.trainingService = trainingService;
@@ -45,6 +55,11 @@ public class TrainingHandler {
     public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) throws InsufficientTokensException {
         this(new TrainingService(new TrainingRepository(
                 JooqFactory.getConnection(), JooqFactory.getDSLContext())), trainingDto, statusListener);
+    }
+
+    public TrainingHandler(UUID trainingId, TrainingMetricDto recentMetric) {
+        this(new TrainingService(new TrainingRepository(
+                JooqFactory.getConnection(), JooqFactory.getDSLContext())), null, trainingId, recentMetric);
     }
 
     public void addNewTrainingMetric(TrainingMetricDto trainingMetricDto) {
@@ -77,5 +92,9 @@ public class TrainingHandler {
                     trainingId, e.getMessage(), e);
         }
         return null;
+    }
+
+    public UUID getTrainingId() {
+        return trainingId;
     }
 }
