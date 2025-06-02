@@ -101,13 +101,15 @@ public class UserRepository implements IUserRepository {
     public void updateUser(UUID userId, UpdateUserForm updateUserForm) {
         dsl.query("""
                         UPDATE users
-                        SET email = ?,
+                        SET first_name = ?,
+                            last_name = ?,
                             password_hash = ?,
                             country_id = (SELECT id FROM countries WHERE name = ?),
                             birth_date = ?
                         WHERE id = ?
                         """,
-                updateUserForm.email(),
+                updateUserForm.firstName(),
+                updateUserForm.lastName(),
                 updateUserForm.password(),
                 updateUserForm.country(),
                 updateUserForm.birthDate(),

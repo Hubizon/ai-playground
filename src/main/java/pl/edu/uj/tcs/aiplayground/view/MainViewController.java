@@ -328,7 +328,6 @@ public class MainViewController {
             alert = new Alert(Alert.AlertType.INFORMATION);
         else
             alert = new Alert(AlertType.WARNING);
-        alert.setTitle("Missing Selection");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
