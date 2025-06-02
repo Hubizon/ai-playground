@@ -205,9 +205,9 @@ public class MainViewController {
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
-        shareButton.disableProperty().bind(
+        /*shareButton.disableProperty().bind(
                 mainViewModel.isRecentTrainingAvailableProperty().not().or(mainViewModel.isTrainingInProgressProperty())
-        );
+        );*/
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {

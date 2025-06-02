@@ -1,23 +1,22 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.edu.uj.tcs.aiplayground.dto.CurrencyDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.service.TokenService;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TokenViewModel {
@@ -30,15 +29,15 @@ public class TokenViewModel {
     private final StringProperty statusMessage = new SimpleStringProperty("");
     private final ObjectProperty<String> selectedCurrency = new SimpleObjectProperty<>("USD");
 
-    private final Map<Integer, Double> baseTokenPrices = new HashMap<>();
-    private final Map<String, Double> exchangeRates = new HashMap<>();
+    private List<CurrencyDto> currencyList = new ArrayList<>();
+    private final List<Integer> tokenPackets = new ArrayList<>();
 
     public TokenViewModel(TokenService tokenService, UserViewModel userViewModel) {
         this.tokenService = tokenService;
         this.userViewModel = userViewModel;
 
-        setupBaseTokenPrices();
-        setupExchangeRates();
+        setupCurrencyTokenPrices();
+        setupPackets();
 
         this.userViewModel.userProperty().addListener((obs, oldUser, newUser) -> {
             if (newUser != null) {
@@ -57,7 +56,7 @@ public class TokenViewModel {
 
         if (this.userViewModel.isLoggedIn()) {
             try {
-            currentTokens.set(tokenService.getUserTokens(this.userViewModel.getUser()));
+                currentTokens.set(tokenService.getUserTokens(this.userViewModel.getUser()));
             } catch (DatabaseException e) {
                 System.out.println("Failed to fetch user tokens for user " + this.userViewModel.getUser().username() + ": " + e.getMessage());
                 currentTokens.set(0);
@@ -78,47 +77,53 @@ public class TokenViewModel {
         return selectedCurrency;
     }
 
-    private void setupBaseTokenPrices() {// TODO: Może trzeba to trzymać w bazie?
-        // All prices are in USD (our base currency)
-        baseTokenPrices.put(100, 1.99);
-        baseTokenPrices.put(250, 4.49);
-        baseTokenPrices.put(500, 7.99);
-        baseTokenPrices.put(1000, 14.99);
-        baseTokenPrices.put(2500, 34.99);
-        baseTokenPrices.put(5000, 59.99);
-        baseTokenPrices.put(10000, 99.99);
-        baseTokenPrices.put(25000, 199.99);
-        baseTokenPrices.put(50000, 349.99);
+    private void setupCurrencyTokenPrices() {
+        try {
+            currencyList = tokenService.getCurrencyList();
+        } catch (DatabaseException e) {
+
+        }
     }
 
-    private void setupExchangeRates() { //TODO: Fetchowanie z bazy
-        exchangeRates.put("USD", 1.0);
-        exchangeRates.put("EUR", 0.92);
-        exchangeRates.put("PLN", 3.98);
+    private void setupPackets() {
+        tokenPackets.add(100);
+        tokenPackets.add(200);
+        tokenPackets.add(500);
+        tokenPackets.add(1000);
+        tokenPackets.add(2000);
+        tokenPackets.add(5000);
+        tokenPackets.add(10000);
+        tokenPackets.add(20000);
+        tokenPackets.add(50000);
     }
 
     public List<Integer> getTokenAmounts() {
-        return baseTokenPrices.keySet().stream().sorted().collect(Collectors.toList());
+        return tokenPackets.stream().sorted().collect(Collectors.toList());
     }
 
-    public List<String> getAvailableCurrencies() {
-        return exchangeRates.keySet().stream().sorted().collect(Collectors.toList());
+    public ObservableList<String> getAvailableCurrencies() {
+        return FXCollections.observableArrayList(
+                currencyList.stream()
+                        .map(CurrencyDto::name)
+                        .sorted()
+                        .collect(Collectors.toList())
+        );
     }
 
     public Double getConvertedPrice(int amount, String targetCurrency) {
-        Double usdPrice = baseTokenPrices.get(amount);
-        if (usdPrice == null) {
-            logger.warn("No base price found for {} tokens.", amount);
-            return null;
-        }
 
-        Double rate = exchangeRates.get(targetCurrency);
-        if (rate == null) {
+        Optional<CurrencyDto> currencyDtoOpt = currencyList.stream()
+                .filter(c -> c.name().equals(targetCurrency))
+                .findFirst();
+
+        if (currencyDtoOpt.isEmpty()) {
             logger.error("Exchange rate for {} not found. Cannot convert price.", targetCurrency);
             statusMessage.set("Error: Currency not supported.");
             return null;
         }
-        return usdPrice * rate;
+
+        Double rate = currencyDtoOpt.get().conversionRate();
+        return amount * rate;
     }
 
     public boolean purchaseTokens(int amount) {

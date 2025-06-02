@@ -1,6 +1,5 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -9,13 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.viewmodel.TokenViewModel;
-import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class TokenShopController {
 
@@ -34,24 +27,13 @@ public class TokenShopController {
     private TokenViewModel tokenViewModel;
     private Stage stage;
 
-    private final Map<Integer, Double> baseTokenPrices = new HashMap<>();
-
-    private final Map<String, Double> exchangeRates = new HashMap<>();
-
-    private final List<Integer> tokenAmounts = Arrays.asList(
-            100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000
-    );
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
         this.tokenViewModel = factory.getTokenViewModel();
 
-        currencyComboBox.setItems(FXCollections.observableArrayList("USD", "EUR", "PLN"));
+        currencyComboBox.setItems(tokenViewModel.getAvailableCurrencies());
         currencyComboBox.setValue("USD");
-
-        setupBaseTokenPrices();
-
-        setupExchangeRates();
 
         setupTokenTabs();
 
@@ -71,38 +53,13 @@ public class TokenShopController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        this.stage.setMinWidth(tokenViewModel.getTokenAmounts().size() * 100 + 100);
     }
 
-    private void setupBaseTokenPrices() {
-        baseTokenPrices.put(100, 1.99);
-        baseTokenPrices.put(250, 4.49);
-        baseTokenPrices.put(500, 7.99);
-        baseTokenPrices.put(1000, 14.99);
-        baseTokenPrices.put(2500, 34.99);
-        baseTokenPrices.put(5000, 59.99);
-        baseTokenPrices.put(10000, 99.99);
-        baseTokenPrices.put(25000, 199.99);
-        baseTokenPrices.put(50000, 349.99);
-    }
-
-    private void setupExchangeRates() {
-        exchangeRates.put("USD", 1.0);
-        exchangeRates.put("EUR", 0.92);
-        exchangeRates.put("PLN", 3.98);
-    }
-
-    private double convertPrice(double usdPrice, String targetCurrency) {
-        Double rate = exchangeRates.get(targetCurrency);
-        if (rate == null) {
-            System.err.println("Exchange rate for " + targetCurrency + " not found. Using USD price.");
-            return usdPrice;
-        }
-        return usdPrice * rate;
-    }
 
     private void setupTokenTabs() {
         tokenTabPane.getTabs().clear();
-        for (Integer amount : tokenAmounts) {
+        for (Integer amount : tokenViewModel.getTokenAmounts()) {
             Tab tab = new Tab(amount + " Tokens");
             tab.setId("tab" + amount + "Tokens");
 
@@ -140,15 +97,12 @@ public class TokenShopController {
             if (tabId != null && tabId.startsWith("tab") && tabId.endsWith("Tokens")) {
                 try {
                     int amount = Integer.parseInt(tabId.replace("tab", "").replace("Tokens", ""));
-                    Double usdPrice = baseTokenPrices.get(amount);
-
-                    if (usdPrice != null) {
-                        double convertedPrice = convertPrice(usdPrice, currency);
-                        Label priceLabel = (Label) tab.getContent().lookup("#price" + amount + "TokensLabel");
-                        if (priceLabel != null) {
-                            priceLabel.setText(String.format("%.2f %s", convertedPrice, currency));
-                        }
+                    double convertedPrice = tokenViewModel.getConvertedPrice(amount, currency);
+                    Label priceLabel = (Label) tab.getContent().lookup("#price" + amount + "TokensLabel");
+                    if (priceLabel != null) {
+                        priceLabel.setText(String.format("%.2f %s", convertedPrice, currency));
                     }
+
                 } catch (NumberFormatException e) {
                     System.err.println("Could not parse amount from tab ID: " + tabId + " - " + e.getMessage());
                 }
@@ -158,24 +112,14 @@ public class TokenShopController {
 
     private void confirmPurchase(int amount) {
         String currency = currencyComboBox.getValue();
-        Double usdPrice = baseTokenPrices.get(amount);
-        Double finalPrice;
 
-        if (usdPrice != null) {
-            finalPrice = convertPrice(usdPrice, currency);
-        } else {
-            finalPrice = null;
-        }
-
-        if (finalPrice == null) {
-            alertMessage("Error: Price for " + amount + " tokens in " + currency + " is not available.", false);
-            return;
-        }
+        double Price = tokenViewModel.getConvertedPrice(amount, currency);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Purchase");
         alert.setHeaderText("Confirm your token purchase");
-        alert.setContentText(String.format("Are you sure you want to buy %d tokens for %.2f %s?", amount, finalPrice, currency));
+
+        alert.setContentText(String.format("Are you sure you want to buy %d tokens for %.2f %s?", amount, Price, currency));
         alert.getDialogPane().getStylesheets().add(
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
@@ -183,8 +127,8 @@ public class TokenShopController {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                System.out.println("Purchasing " + amount + " tokens for " + String.format("%.2f", finalPrice) + " " + currency);
-                boolean success =  tokenViewModel.purchaseTokens(amount);
+                System.out.println("Purchasing " + amount + " tokens for " + String.format("%.2f", Price) + " " + currency);
+                boolean success = tokenViewModel.purchaseTokens(amount);
                 if (success) {
                     alertMessage("Purchase successful! You received " + amount + " tokens.", true);
                     updateCurrentTokensDisplay();
