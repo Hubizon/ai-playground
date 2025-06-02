@@ -20,6 +20,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
@@ -27,8 +28,6 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.LeaderboardViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
-import javafx.scene.control.ListView;
-import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainViewController {
-
     private final double SPACER = 200;
     private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
@@ -44,6 +42,8 @@ public class MainViewController {
     public LineChart<Number, Number> lossChart;
     @FXML
     public LineChart<Number, Number> accuracyChart;
+    @FXML
+    public Label statusField;
     @FXML
     private TabPane leftTabPane;
     private Stage stage;
@@ -142,6 +142,14 @@ public class MainViewController {
                 });
             }
         });
+
+        statusField.textProperty().bind(Bindings.createStringBinding(
+                () -> {
+                    StatusType status = mainViewModel.trainingStatusProperty().get();
+                    return status != null ? status.toString() : "-";
+                },
+                mainViewModel.trainingStatusProperty()
+        ));
 
         optimizerComboBox.setItems(FXCollections.observableArrayList(OptimizerType.values()));
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));

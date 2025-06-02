@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
@@ -30,4 +31,6 @@ public interface IModelRepository {
     UUID getTrainingIdForModel(UUID modelVersionId);
 
     boolean hasUserAlreadySharedTraining(UUID trainingId);
+
+    String getTrainingStatusName(UUID trainingId);
 }

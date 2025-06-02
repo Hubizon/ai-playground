@@ -157,6 +157,11 @@
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Status:" style="-fx-text-fill: white;"/>
+            <Label fx:id="statusField" text="Idle"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
             <Button fx:id="shareButton" text="Share" onAction="#onShareButtonClicked"/>
         </HBox>
 

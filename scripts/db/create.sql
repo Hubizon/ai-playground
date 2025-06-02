@@ -276,11 +276,11 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
         ('BoughtTokens',0,FALSE,FALSE);
 
 INSERT INTO statuses (name, description)
-VALUES ('Queue', 'The training is waiting to start.'),
-       ('In Progress', 'The training is currently running.'),
-       ('Finished', 'The training completed successfully.'),
-       ('Error', 'The training finished with an error.'),
-       ('Cancelled', 'The training was cancelled by the user or system.');
+VALUES ('QUEUE', 'The training is waiting to start.'),
+       ('IN_PROGRESS', 'The training is currently running.'),
+       ('FINISHED', 'The training completed successfully.'),
+       ('ERROR', 'The training finished with an error.'),
+       ('CANCELLED', 'The training was cancelled by the user or system.');
 
 INSERT INTO roles (name, initial_tokens)
 VALUES ('Basic User', 1000),

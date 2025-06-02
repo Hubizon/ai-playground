@@ -7,19 +7,24 @@ public enum StatusType {
     ERROR("Error", true),
     CANCELLED("Cancelled", true);
 
-    String name;
+    String displayName;
     boolean isFinished;
 
-    StatusType(String name, boolean isFinished) {
-        this.name = name;
+    StatusType(String displayName, boolean isFinished) {
+        this.displayName = displayName;
         this.isFinished = isFinished;
     }
 
     public String getName() {
-        return name;
+        return displayName;
     }
 
     public boolean getIsFinished() {
         return isFinished;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
     }
 }

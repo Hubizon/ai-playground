@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;
@@ -247,5 +248,18 @@ public class ModelRepository implements IModelRepository {
                         """,
                 trainingId
         ).isEmpty();
+    }
+
+    @Override
+    public String getTrainingStatusName(UUID trainingId) {
+        return dsl.fetchOne("""
+                        SELECT s.name
+                        FROM trainings t
+                        JOIN statuses s ON s.id = t.status
+                        WHERE t.id = ?
+                        LIMIT 1;
+                        """,
+                trainingId
+        ).into(String.class);
     }
 }

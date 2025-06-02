@@ -71,6 +71,7 @@ public class MainViewModel {
                 UUID trainingId = modelService.getTrainingIdForModel(model.modelVersionId());
                 TrainingDto trainingDto = modelService.getTrainingForModel(model.modelVersionId());
                 List<TrainingMetricDto> metrics = modelService.getMetricsForModel(model.modelVersionId());
+                trainingStatus.set(modelService.getTrainingStatus(trainingId));
                 if (trainingDto != null) {
                     learningRate.set(trainingDto.learningRate());
                     batchSize.set(trainingDto.batchSize());
@@ -387,7 +388,8 @@ public class MainViewModel {
 
                 TrainingDto trainingDto = trainingForm.toDto(model.modelVersionId());
                 trainingDto.dataset().setTrainingService(trainingService);
-                trainingHandler = new TrainingHandler(trainingDto, trainingStatus::set);
+                trainingHandler = new TrainingHandler(trainingDto,
+                        (StatusType statusType) -> Platform.runLater(() -> trainingStatus.set(statusType)));
                 trainingHandler.updateTrainingStatus(StatusType.IN_PROGRESS);
 
                 runTraining(trainingDto, net, trainingHandler);
@@ -400,32 +402,33 @@ public class MainViewModel {
                     }
                 }
             } catch (TrainingException e) {
+                logger.error("Training error", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Training error", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Training failed: " + e.getMessage(), false))
                 );
             } catch (InsufficientTokensException e) {
+                logger.error("Insufficient Tokens", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Insufficient Tokens", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Insufficient Tokens: " + e.getMessage(), false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Insufficient Tokens: " + e.getMessage(),
+                        false))
                 );
             } catch (DatabaseException e) {
+                logger.error("Internal error", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Internal error", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Internal error", false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Internal error", false))
                 );
             } catch (ModelModificationException e) {
+                logger.error("Illegal hyperparameters", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Illegal hyperparameters", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Illegal hyperparameters: " + e.getMessage(), false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Illegal hyperparameters: " + e.getMessage(), false))
                 );
             } finally {
                 Platform.runLater(() -> {
