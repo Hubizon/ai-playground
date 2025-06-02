@@ -213,9 +213,9 @@ public class MainViewController {
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
-        /*shareButton.disableProperty().bind(
+        shareButton.disableProperty().bind(
                 mainViewModel.isRecentTrainingAvailableProperty().not().or(mainViewModel.isTrainingInProgressProperty())
-        );*/
+        );
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {
@@ -534,7 +534,11 @@ public class MainViewController {
             stage.setTitle("AI Playground - Buy Tokens");
             stage.setScene(scene);
             stage.show();
-        } catch (Exception e) {
+
+            stage.setOnCloseRequest(event -> {
+                mainViewModel.updateUserTokens();
+            });
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -544,7 +548,7 @@ public class MainViewController {
         modelsListView.getStyleClass().add("custom-list-view");
 
         modelsListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
+            if (event.getClickCount() >= 2) {
                 String selectedModel = modelsListView.getSelectionModel().getSelectedItem();
                 if (selectedModel != null) {
                     mainViewModel.setModel(userViewModel.getUser(), selectedModel);

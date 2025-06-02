@@ -108,15 +108,6 @@ public class MainViewModel {
         }
     }
 
-    private void updateUserTokens() {
-        try {
-            userTokens.set(userService.userTokenCount(user.userId()));
-        } catch (DatabaseException e) {
-            logger.error("Failed to get user tokens for user={}, error={}", user, e.getMessage(), e);
-            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
-        }
-    }
-
     private void updateIsPreviousVersion() {
         if (!isModelLoaded.get())
             isPreviousVersion.set(false);
@@ -255,6 +246,15 @@ public class MainViewModel {
         layers.set(idx, new LayerConfig(type, newParams));
     }
 
+    public void updateUserTokens() {
+        try {
+            userTokens.set(userService.userTokenCount(user.userId()));
+        } catch (DatabaseException e) {
+            logger.error("Failed to get user tokens for user={}, error={}", user, e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+        }
+    }
+
     public boolean isLoggedIn() {
         return user != null;
     }
@@ -280,7 +280,6 @@ public class MainViewModel {
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
         }
         setupModel();
-        trainingHandler = null;
     }
 
     public void setNextVersion() {
@@ -349,8 +348,8 @@ public class MainViewModel {
             if (mess != null) {
                 alertEvent.set(AlertEvent.createAlertEvent(mess, true));
             }
-            updateIsRecentTrainingAvailable();
         }
+        updateIsRecentTrainingAvailable();
     }
 
     public void stopTraining() {

@@ -41,7 +41,6 @@ public class TokenViewModel {
 
         this.userViewModel.userProperty().addListener((obs, oldUser, newUser) -> {
             if (newUser != null) {
-
                 try {
                     currentTokens.set(tokenService.getUserTokens(newUser));
                 } catch (DatabaseException e) {
@@ -81,7 +80,7 @@ public class TokenViewModel {
         try {
             currencyList = tokenService.getCurrencyList();
         } catch (DatabaseException e) {
-
+            System.out.println("Failed to fetch token prices: " + e.getMessage());
         }
     }
 

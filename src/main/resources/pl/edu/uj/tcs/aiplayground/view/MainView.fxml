@@ -157,7 +157,7 @@
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="Share" onAction="#onShareButtonClicked"/>
+            <Button fx:id="shareButton" text="Share" onAction="#onShareButtonClicked"/>
         </HBox>
 
 
