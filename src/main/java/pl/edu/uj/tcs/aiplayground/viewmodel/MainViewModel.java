@@ -71,7 +71,18 @@ public class MainViewModel {
                 UUID trainingId = modelService.getTrainingIdForModel(model.modelVersionId());
                 TrainingDto trainingDto = modelService.getTrainingForModel(model.modelVersionId());
                 List<TrainingMetricDto> metrics = modelService.getMetricsForModel(model.modelVersionId());
-                trainingStatus.set(modelService.getTrainingStatus(trainingId));
+                String statusName = modelService.getTrainingStatus(trainingId);
+                if (statusName == null)
+                    trainingStatus.set(null);
+                else {
+                    try {
+                        trainingStatus.set(StatusType.valueOf(statusName));
+                    } catch (Exception e) {
+                        logger.error("{} is not a valid status value, error={}", statusName, e.getMessage(), e);
+                        trainingStatus.set(null);
+                    }
+                }
+
                 if (trainingDto != null) {
                     learningRate.set(trainingDto.learningRate());
                     batchSize.set(trainingDto.batchSize());
@@ -91,8 +102,7 @@ public class MainViewModel {
                 logger.error("Failed to get model training data for model={}, error={}", model, e.getMessage(), e);
                 alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             }
-        }
-        else
+        } else
             trainingHandler = null;
         isModelLoaded.set(model != null);
         updateUserTokens();

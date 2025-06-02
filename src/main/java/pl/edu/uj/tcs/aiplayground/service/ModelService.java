@@ -3,7 +3,6 @@ package pl.edu.uj.tcs.aiplayground.service;
 import org.jooq.exception.DataAccessException;
 import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
-import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
@@ -133,9 +132,9 @@ public class ModelService {
         }
     }
 
-    public StatusType getTrainingStatus(UUID trainingId) throws DatabaseException {
+    public String getTrainingStatus(UUID trainingId) throws DatabaseException {
         try {
-            return StatusType.valueOf(modelRepository.getTrainingStatusName(trainingId));
+            return modelRepository.getTrainingStatusName(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

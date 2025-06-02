@@ -251,7 +251,7 @@ public class ModelRepository implements IModelRepository {
 
     @Override
     public String getTrainingStatusName(UUID trainingId) {
-        return dsl.fetchOne("""
+        Record record = dsl.fetchOne("""
                         SELECT s.name
                         FROM trainings t
                         JOIN statuses s ON s.id = t.status
@@ -259,6 +259,10 @@ public class ModelRepository implements IModelRepository {
                         LIMIT 1;
                         """,
                 trainingId
-        ).into(String.class);
+        );
+
+        if (record == null)
+            return null;
+        return record.into(String.class);
     }
 }

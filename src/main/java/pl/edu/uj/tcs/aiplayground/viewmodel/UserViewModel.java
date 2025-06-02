@@ -2,8 +2,6 @@ package pl.edu.uj.tcs.aiplayground.viewmodel;
 
 import javafx.application.Platform;
 import javafx.beans.property.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
@@ -27,6 +25,10 @@ public class UserViewModel {
     private final StringProperty chosenUser = new SimpleStringProperty();
     private final StringProperty chosenRole = new SimpleStringProperty();
     private final StringProperty chosenUserRole = new SimpleStringProperty();
+
+    public UserViewModel(UserService userService) {
+        this.userService = userService;
+    }
 
     private void setupUser(UserDto user) {
         this.user.set(user);
@@ -53,11 +55,9 @@ public class UserViewModel {
         }
     }
 
-    public UserViewModel(UserService userService) {
-        this.userService = userService;
+    public BooleanProperty isAdminProperty() {
+        return isAdmin;
     }
-
-    public BooleanProperty isAdminProperty() { return isAdmin; }
 
     public StringProperty statusMessageProperty() {
         return statusMessage;

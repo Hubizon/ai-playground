@@ -2,9 +2,7 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
 import pl.edu.uj.tcs.aiplayground.dto.CurrencyDto;
-import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
-import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;
 

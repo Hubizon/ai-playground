@@ -68,7 +68,7 @@ public class TrainingRepository implements ITrainingRepository {
                 trainingDto.lossFunction().name(),
                 trainingDto.maxEpochs(),
                 trainingDto.batchSize(),
-                DEFAULT_STATUS.getName()
+                DEFAULT_STATUS.name()
         ).into(UUID.class);
     }
 
@@ -79,7 +79,7 @@ public class TrainingRepository implements ITrainingRepository {
                             SET status = (SELECT id FROM statuses WHERE name = ?)
                                 WHERE id = ?;
                         """,
-                status.getName(),
+                status.name(),
                 trainingId
         ).execute();
     }
