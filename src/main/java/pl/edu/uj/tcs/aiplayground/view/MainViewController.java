@@ -436,9 +436,7 @@ public class MainViewController {
 
     @FXML
     private void onShareButtonClicked() {
-        if (mainViewModel.isModelLoadedProperty().getValue() && !mainViewModel.isTrainingInProgressProperty().getValue() && !epochField.getText().equals("0")) {
-            mainViewModel.shareTraining();
-        }
+        mainViewModel.shareTraining();
     }
 
     @FXML
