@@ -359,7 +359,9 @@ public class MainViewModel {
     private void runTraining(TrainingDto dto, NeuralNet net, TrainingHandler handler) throws TrainingException {
         net.train(dto, isCancelled, metric -> {
             Platform.runLater(() -> {
-                handler.addNewTrainingMetric(metric);
+                if (handler != null) {
+                    handler.addNewTrainingMetric(metric);
+                }
                 liveMetrics.add(metric);
             });
         });
