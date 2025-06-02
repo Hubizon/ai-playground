@@ -548,7 +548,7 @@ BEGIN
              JOIN models m ON mv.model_id = m.id
     WHERE mv.id = NEW.model_version_id;
 
-    event_price := calculate_event_price(model_user_id, training_event_id));
+    event_price := calculate_event_price(model_user_id, training_event_id);
 
     training_cost := -calculate_training_cost(NEW) + event_price;
 
