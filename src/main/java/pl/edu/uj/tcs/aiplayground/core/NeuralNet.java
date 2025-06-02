@@ -116,7 +116,7 @@ public class NeuralNet {
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
 
-        final int batchSize = 8;
+        final int batchSize = dto.batchSize();
         final int numThreads = Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + numThreads + " threads");
 
@@ -160,7 +160,6 @@ public class NeuralNet {
                             for (int j = 0; j < p.cols; j++)
                                 p.gradient[i][j] /= batchSize;
                     }
-                    //if(processed % 4096 == 0) System.out.println(processed+" "+batchLoss);
                     epochLoss += batchLoss;
                     optimizer.optimize();
                     processed += batchSize;
@@ -172,9 +171,6 @@ public class NeuralNet {
                     break;
                 TrainingMetricDto metric = new TrainingMetricDto(epoch, epochLoss, accuracy);
                 callback.accept(metric);
-                //Instant t1 = Instant.now();
-                //System.out.println("Epoch "+epoch+" took "+Duration.between(t0, t1).toMillis()+" ms");
-                //t0 = t1;
             }
         } catch (InterruptedException | ExecutionException e) {
             throw new TrainingException(e);

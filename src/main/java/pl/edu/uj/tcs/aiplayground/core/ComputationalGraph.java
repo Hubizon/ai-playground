@@ -141,6 +141,27 @@ public class ComputationalGraph {
                     }
                 }
             }
+            else if (operation.startsWith("leakyRelu")) {
+                Tensor input = components.get(0);
+                double alpha;
+                try {
+                    String[] parts = operation.split("=");
+                    alpha = Double.parseDouble(parts[1]);
+                } catch (Exception e) {
+                    System.err.println("Error parsing alpha for leakyRelu, using default: " + e.getMessage());
+                    alpha = 0.01;
+                }
+
+                for (int i = 0; i < input.rows; i++) {
+                    for (int j = 0; j < input.cols; j++) {
+                        if (input.data[i][j] > 0) {
+                            input.gradient[i][j] += result.gradient[i][j];
+                        } else {
+                            input.gradient[i][j] += result.gradient[i][j] * alpha;
+                        }
+                    }
+                }
+            }
         }
     }
 }

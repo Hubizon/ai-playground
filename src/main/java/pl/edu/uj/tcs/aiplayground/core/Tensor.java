@@ -132,6 +132,23 @@ public class Tensor {
         return result;
     }
 
+    public static Tensor leakyRelu(Tensor a, ComputationalGraph graph, double alpha) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                if (a.data[i][j] <= 0) {
+                    result.data[i][j] = alpha * a.data[i][j];
+                } else {
+                    result.data[i][j] = a.data[i][j];
+                }
+            }
+        }
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "leakyRelu: alpha=" + alpha);
+        }
+        return result;
+    }
+
     public static Tensor Sigmoid(Tensor a, ComputationalGraph graph) {
         Tensor result = Tensor.zerosLike(a);
         for (int i = 0; i < a.rows; i++) {

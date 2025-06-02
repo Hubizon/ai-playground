@@ -6,10 +6,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public sealed interface LayerParams permits LinearParams, EmptyParams {
+public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, LinearParams {
     List<String> getParamNames();
 
     default List<Class<?>> getParamTypes() {
@@ -79,6 +80,9 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
             args[i] = json.get(names.get(i));
+            if(args[i].getClass() == BigDecimal.class){
+                args[i] = ((BigDecimal) args[i]).doubleValue();
+            }
         }
 
         try {
