@@ -11,7 +11,6 @@ import pl.edu.uj.tcs.aiplayground.core.TrainingHandler;
 import pl.edu.uj.tcs.aiplayground.dto.*;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
-import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
 import pl.edu.uj.tcs.aiplayground.dto.validation.TrainingValidation;
 import pl.edu.uj.tcs.aiplayground.exception.*;
@@ -19,7 +18,6 @@ import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -219,7 +217,9 @@ public class MainViewModel {
         return isTrainingInProgress;
     }
 
-    public BooleanProperty isRecentTrainingAvailableProperty() { return isRecentTrainingAvailable; }
+    public BooleanProperty isRecentTrainingAvailableProperty() {
+        return isRecentTrainingAvailable;
+    }
 
     public BooleanProperty isPreviousVersionProperty() {
         return isPreviousVersion;
@@ -329,11 +329,11 @@ public class MainViewModel {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Illegal model name: " + e.getMessage(), false));
-        } catch(InsufficientTokensException e) {
+        } catch (InsufficientTokensException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Insufficient tokens: " + e.getMessage(), false));
-        } catch(DatabaseException e) {
+        } catch (DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
@@ -368,7 +368,7 @@ public class MainViewModel {
     public void train(TrainingForm trainingForm) {
         try {
             TrainingValidation.validateTrainingForm(trainingForm);
-        } catch(InvalidHyperparametersException e) {
+        } catch (InvalidHyperparametersException e) {
             alertEvent.set(AlertEvent.createAlertEvent("Invalid hyperparameters: " + e.getMessage(), false));
             return;
         }
@@ -402,14 +402,14 @@ public class MainViewModel {
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
                 );
-            } catch(InsufficientTokensException e) {
+            } catch (InsufficientTokensException e) {
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Insufficient Tokens", e);
                 Platform.runLater(() ->
                         alertEvent.set(AlertEvent.createAlertEvent("Insufficient Tokens: " + e.getMessage(), false))
                 );
-            } catch(DatabaseException e) {
+            } catch (DatabaseException e) {
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
                 logger.error("Internal error", e);

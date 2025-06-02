@@ -127,20 +127,20 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals("softmax")) {
-            Tensor input = components.get(0);
-            for (int i = 0; i < input.cols; i++) {
-                for (int j = 0; j < input.rows; j++) {
-                    double grad = 0;
-                    for (int k = 0; k < input.rows; k++) {
-                        double s_j = result.data[j][i];
-                        double s_k = result.data[k][i];
-                        double delta = (j == k) ? 1.0 : 0.0;
-                        grad += result.gradient[k][i] * s_j * (delta - s_k);
+                Tensor input = components.get(0);
+                for (int i = 0; i < input.cols; i++) {
+                    for (int j = 0; j < input.rows; j++) {
+                        double grad = 0;
+                        for (int k = 0; k < input.rows; k++) {
+                            double s_j = result.data[j][i];
+                            double s_k = result.data[k][i];
+                            double delta = (j == k) ? 1.0 : 0.0;
+                            grad += result.gradient[k][i] * s_j * (delta - s_k);
+                        }
+                        input.gradient[j][i] += grad;
                     }
-                    input.gradient[j][i] += grad;
                 }
             }
-        }
         }
     }
 }

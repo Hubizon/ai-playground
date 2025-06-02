@@ -4,11 +4,11 @@ import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
+import pl.edu.uj.tcs.aiplayground.dto.validation.UserValidation;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 import pl.edu.uj.tcs.aiplayground.service.repository.IUserRepository;
 import pl.edu.uj.tcs.aiplayground.service.utility.PasswordHasher;
-import pl.edu.uj.tcs.aiplayground.dto.validation.UserValidation;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
 
 import java.util.List;

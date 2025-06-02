@@ -156,10 +156,10 @@ public class ModelRepository implements IModelRepository {
     @Override
     public boolean existUserModelName(UUID userId, String name) {
         return !dsl.fetch("""
-            SELECT 1
-            FROM models
-            WHERE user_id = ? AND name = ?;
-            """,
+                        SELECT 1
+                        FROM models
+                        WHERE user_id = ? AND name = ?;
+                        """,
                 userId, name
         ).isEmpty();
     }
@@ -167,21 +167,21 @@ public class ModelRepository implements IModelRepository {
     @Override
     public TrainingDto getTrainingForModel(UUID modelVersionId) {
         Record record = dsl.fetchOne("""
-            SELECT t.model_version_id,
-                   t.max_epochs,
-                   t.batch_size,
-                   t.learning_rate,
-                   d.name AS dataset,
-                   o.name AS optimizer,
-                   l.name AS loss_function
-            FROM trainings t
-            JOIN datasets d ON t.dataset_id = d.id
-            JOIN optimizers o ON t.optimizer = o.id
-            JOIN loss_functions l ON t.loss_function = l.id
-            WHERE t.model_version_id = ?
-            ORDER BY t.started_at DESC
-            LIMIT 1
-        """, modelVersionId);
+                    SELECT t.model_version_id,
+                           t.max_epochs,
+                           t.batch_size,
+                           t.learning_rate,
+                           d.name AS dataset,
+                           o.name AS optimizer,
+                           l.name AS loss_function
+                    FROM trainings t
+                    JOIN datasets d ON t.dataset_id = d.id
+                    JOIN optimizers o ON t.optimizer = o.id
+                    JOIN loss_functions l ON t.loss_function = l.id
+                    WHERE t.model_version_id = ?
+                    ORDER BY t.started_at DESC
+                    LIMIT 1
+                """, modelVersionId);
 
         if (record == null)
             return null;
@@ -200,12 +200,12 @@ public class ModelRepository implements IModelRepository {
     @Override
     public List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId) {
         List<Record> records = dsl.fetch("""
-                SELECT m.epoch, m.loss, m.accuracy
-                FROM training_metrics m
-                JOIN trainings t ON m.training_id = t.id
-                WHERE t.model_version_id = ?
-                ORDER BY m.epoch
-            """,
+                            SELECT m.epoch, m.loss, m.accuracy
+                            FROM training_metrics m
+                            JOIN trainings t ON m.training_id = t.id
+                            WHERE t.model_version_id = ?
+                            ORDER BY m.epoch
+                        """,
                 modelVersionId
         );
 
@@ -241,10 +241,10 @@ public class ModelRepository implements IModelRepository {
     @Override
     public boolean hasUserAlreadySharedTraining(UUID trainingId) {
         return !dsl.fetch("""
-            SELECT 1
-            FROM public_results pt
-            WHERE pt.training_id = ?;
-            """,
+                        SELECT 1
+                        FROM public_results pt
+                        WHERE pt.training_id = ?;
+                        """,
                 trainingId
         ).isEmpty();
     }

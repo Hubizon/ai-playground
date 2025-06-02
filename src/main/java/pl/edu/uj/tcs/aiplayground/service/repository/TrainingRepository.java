@@ -7,11 +7,10 @@ import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.util.List;
 import java.util.UUID;
-import java.sql.Connection;
 
 @SuppressWarnings("ConstantConditions")
 public class TrainingRepository implements ITrainingRepository {
@@ -114,10 +113,10 @@ public class TrainingRepository implements ITrainingRepository {
         }
 
         dsl.query("""
-                    INSERT INTO public_results (training_id, accuracy, loss)
-                    VALUES (?, ?, ?)
-                    ON CONFLICT (training_id) DO NOTHING
-                    """, trainingId, accuracy, loss).execute();
+                INSERT INTO public_results (training_id, accuracy, loss)
+                VALUES (?, ?, ?)
+                ON CONFLICT (training_id) DO NOTHING
+                """, trainingId, accuracy, loss).execute();
 
         PGNotification[] notifications = pgConnection.getNotifications();
         if (notifications != null && notifications.length > 0)

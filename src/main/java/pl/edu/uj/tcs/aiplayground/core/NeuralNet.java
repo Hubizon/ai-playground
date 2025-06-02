@@ -1,10 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.core;
+
 import javafx.util.Pair;
 import org.jooq.JSONB;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
-import pl.edu.uj.tcs.aiplayground.core.layers.*;
+import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
@@ -14,8 +15,7 @@ import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
-import java.time.*;
-
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,10 +58,16 @@ public class NeuralNet {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unknown layer type: " + typeStr));
 
-            LayerParams params = type.getParams().loadFromJson(paramsJson);;
+            LayerParams params = type.getParams().loadFromJson(paramsJson);
             Layer layer = new LayerConfig(type, params).toLayer();
             layers.add(layer);
         }
+    }
+
+    public static Optional<LayerType> getLayerTypeFor(Layer layer) {
+        return Arrays.stream(LayerType.values())
+                .filter(t -> t.createLayer(t.getParams()).getClass().equals(layer.getClass()))
+                .findFirst();
     }
 
     public JSONB toJson() {
@@ -110,9 +116,9 @@ public class NeuralNet {
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
 
-        final int batchSize=8;
-        final int numThreads  = Runtime.getRuntime().availableProcessors();;
-        System.out.println("Using "+numThreads+" threads");
+        final int batchSize = 8;
+        final int numThreads = Runtime.getRuntime().availableProcessors();
+        System.out.println("Using " + numThreads + " threads");
 
         Dataset dataset = dto.dataset().create();
         LossFunc lossFn = dto.lossFunction().create();
@@ -126,20 +132,20 @@ public class NeuralNet {
                 if (isCancelled.get()) break;
 
                 double epochLoss = 0;
-                int processed   = 0;
+                int processed = 0;
                 Dataset.DataLoader loader = dataset.getDataLoader("train", batchSize);
 
                 while (loader.hasNext()) {
-                    List<Pair<Tensor,Tensor>> batch = loader.next();
+                    List<Pair<Tensor, Tensor>> batch = loader.next();
                     optimizer.zeroGradient();
                     List<Future<Double>> futures = new ArrayList<>(batch.size());
-                    for (Pair<Tensor,Tensor> dp : batch) {
+                    for (Pair<Tensor, Tensor> dp : batch) {
                         futures.add(exec.submit(() -> {
                             ComputationalGraph g = new ComputationalGraph();
-                            Tensor x    = dp.getKey().transpose();
-                            Tensor y    = dp.getValue().transpose();
+                            Tensor x = dp.getKey().transpose();
+                            Tensor y = dp.getValue().transpose();
                             Tensor pred = forward(x, g);
-                            double l    = lossFn.loss(pred, y);
+                            double l = lossFn.loss(pred, y);
                             g.propagate();
                             return l;
                         }));
@@ -157,11 +163,11 @@ public class NeuralNet {
                     //if(processed % 4096 == 0) System.out.println(processed+" "+batchLoss);
                     epochLoss += batchLoss;
                     optimizer.optimize();
-                    processed+=batchSize;
+                    processed += batchSize;
                 }
 
                 Accuracy acc = new Accuracy();
-                accuracy = acc.eval(dataset,this);
+                accuracy = acc.eval(dataset, this);
                 if (isCancelled.get())
                     break;
                 TrainingMetricDto metric = new TrainingMetricDto(epoch, epochLoss, accuracy);
@@ -175,11 +181,5 @@ public class NeuralNet {
         } finally {
             exec.shutdown();
         }
-    }
-
-    public static Optional<LayerType> getLayerTypeFor(Layer layer) {
-        return Arrays.stream(LayerType.values())
-                .filter(t -> t.createLayer(t.getParams()).getClass().equals(layer.getClass()))
-                .findFirst();
     }
 }
