@@ -220,7 +220,7 @@ CREATE TABLE custom_event_prices
 (
     event_id INTEGER REFERENCES events,
     role_id  INTEGER REFERENCES roles,
-    price    double precision
+    price    INTEGER
 );
 
 INSERT INTO currencies (name, conversion_rate)
@@ -430,13 +430,13 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION calculate_event_price(
     p_user_id UUID,
     p_event_id INTEGER
-) RETURNS DOUBLE PRECISION AS
+) RETURNS INTEGER AS
 $$
 DECLARE
     v_role_id      INTEGER;
-    v_custom_price DOUBLE PRECISION;
+    v_custom_price INTEGER;
     v_base_price   INTEGER;
-    v_final_price  DOUBLE PRECISION;
+    v_final_price  INTEGER;
 BEGIN
 
     SELECT ur.role_id
@@ -502,7 +502,7 @@ $$
 
 DECLARE
     v_event_id INTEGER;
-    v_price    DOUBLE PRECISION;
+    v_price    INTEGER;
 BEGIN
     SELECT id INTO v_event_id FROM events WHERE name = 'Model Creation';
     v_price := calculate_event_price(NEW.user_id, v_event_id);
@@ -535,8 +535,8 @@ $$
 DECLARE
     user_balance      INTEGER;
     training_event_id INTEGER;
-    training_cost     DOUBLE PRECISION;
-    event_price       DOUBLE PRECISION;
+    training_cost     INTEGER;
+    event_price       INTEGER;
     model_user_id     UUID;
 BEGIN
     SELECT id INTO training_event_id FROM events WHERE name = 'Model Training';
@@ -569,8 +569,8 @@ CREATE OR REPLACE FUNCTION update_token_history_after_training()
 $$
 DECLARE
     training_event_id INTEGER;
-    training_cost     DOUBLE PRECISION;
-    event_price       DOUBLE PRECISION;
+    training_cost     INTEGER;
+    event_price       INTEGER;
     total_cost        INTEGER;
     v_model_id        UUID;
     model_user_id     UUID;
@@ -595,7 +595,7 @@ BEGIN
     training_cost := -calculate_training_cost(NEW);
     event_price := calculate_event_price(model_user_id, training_event_id);
 
-    total_cost := CEIL(training_cost + event_price);
+    total_cost := training_cost + event_price;
 
     INSERT INTO token_history (user_id,
                                amount,
