@@ -231,7 +231,7 @@ public class MainViewController {
         prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
         nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
 
-//        tokenField.textProperty().bind(mainViewModel.tokensProperty());
+//        tokenField.textProperty().bind(mainViewModel.tokensProperty()); //TODO: uncomment when tokenProperty() in mainViewModel will be ready to use
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
