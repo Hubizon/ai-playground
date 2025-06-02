@@ -26,4 +26,8 @@ public interface IModelRepository {
     TrainingDto getTrainingForModel(UUID modelVersionId);
 
     List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId);
+
+    UUID getTrainingIdForModel(UUID modelVersionId);
+
+    boolean hasUserAlreadySharedTraining(UUID trainingId);
 }

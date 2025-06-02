@@ -627,19 +627,32 @@ CREATE OR REPLACE TRIGGER update_token_history_after_starting_model_training
 EXECUTE FUNCTION update_token_history_after_training();
 
 CREATE OR REPLACE VIEW leaderboards AS
-SELECT RANK() OVER (ORDER BY pr.accuracy DESC, pr.loss ASC) AS position,
-       u.username,
-       c.name                                               AS country,
-       d.name                                               AS dataset,
-       pr.accuracy,
-       pr.loss
-FROM public_results pr
-         JOIN trainings t ON pr.training_id = t.id
-         JOIN datasets d ON t.dataset_id = d.id
-         JOIN model_versions mv ON t.model_version_id = mv.id
-         JOIN models m ON mv.model_id = m.id
-         JOIN users u ON m.user_id = u.id
-         JOIN countries c ON u.country_id = c.id;
+WITH best_per_user_dataset AS (
+    SELECT DISTINCT ON (u.id, d.id)
+        u.id AS user_id,
+        u.username,
+        c.name AS country,
+        d.id AS dataset_id,
+        d.name AS dataset,
+        pr.accuracy,
+        pr.loss
+    FROM public_results pr
+             JOIN trainings t ON pr.training_id = t.id
+             JOIN datasets d ON t.dataset_id = d.id
+             JOIN model_versions mv ON t.model_version_id = mv.id
+             JOIN models m ON mv.model_id = m.id
+             JOIN users u ON m.user_id = u.id
+             JOIN countries c ON u.country_id = c.id
+    ORDER BY u.id, d.id, pr.accuracy DESC, pr.loss ASC
+)
+SELECT
+            RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
+            username,
+            country,
+            dataset,
+            accuracy,
+            loss
+FROM best_per_user_dataset;
 
 
 CREATE OR REPLACE VIEW best_results AS
@@ -707,7 +720,7 @@ BEGIN
     WHERE user_id = v_user_id
       AND dataset_id = v_dataset_id
       AND scope = 'country'), 0)
-    INTO v_old_best_reward_global;
+    INTO v_old_best_reward_country;
 
     SELECT COUNT(*) + 1
     INTO v_country_rank
@@ -789,6 +802,12 @@ BEGIN
                 format('Congratulations! You''ve earned %s tokens!\n%s',
                        v_reward_total, v_description)
                 );
+    ELSE
+        PERFORM pg_notify(
+                'reward_channel',
+                format(
+                        'Congratulations! You''ve shared the model. Currently, it holds the %s place globally and the %s place in your country.',
+                        v_global_rank, v_country_rank));
     END IF;
 
     RETURN NEW;

@@ -21,6 +21,7 @@ import pl.edu.uj.tcs.aiplayground.service.UserService;
 
 import javax.xml.crypto.Data;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainViewModel {
@@ -70,9 +71,9 @@ public class MainViewModel {
             modelVersion.set(model.versionNumber());
 
             try {
-                var training = modelService.getTrainingDataForModel(model.modelVersionId());
-                TrainingDto trainingDto = training.getKey();
-                List<TrainingMetricDto> metrics = training.getValue();
+                UUID trainingId = modelService.getTrainingIdForModel(model.modelVersionId());
+                TrainingDto trainingDto = modelService.getTrainingForModel(model.modelVersionId());
+                List<TrainingMetricDto> metrics = modelService.getMetricsForModel(model.modelVersionId());
                 if (trainingDto != null) {
                     learningRate.set(trainingDto.learningRate());
                     batchSize.set(trainingDto.batchSize());
@@ -84,6 +85,9 @@ public class MainViewModel {
                 if (metrics != null) {
                     liveMetrics.clear();
                     liveMetrics.addAll(metrics);
+                    if (trainingId != null) {
+                        trainingHandler = new TrainingHandler(trainingId, liveMetrics.getLast());
+                    }
                 }
             } catch (DatabaseException e) {
                 logger.error("Failed to get model training data for model={}, error={}", model, e.getMessage(), e);
@@ -149,7 +153,14 @@ public class MainViewModel {
     }
 
     private void updateIsRecentTrainingAvailable() {
-        isRecentTrainingAvailable.set(trainingHandler != null);
+        try {
+            isRecentTrainingAvailable.set(trainingHandler != null
+                    && !modelService.hasUserAlreadySharedTraining(trainingHandler.getTrainingId()));
+        } catch (DatabaseException e) {
+            logger.error("Failed to get information about shared training, error={}", e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+            isRecentTrainingAvailable.set(false);
+        }
     }
 
     public DoubleProperty learningRateProperty() {
@@ -268,6 +279,7 @@ public class MainViewModel {
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
         }
         setupModel();
+        trainingHandler = null;
     }
 
     public void setNextVersion() {
@@ -336,6 +348,7 @@ public class MainViewModel {
             if (mess != null) {
                 alertEvent.set(AlertEvent.createAlertEvent(mess, true));
             }
+            updateIsRecentTrainingAvailable();
         }
     }
 

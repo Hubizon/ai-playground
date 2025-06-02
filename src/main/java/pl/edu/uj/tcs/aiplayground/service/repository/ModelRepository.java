@@ -220,4 +220,32 @@ public class ModelRepository implements IModelRepository {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public UUID getTrainingIdForModel(UUID modelVersionId) {
+        Record record = dsl.fetchOne("""
+                        SELECT t.id
+                        FROM trainings t
+                        WHERE t.model_version_id = ?
+                        ORDER BY t.started_at DESC
+                        LIMIT 1;
+                        """,
+                modelVersionId
+        );
+
+        if (record == null)
+            return null;
+        return record.into(UUID.class);
+    }
+
+    @Override
+    public boolean hasUserAlreadySharedTraining(UUID trainingId) {
+        return !dsl.fetch("""
+            SELECT 1
+            FROM public_results pt
+            WHERE pt.training_id = ?;
+            """,
+                trainingId
+        ).isEmpty();
+    }
 }
