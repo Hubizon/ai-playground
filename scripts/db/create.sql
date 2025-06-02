@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
 DROP FUNCTION IF EXISTS calculate_training_cost CASCADE;
+DROP FUNCTION IF EXISTS calculate_event_price CASCADE;
 
 CREATE TABLE currencies
 (
@@ -737,23 +738,22 @@ BEGIN
     INTO v_old_best_reward_country;
 
     SELECT COUNT(*) + 1
-    INTO v_country_rank
-    FROM public_results pr
-             JOIN trainings t ON pr.training_id = t.id
-             JOIN model_versions mv ON t.model_version_id = mv.id
-             JOIN models m ON mv.model_id = m.id
-             JOIN users u ON m.user_id = u.id
-    WHERE u.country_id = v_country_id
-      AND pr.accuracy > NEW.accuracy;
+    INTO v_global_rank
+    FROM leaderboards lb
+        JOIN datasets d ON lb.dataset = d.name
+    WHERE d.id = v_dataset_id
+      AND (lb.accuracy > NEW.accuracy
+        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
 
     SELECT COUNT(*) + 1
-    INTO v_global_rank
-    FROM public_results pr
-             JOIN trainings t ON pr.training_id = t.id
-             JOIN model_versions mv ON t.model_version_id = mv.id
-             JOIN models m ON mv.model_id = m.id
-             JOIN users u ON m.user_id = u.id
-    WHERE pr.accuracy > NEW.accuracy;
+    INTO v_country_rank
+    FROM leaderboards lb
+        JOIN datasets d ON lb.dataset = d.name
+        JOIN countries c ON lb.country = c.name
+    WHERE d.id = v_dataset_id
+      AND c.id = v_country_id
+      AND (lb.accuracy > NEW.accuracy
+        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
 
     v_description_country := NULL;
     IF v_country_rank = 1 THEN

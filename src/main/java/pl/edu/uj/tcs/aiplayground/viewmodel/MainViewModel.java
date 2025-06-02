@@ -59,7 +59,6 @@ public class MainViewModel {
 
     private void setupModel() {
         layers.clear();
-        trainingHandler = null;
         if (model != null) {
             NeuralNet neuralNet = new NeuralNet(model.architecture());
             layers.addAll(neuralNet.toConfigList());
@@ -92,6 +91,8 @@ public class MainViewModel {
                 alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             }
         }
+        else
+            trainingHandler = null;
         isModelLoaded.set(model != null);
         updateUserTokens();
         updateIsRecentTrainingAvailable();
@@ -392,10 +393,12 @@ public class MainViewModel {
 
                 runTraining(trainingDto, net, trainingHandler);
 
-                if (isCancelled.get()) { // TODO to powinno być tutaj a nie po stronie core?
-                    trainingHandler.updateTrainingStatus(StatusType.CANCELLED);
-                } else {
-                    trainingHandler.updateTrainingStatus(StatusType.FINISHED);
+                if (trainingHandler != null) {
+                    if (isCancelled.get()) {
+                        trainingHandler.updateTrainingStatus(StatusType.CANCELLED);
+                    } else {
+                        trainingHandler.updateTrainingStatus(StatusType.FINISHED);
+                    }
                 }
             } catch (TrainingException e) {
                 if (trainingHandler != null)
