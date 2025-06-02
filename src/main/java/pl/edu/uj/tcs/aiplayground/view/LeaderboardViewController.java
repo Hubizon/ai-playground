@@ -34,6 +34,18 @@ public class LeaderboardViewController {
 
         lossColumn.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleDoubleProperty(cellData.getValue().loss()).asObject());
+
+        lossColumn.setCellFactory(column -> new javafx.scene.control.TableCell<LeaderboardDto, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%.2f", item));
+                }
+            }
+        });
     }
 
     public void loadData(List<LeaderboardDto> data) {
