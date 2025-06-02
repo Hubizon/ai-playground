@@ -17,11 +17,11 @@ import java.util.function.Consumer;
 public class TrainingCombined {
     public static void main(String[] args) {
         List<LayerConfig> architecture = List.of(
-                new LayerConfig(LayerType.LINEAR, new LinearParams(784,512, true)),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(784, 512, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(512,64,true)),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(512, 64, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true))
+                new LayerConfig(LayerType.LINEAR, new LinearParams(64, 10, true))
         );
 
         NeuralNet nn = new NeuralNet(architecture);

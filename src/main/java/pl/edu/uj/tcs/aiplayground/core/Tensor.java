@@ -69,7 +69,9 @@ public class Tensor {
         ArrayList<Tensor> addends = new ArrayList<Tensor>();
         addends.add(a);
         addends.add(b);
-        if(graph!=null){graph.addNode(result, addends, "+");}
+        if (graph != null) {
+            graph.addNode(result, addends, "+");
+        }
         return result;
     }
 
@@ -87,7 +89,9 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        if(graph!=null) {graph.addNode(result, factors, "*");}
+        if (graph != null) {
+            graph.addNode(result, factors, "*");
+        }
         return result;
     }
 
@@ -107,7 +111,9 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        if(graph!=null) {graph.addNode(result, factors, "matMul");}
+        if (graph != null) {
+            graph.addNode(result, factors, "matMul");
+        }
         return result;
     }
 
@@ -120,7 +126,9 @@ public class Tensor {
             }
 
         }
-        if(graph!=null){graph.addNode(result, new ArrayList<>(List.of(a)), "relu");}
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+        }
         return result;
     }
 
@@ -131,54 +139,10 @@ public class Tensor {
                 result.data[i][j] = 1 / (1 + Math.exp(-a.data[i][j]));
             }
         }
-        if(graph!=null){ graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");}
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+        }
         return result;
-    }
-
-    public void fill(double value) {
-        for (int i = 0; i < rows; i++) {
-            Arrays.fill(data[i], value);
-        }
-
-    }
-
-    public Tensor sumRows(ComputationalGraph graph) {
-        double[][] sum = new double[1][cols];
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                sum[0][i] += data[j][i];
-            }
-        }
-        Tensor result = new Tensor(sum, 1, cols);
-        ArrayList<Tensor> comps = new ArrayList<>();
-        comps.add(this);
-        if(graph!=null){graph.addNode(result, comps, "sumRows");}
-        return result;
-    }
-
-    public Tensor sumCols(ComputationalGraph graph) {
-        double[][] sum = new double[rows][1];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                sum[i][0] += data[i][j];
-            }
-        }
-        Tensor result = new Tensor(sum, rows, 1);
-        ArrayList<Tensor> comps = new ArrayList<>();
-        comps.add(this);
-        if(graph!=null){graph.addNode(result, comps, "sumCols");}
-        return result;
-    }
-
-    public Tensor transpose() {
-
-        double[][] transposedData = new double[cols][rows];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                transposedData[j][i] = data[i][j];
-            }
-        }
-        return new Tensor(transposedData, cols, rows);
     }
 
     public static Tensor Softmax(Tensor input, ComputationalGraph graph) {
@@ -209,5 +173,55 @@ public class Tensor {
         }
 
         return result;
+    }
+
+    public void fill(double value) {
+        for (int i = 0; i < rows; i++) {
+            Arrays.fill(data[i], value);
+        }
+
+    }
+
+    public Tensor sumRows(ComputationalGraph graph) {
+        double[][] sum = new double[1][cols];
+        for (int i = 0; i < cols; i++) {
+            for (int j = 0; j < rows; j++) {
+                sum[0][i] += data[j][i];
+            }
+        }
+        Tensor result = new Tensor(sum, 1, cols);
+        ArrayList<Tensor> comps = new ArrayList<>();
+        comps.add(this);
+        if (graph != null) {
+            graph.addNode(result, comps, "sumRows");
+        }
+        return result;
+    }
+
+    public Tensor sumCols(ComputationalGraph graph) {
+        double[][] sum = new double[rows][1];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                sum[i][0] += data[i][j];
+            }
+        }
+        Tensor result = new Tensor(sum, rows, 1);
+        ArrayList<Tensor> comps = new ArrayList<>();
+        comps.add(this);
+        if (graph != null) {
+            graph.addNode(result, comps, "sumCols");
+        }
+        return result;
+    }
+
+    public Tensor transpose() {
+
+        double[][] transposedData = new double[cols][rows];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                transposedData[j][i] = data[i][j];
+            }
+        }
+        return new Tensor(transposedData, cols, rows);
     }
 }

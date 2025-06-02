@@ -7,7 +7,6 @@ import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
-import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;

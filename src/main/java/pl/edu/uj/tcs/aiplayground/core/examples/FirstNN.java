@@ -71,7 +71,7 @@ public class FirstNN {
             optimizer.zeroGradient();
 
 
-            if (epoch % 1 == 0) {
+            if (0 == 0) {
                 int sum = 0;
                 System.out.println("EVAL MODE: " + epoch);
                 for (int i = 0; i < numPoints; i++) {

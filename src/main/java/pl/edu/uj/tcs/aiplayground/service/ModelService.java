@@ -1,16 +1,16 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
-import javafx.util.Pair;
 import org.jooq.exception.DataAccessException;
-import org.postgresql.core.Tuple;
 import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
-import pl.edu.uj.tcs.aiplayground.exception.*;
-import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
 import pl.edu.uj.tcs.aiplayground.dto.validation.ModelValidation;
+import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
+import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
+import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +46,7 @@ public class ModelService {
         }
     }
 
-    public ModelDto addModel(ModelForm modelForm) throws DatabaseException, ModelModificationException, InsufficientTokensException  {
+    public ModelDto addModel(ModelForm modelForm) throws DatabaseException, ModelModificationException, InsufficientTokensException {
         ModelValidation.validateModelForm(modelForm);
 
         if (modelRepository.existUserModelName(modelForm.userId(), modelForm.name()))
@@ -54,9 +54,8 @@ public class ModelService {
 
         try {
             return modelRepository.insertModel(modelForm);
-        } catch(DataAccessException e) {
-            if (e.getCause() instanceof org.postgresql.util.PSQLException) {
-                PSQLException ex = (PSQLException) e.getCause();
+        } catch (DataAccessException e) {
+            if (e.getCause() instanceof PSQLException ex) {
                 if ("P0001".equals(ex.getSQLState())) {
                     throw new InsufficientTokensException(ex.getServerErrorMessage().getMessage());
                 }

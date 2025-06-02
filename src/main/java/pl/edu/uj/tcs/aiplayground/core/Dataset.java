@@ -1,21 +1,21 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
 import javafx.util.Pair;
+
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class  Dataset {
+public class Dataset {
 
     public ArrayList<Integer> inputShape;
     public ArrayList<Integer> outputShape;
     public int size;
     public ArrayList<Pair<Tensor, Tensor>> trainData;
     public ArrayList<Pair<Tensor, Tensor>> testData;
-    private Map<String, Integer> labelMap;
-    private int nextLabel = 0;
+    private final Map<String, Integer> labelMap;
+    private final int nextLabel = 0;
 
     public Dataset(String filename) {
         trainData = new ArrayList<>();
@@ -138,15 +138,14 @@ public class  Dataset {
         Collections.shuffle(trainData);
     }
 
-    public DataLoader getDataLoader(String type,int batchSize) {
-        if(type.equals("train")) shuffle();
-        return new DataLoader(type,batchSize);
+    public DataLoader getDataLoader(String type, int batchSize) {
+        if (type.equals("train")) shuffle();
+        return new DataLoader(type, batchSize);
     }
 
 
-    public class DataLoader implements Iterator<ArrayList<Pair<Tensor, Tensor>>>
-    {
-        int cursor=0;
+    public class DataLoader implements Iterator<ArrayList<Pair<Tensor, Tensor>>> {
+        int cursor = 0;
         int lastRet = -1;
         int batchSize;
         ArrayList<Pair<Tensor, Tensor>> data;
@@ -155,23 +154,21 @@ public class  Dataset {
         public DataLoader(String type, int batchSize) {
             this.type = type;
             this.batchSize = batchSize;
-            if(type.equals("train"))
+            if (type.equals("train"))
                 data = trainData;
             else
                 data = testData;
         }
 
-        public boolean hasNext()
-        {
-                return cursor+batchSize < data.size();
+        public boolean hasNext() {
+            return cursor + batchSize < data.size();
         }
 
-        public ArrayList<Pair<Tensor, Tensor>> next()
-        {
-            if(!hasNext())
+        public ArrayList<Pair<Tensor, Tensor>> next() {
+            if (!hasNext())
                 throw new NoSuchElementException();
-            cursor+=batchSize;
-            return new ArrayList<>(data.subList(cursor-batchSize,cursor));
+            cursor += batchSize;
+            return new ArrayList<>(data.subList(cursor - batchSize, cursor));
         }
 
     }

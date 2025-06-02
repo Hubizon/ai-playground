@@ -19,5 +19,7 @@ public enum StatusType {
         return name;
     }
 
-    public boolean getIsFinished() { return isFinished; }
+    public boolean getIsFinished() {
+        return isFinished;
+    }
 }
