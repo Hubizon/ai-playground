@@ -116,8 +116,8 @@ public class UserRepository implements IUserRepository {
     @Override
     public int userTokenCount(UUID userId) {
         return dsl.fetchOne("""
-                SELECT 
-                """, userId // TODO
+                SELECT get_user_token_balance(?);
+                """, userId
         ).into(Integer.class);
     }
 }

@@ -24,7 +24,7 @@ public class ViewModelFactory {
         var modelService = new ModelService(modelRepository);
         var trainingRepository = new TrainingRepository(dsl);
         var trainingService = new TrainingService(trainingRepository);
-        this.mainViewModel = new MainViewModel(modelService, trainingService);
+        this.mainViewModel = new MainViewModel(modelService, userService, trainingService);
 
         var leaderboardRepository = new LeaderboardRepository(dsl);
         var leadeboardService = new LeaderboardService(leaderboardRepository);
