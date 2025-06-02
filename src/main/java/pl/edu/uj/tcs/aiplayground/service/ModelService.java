@@ -1,10 +1,14 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import javafx.util.Pair;
+import org.jooq.exception.DataAccessException;
+import org.postgresql.core.Tuple;
+import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
-import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
+import pl.edu.uj.tcs.aiplayground.exception.*;
 import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
 import pl.edu.uj.tcs.aiplayground.dto.validation.ModelValidation;
 
@@ -42,7 +46,7 @@ public class ModelService {
         }
     }
 
-    public ModelDto addModel(ModelForm modelForm) throws DatabaseException, ModelModificationException {
+    public ModelDto addModel(ModelForm modelForm) throws DatabaseException, ModelModificationException, InsufficientTokensException  {
         ModelValidation.validateModelForm(modelForm);
 
         if (modelRepository.existUserModelName(modelForm.userId(), modelForm.name()))
@@ -50,6 +54,14 @@ public class ModelService {
 
         try {
             return modelRepository.insertModel(modelForm);
+        } catch(DataAccessException e) {
+            if (e.getCause() instanceof org.postgresql.util.PSQLException) {
+                PSQLException ex = (PSQLException) e.getCause();
+                if ("P0001".equals(ex.getSQLState())) {
+                    throw new InsufficientTokensException(ex.getServerErrorMessage().getMessage());
+                }
+            }
+            throw e;
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
@@ -84,6 +96,38 @@ public class ModelService {
                     .filter(i -> i > modelVersion)
                     .min(Integer::compareTo)
                     .orElse(null);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public UUID getTrainingIdForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            return modelRepository.getTrainingIdForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public TrainingDto getTrainingForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            return modelRepository.getTrainingForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            return modelRepository.getMetricsForModel(modelVersionId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public boolean hasUserAlreadySharedTraining(UUID trainingId) throws DatabaseException {
+        try {
+            return modelRepository.hasUserAlreadySharedTraining(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

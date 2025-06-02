@@ -1,11 +1,18 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LossFunctionType;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.OptimizerType;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
 public class ModelRepository implements IModelRepository {
@@ -154,6 +161,91 @@ public class ModelRepository implements IModelRepository {
             WHERE user_id = ? AND name = ?;
             """,
                 userId, name
+        ).isEmpty();
+    }
+
+    @Override
+    public TrainingDto getTrainingForModel(UUID modelVersionId) {
+        Record record = dsl.fetchOne("""
+            SELECT t.model_version_id,
+                   t.max_epochs,
+                   t.batch_size,
+                   t.learning_rate,
+                   d.name AS dataset,
+                   o.name AS optimizer,
+                   l.name AS loss_function
+            FROM trainings t
+            JOIN datasets d ON t.dataset_id = d.id
+            JOIN optimizers o ON t.optimizer = o.id
+            JOIN loss_functions l ON t.loss_function = l.id
+            WHERE t.model_version_id = ?
+            ORDER BY t.started_at DESC
+            LIMIT 1
+        """, modelVersionId);
+
+        if (record == null)
+            return null;
+
+        return new TrainingDto(
+                record.get("model_version_id", UUID.class),
+                record.get("max_epochs", Integer.class),
+                record.get("batch_size", Integer.class),
+                record.get("learning_rate", Double.class),
+                DatasetType.valueOf(record.get("dataset", String.class)),
+                OptimizerType.valueOf(record.get("optimizer", String.class)),
+                LossFunctionType.valueOf(record.get("loss_function", String.class))
+        );
+    }
+
+    @Override
+    public List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId) {
+        List<Record> records = dsl.fetch("""
+                SELECT m.epoch, m.loss, m.accuracy
+                FROM training_metrics m
+                JOIN trainings t ON m.training_id = t.id
+                WHERE t.model_version_id = ?
+                ORDER BY m.epoch
+            """,
+                modelVersionId
+        );
+
+        if (records == null || records.isEmpty())
+            return null;
+
+        return records.stream()
+                .map(r -> new TrainingMetricDto(
+                        r.get("epoch", Integer.class),
+                        r.get("loss", Double.class),
+                        r.get("accuracy", Double.class)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UUID getTrainingIdForModel(UUID modelVersionId) {
+        Record record = dsl.fetchOne("""
+                        SELECT t.id
+                        FROM trainings t
+                        WHERE t.model_version_id = ?
+                        ORDER BY t.started_at DESC
+                        LIMIT 1;
+                        """,
+                modelVersionId
+        );
+
+        if (record == null)
+            return null;
+        return record.into(UUID.class);
+    }
+
+    @Override
+    public boolean hasUserAlreadySharedTraining(UUID trainingId) {
+        return !dsl.fetch("""
+            SELECT 1
+            FROM public_results pt
+            WHERE pt.training_id = ?;
+            """,
+                trainingId
         ).isEmpty();
     }
 }

@@ -6,57 +6,44 @@ import pl.edu.uj.tcs.aiplayground.core.optim.*;
 import java.util.ArrayList;
 
 public enum OptimizerType {
-    SGD("SGD", "Stochastic Gradient Descent") {
+    SGD("Stochastic Gradient Descent") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new SGDOptimizer(params, learningRate);
         }
     },
-    ADAM("Adam", "Adam Optimizer") {
+    ADAM("Adam Optimizer") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdamOptimizer(params, learningRate);
         }
     },
 
-    ADAGRAD("AdaGrad", "AdaGrad Optimizer") {
+    ADAGRAD("AdaGrad Optimizer") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdaGradOptimizer(params, learningRate);
         }
     },
 
-    ADADELTA("AdaDelta", "AdaDelta Optimizer") {
+    ADADELTA("AdaDelta Optimizer") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new AdaDeltaOptimizer(params, learningRate);
         }
     },
 
-    RMSPROP("RMSProp", "RMSProp Optimizer") {
+    RMSPROP("RMSProp Optimizer") {
         @Override
         public Optimizer create(ArrayList<Tensor> params, double learningRate) {
             return new RMSPropOptimizer(params, learningRate);
         }
     };
 
-    private final String dbKey;
     private final String displayName;
 
-    OptimizerType(String dbKey, String displayName) {
-        this.dbKey = dbKey;
+    OptimizerType(String displayName) {
         this.displayName = displayName;
-    }
-
-    public static OptimizerType fromKey(String key) {
-        for (OptimizerType type : values())
-            if (type.dbKey.equalsIgnoreCase(key))
-                return type;
-        throw new IllegalArgumentException("Unknown optimizer key: " + key);
-    }
-
-    public String getDbKey() {
-        return dbKey;
     }
 
     public abstract Optimizer create(ArrayList<Tensor> params, double learningRate);

@@ -6,6 +6,8 @@ import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
@@ -21,24 +23,43 @@ public class TrainingHandler {
     private TrainingMetricDto recentMetric;
 
     public TrainingHandler(TrainingService trainingService,
+                           Consumer<StatusType> statusListener,
+                           UUID trainingId,
+                           TrainingMetricDto recentMetric) {
+        this.trainingService = trainingService;
+        this.statusListener = statusListener;
+        this.trainingId = trainingId;
+        this.recentMetric = recentMetric;
+    }
+
+    public TrainingHandler(TrainingService trainingService,
                            TrainingDto trainingDto,
-                           Consumer<StatusType> statusListener) {
+                           Consumer<StatusType> statusListener) throws InsufficientTokensException {
         this.trainingService = trainingService;
         this.statusListener = statusListener;
 
         try {
             trainingId = trainingService.addNewTraining(trainingDto);
+        } catch (InsufficientTokensException e) {
+            throw e;
         } catch (DatabaseException e) {
             logger.error("Failed to create training for core={}, error={}", trainingDto, e.getMessage(), e);
         }
     }
 
-    public TrainingHandler(TrainingDto trainingDto) {
-        this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, null);
+    public TrainingHandler(TrainingDto trainingDto) throws InsufficientTokensException {
+        this(new TrainingService(new TrainingRepository(
+                JooqFactory.getConnection(), JooqFactory.getDSLContext())), trainingDto, null);
     }
 
-    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) {
-        this(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())), trainingDto, statusListener);
+    public TrainingHandler(TrainingDto trainingDto, Consumer<StatusType> statusListener) throws InsufficientTokensException {
+        this(new TrainingService(new TrainingRepository(
+                JooqFactory.getConnection(), JooqFactory.getDSLContext())), trainingDto, statusListener);
+    }
+
+    public TrainingHandler(UUID trainingId, TrainingMetricDto recentMetric) {
+        this(new TrainingService(new TrainingRepository(
+                JooqFactory.getConnection(), JooqFactory.getDSLContext())), null, trainingId, recentMetric);
     }
 
     public void addNewTrainingMetric(TrainingMetricDto trainingMetricDto) {
@@ -63,12 +84,17 @@ public class TrainingHandler {
         }
     }
 
-    public void shareTraining() {
+    public String shareTraining() {
         try {
-            trainingService.shareTraining(trainingId, recentMetric.accuracy(), recentMetric.loss());
+            return trainingService.shareTraining(trainingId, recentMetric.accuracy(), recentMetric.loss());
         } catch (DatabaseException e) {
             logger.error("Failed to share training for trainingId={}, error={}",
                     trainingId, e.getMessage(), e);
         }
+        return null;
+    }
+
+    public UUID getTrainingId() {
+        return trainingId;
     }
 }

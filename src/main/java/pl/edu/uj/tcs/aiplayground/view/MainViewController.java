@@ -17,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
@@ -46,6 +47,8 @@ public class MainViewController {
     private MainViewModel mainViewModel;
     @FXML
     private VBox barsContainer;
+    @FXML
+    private Label tokenField;
     @FXML
     private Label accuracyField;
     @FXML
@@ -81,7 +84,7 @@ public class MainViewController {
     @FXML
     private Button nextVersionButton;
     @FXML
-    private Button shareButon;
+    private Button shareButton;
     @FXML
     private ListView<String> modelsListView;
 
@@ -137,6 +140,14 @@ public class MainViewController {
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
+
+        optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
+        lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
+        datasetComboBox.valueProperty().bindBidirectional(mainViewModel.datasetTypeProperty());
+
+        Bindings.bindBidirectional(learningRateField.textProperty(), mainViewModel.learningRateProperty(), new NumberStringConverter());
+        Bindings.bindBidirectional(batchField.textProperty(), mainViewModel.batchSizeProperty(), new NumberStringConverter("#"));
+        Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
 
         accuracyField.setText("0");
 
@@ -194,7 +205,9 @@ public class MainViewController {
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
-
+        shareButton.disableProperty().bind(
+                mainViewModel.isRecentTrainingAvailableProperty().not().or(mainViewModel.isTrainingInProgressProperty())
+        );
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {
@@ -228,6 +241,8 @@ public class MainViewController {
 
         prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
         nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
+
+        tokenField.textProperty().bind(mainViewModel.userTokensProperty().asString());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
@@ -403,6 +418,10 @@ public class MainViewController {
         accuracyField.setText(String.valueOf(accuracy));
     }
 
+    public void setTokens(int tokens) {
+        tokenField.setText(String.valueOf(tokens));
+    }
+
     public int getLossPercentage() {
         return Integer.parseInt(lossField.getText());
     }
@@ -416,7 +435,7 @@ public class MainViewController {
     }
 
     @FXML
-    private void onShareButtonClicked(){
+    private void onShareButtonClicked() {
         mainViewModel.shareTraining();
     }
 
