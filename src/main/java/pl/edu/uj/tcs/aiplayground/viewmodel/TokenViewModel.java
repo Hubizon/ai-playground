@@ -1,22 +1,18 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.edu.uj.tcs.aiplayground.dto.CurrencyDto;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.service.TokenService;
-import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TokenViewModel {
@@ -28,9 +24,8 @@ public class TokenViewModel {
     private final IntegerProperty currentTokens = new SimpleIntegerProperty(0);
     private final StringProperty statusMessage = new SimpleStringProperty("");
     private final ObjectProperty<String> selectedCurrency = new SimpleObjectProperty<>("USD");
-
-    private List<CurrencyDto> currencyList = new ArrayList<>();
     private final List<Integer> tokenPackets = new ArrayList<>();
+    private List<CurrencyDto> currencyList = new ArrayList<>();
 
     public TokenViewModel(TokenService tokenService, UserViewModel userViewModel) {
         this.tokenService = tokenService;

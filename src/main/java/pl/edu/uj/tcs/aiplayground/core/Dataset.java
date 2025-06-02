@@ -9,13 +9,13 @@ import java.util.*;
 
 public class Dataset {
 
+    private final Map<String, Integer> labelMap;
+    private final int nextLabel = 0;
     public ArrayList<Integer> inputShape;
     public ArrayList<Integer> outputShape;
     public int size;
     public ArrayList<Pair<Tensor, Tensor>> trainData;
     public ArrayList<Pair<Tensor, Tensor>> testData;
-    private final Map<String, Integer> labelMap;
-    private final int nextLabel = 0;
 
     public Dataset(String filename) {
         trainData = new ArrayList<>();

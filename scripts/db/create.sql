@@ -273,7 +273,7 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('Model Training', -10, TRUE, FALSE),
        ('Model Stopping', -5, TRUE, FALSE),
        ('Application Login', -1, FALSE, FALSE),
-        ('BoughtTokens',0,FALSE,FALSE);
+       ('BoughtTokens', 0, FALSE, FALSE);
 
 INSERT INTO statuses (name, description)
 VALUES ('QUEUE', 'The training is waiting to start.'),
@@ -629,36 +629,33 @@ CREATE OR REPLACE TRIGGER update_token_history_after_starting_model_training
 EXECUTE FUNCTION update_token_history_after_training();
 
 CREATE OR REPLACE VIEW leaderboards AS
-WITH best_per_user_dataset AS (
-    SELECT DISTINCT ON (u.id, d.id)
-        u.id AS user_id,
-        u.username,
-        c.name AS country,
-        d.id AS dataset_id,
-        d.name AS dataset,
-        pr.accuracy,
-        pr.loss
-    FROM public_results pr
-             JOIN trainings t ON pr.training_id = t.id
-             JOIN datasets d ON t.dataset_id = d.id
-             JOIN model_versions mv ON t.model_version_id = mv.id
-             JOIN models m ON mv.model_id = m.id
-             JOIN users u ON m.user_id = u.id
-             JOIN countries c ON u.country_id = c.id
-    ORDER BY u.id, d.id, pr.accuracy DESC, pr.loss ASC
-)
-SELECT
-            RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
-            username,
-            country,
-            dataset,
-            accuracy,
-            loss
+WITH best_per_user_dataset AS (SELECT DISTINCT ON (u.id, d.id) u.id   AS user_id,
+                                                               u.username,
+                                                               c.name AS country,
+                                                               d.id   AS dataset_id,
+                                                               d.name AS dataset,
+                                                               pr.accuracy,
+                                                               pr.loss
+                               FROM public_results pr
+                                        JOIN trainings t ON pr.training_id = t.id
+                                        JOIN datasets d ON t.dataset_id = d.id
+                                        JOIN model_versions mv ON t.model_version_id = mv.id
+                                        JOIN models m ON mv.model_id = m.id
+                                        JOIN users u ON m.user_id = u.id
+                                        JOIN countries c ON u.country_id = c.id
+                               ORDER BY u.id, d.id, pr.accuracy DESC, pr.loss ASC)
+SELECT RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
+       username,
+       country,
+       dataset,
+       accuracy,
+       loss
 FROM best_per_user_dataset;
 
 
 CREATE OR REPLACE FUNCTION ordinal(n int)
-    RETURNS text AS $$
+    RETURNS text AS
+$$
 BEGIN
     RETURN n || CASE
                     WHEN (n % 100) BETWEEN 11 AND 13 THEN 'th'
@@ -725,17 +722,17 @@ BEGIN
     SELECT dataset_id INTO v_dataset_id FROM trainings WHERE id = NEW.training_id;
 
     SELECT COALESCE((SELECT max_tokens
-        FROM best_results
-        WHERE user_id = v_user_id
-          AND dataset_id = v_dataset_id
-          AND scope = 'global'), 0)
+                     FROM best_results
+                     WHERE user_id = v_user_id
+                       AND dataset_id = v_dataset_id
+                       AND scope = 'global'), 0)
     INTO v_old_best_reward_global;
 
     SELECT COALESCE((SELECT max_tokens
-    FROM best_results
-    WHERE user_id = v_user_id
-      AND dataset_id = v_dataset_id
-      AND scope = 'country'), 0)
+                     FROM best_results
+                     WHERE user_id = v_user_id
+                       AND dataset_id = v_dataset_id
+                       AND scope = 'country'), 0)
     INTO v_old_best_reward_country;
 
     SELECT COUNT(*) + 1
@@ -751,7 +748,7 @@ BEGIN
     SELECT COUNT(*) + 1
     INTO v_global_rank
     FROM leaderboards lb
-        JOIN datasets d ON lb.dataset = d.name
+             JOIN datasets d ON lb.dataset = d.name
     WHERE d.id = v_dataset_id
       AND (lb.accuracy > NEW.accuracy
         OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
@@ -759,8 +756,8 @@ BEGIN
     SELECT COUNT(*) + 1
     INTO v_country_rank
     FROM leaderboards lb
-        JOIN datasets d ON lb.dataset = d.name
-        JOIN countries c ON lb.country = c.name
+             JOIN datasets d ON lb.dataset = d.name
+             JOIN countries c ON lb.country = c.name
     WHERE d.id = v_dataset_id
       AND c.id = v_country_id
       AND (lb.accuracy > NEW.accuracy
@@ -784,7 +781,7 @@ BEGIN
     v_reward_country := GREATEST(0, v_reward_country - v_old_best_reward_country);
     if (v_reward_country > 0) THEN
         INSERT INTO token_history (user_id, amount, event_type, description, training_id)
-            VALUES (v_user_id, v_reward_country, v_event_id, v_description_country, NEW.training_id);
+        VALUES (v_user_id, v_reward_country, v_event_id, v_description_country, NEW.training_id);
     END IF;
 
     v_description_global := NULL;
@@ -805,7 +802,7 @@ BEGIN
     v_reward_global := GREATEST(0, v_reward_global - v_old_best_reward_global);
     IF (v_reward_global > 0) THEN
         INSERT INTO token_history (user_id, amount, event_type, description, training_id)
-            VALUES (v_user_id, v_reward_global, v_event_id, v_description_global, NEW.training_id);
+        VALUES (v_user_id, v_reward_global, v_event_id, v_description_global, NEW.training_id);
     END IF;
 
     v_reward_total := v_reward_country + v_reward_global;

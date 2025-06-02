@@ -140,8 +140,7 @@ public class ComputationalGraph {
                         input.gradient[j][i] += grad;
                     }
                 }
-            }
-            else if (operation.startsWith("leakyRelu")) {
+            } else if (operation.startsWith("leakyRelu")) {
                 Tensor input = components.get(0);
                 double alpha;
                 try {

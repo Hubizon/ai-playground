@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.LeaderboardViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       spacing="10" style="-fx-padding: 20;">
     <Label text="Leaderboard" styleClass="leaderboard-title"/>
-    <TableView fx:id="leaderboardTable" styleClass="leaderboard-table" >
+    <TableView fx:id="leaderboardTable" styleClass="leaderboard-table">
         <columns>
             <TableColumn fx:id="userColumn" text="User" styleClass="leaderboard-column" prefWidth="185"/>
             <TableColumn fx:id="accuracyColumn" text="Accuracy" styleClass="leaderboard-column" prefWidth="185"/>

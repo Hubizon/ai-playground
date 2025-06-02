@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface ITokenRepository {
     void insertNewTokens(UserDto user, int amount);
+
     int getUserTokens(UserDto user);
 
     List<CurrencyDto> getCurrencyList();

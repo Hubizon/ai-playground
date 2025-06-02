@@ -3,7 +3,6 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
-import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.DatasetType;

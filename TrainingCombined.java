@@ -17,24 +17,24 @@ import java.util.function.Consumer;
 public class TrainingCombined {
     public static void main(String[] args) {
         List<LayerConfig> architecture = List.of(
-                new LayerConfig(LayerType.LINEAR, new LinearParams(3,10,true)),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(3, 10, true)),
                 new LayerConfig(LayerType.RELU, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(10,3,true)),
-                new LayerConfig(LayerType.SIGMOID,new EmptyParams())
+                new LayerConfig(LayerType.LINEAR, new LinearParams(10, 3, true)),
+                new LayerConfig(LayerType.SIGMOID, new EmptyParams())
         );
 
         NeuralNet nn = new NeuralNet(architecture);
 
         String mockDataset = """
-        {
-            "data": [
-                {"input": [0, 0], "label": [0]},
-                {"input": [0, 1], "label": [1]},
-                {"input": [1, 0], "label": [1]},
-                {"input": [1, 1], "label": [0]}
-            ]
-        }
-        """;
+                {
+                    "data": [
+                        {"input": [0, 0], "label": [0]},
+                        {"input": [0, 1], "label": [1]},
+                        {"input": [1, 0], "label": [1]},
+                        {"input": [1, 1], "label": [0]}
+                    ]
+                }
+                """;
 
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
