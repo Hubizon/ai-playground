@@ -1,9 +1,9 @@
 package pl.edu.uj.tcs.aiplayground.viewmodel;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.application.Platform;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
@@ -20,12 +20,44 @@ public class UserViewModel {
     private static final Logger logger = LoggerFactory.getLogger(UserViewModel.class);
     private final UserService userService;
 
+    private final BooleanProperty isAdmin = new SimpleBooleanProperty(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
+
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
+    private final StringProperty chosenUser = new SimpleStringProperty();
+    private final StringProperty chosenRole = new SimpleStringProperty();
+    private final StringProperty chosenUserRole = new SimpleStringProperty();
+
+    private void setupUser(UserDto user) {
+        this.user.set(user);
+        if (user != null) {
+            try {
+                isAdmin.set(userService.isUserAdmin(user.userId()));
+                if (isAdmin.get()) {
+                    chosenUser.addListener((observable, oldValue, newValue) -> {
+                        Platform.runLater(() -> {
+                            try {
+                                chosenUserRole.set(userService.getUserRole(chosenUser));
+                            } catch (DatabaseException e) {
+                                logger.error("Failed to get user role, chosenUser={}, error={}",
+                                        chosenUser, e.getMessage(), e);
+                                statusMessage.set("Internal Error");
+                            }
+                        });
+                    });
+                }
+            } catch (DatabaseException e) {
+                logger.error("Failed to get information about user, user={}, error={}", user, e.getMessage(), e);
+                statusMessage.set("Internal Error");
+            }
+        }
+    }
 
     public UserViewModel(UserService userService) {
         this.userService = userService;
     }
+
+    public BooleanProperty isAdminProperty() { return isAdmin; }
 
     public StringProperty statusMessageProperty() {
         return statusMessage;
@@ -33,6 +65,18 @@ public class UserViewModel {
 
     public ObjectProperty<UserDto> userProperty() {
         return user;
+    }
+
+    public StringProperty chosenUserProperty() {
+        return chosenUser;
+    }
+
+    public StringProperty chosenRoleProperty() {
+        return chosenRole;
+    }
+
+    public StringProperty chosenUserRoleProperty() {
+        return chosenUserRole;
     }
 
     public boolean isLoggedIn() {
@@ -49,18 +93,42 @@ public class UserViewModel {
         }
     }
 
+    public List<String> getUsernames() {
+        if (isAdmin.get()) {
+            try {
+                return userService.getUsernamesWithoutUser(user.get().userId());
+            } catch (Exception e) {
+                logger.error("Failed to get usernames, error={}", e.getMessage(), e);
+                statusMessage.set("Internal Error");
+            }
+        }
+        return List.of();
+    }
+
+    public List<String> getRoles() {
+        if (isAdmin.get()) {
+            try {
+                return userService.getRoleNames();
+            } catch (Exception e) {
+                logger.error("Failed to get role names, error={}", e.getMessage(), e);
+                statusMessage.set("Internal Error");
+            }
+        }
+        return List.of();
+    }
+
     public void login(LoginForm loginForm) {
         try {
             UserDto loggedInUser = userService.login(loginForm);
-            user.set(loggedInUser);
+            setupUser(loggedInUser);
             statusMessage.set("Login Successful: " + loggedInUser.username());
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
-            user.set(null);
+            setupUser(null);
         } catch (DatabaseException e) {
             logger.error("Failed to login for loginForm={}, error={}", loginForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
-            user.set(null);
+            setupUser(null);
         }
     }
 
@@ -71,11 +139,11 @@ public class UserViewModel {
             return true;
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
-            user.set(null);
+            setupUser(null);
         } catch (DatabaseException e) {
             logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);
             statusMessage.set("Internal Error");
-            user.set(null);
+            setupUser(null);
         }
         return false;
     }
@@ -96,5 +164,19 @@ public class UserViewModel {
             return false;
         }
         return true;
+    }
+
+    public void setRoleForUser() {
+        if (!isAdmin.get())
+            return;
+
+        try {
+            userService.setRoleForUser(chosenUser.get(), chosenRole.get());
+            setupUser(user.get());
+        } catch (DatabaseException e) {
+            logger.error("Failed to set role for user={}, role={}, error={}",
+                    chosenUser, chosenRole, e.getMessage(), e);
+            statusMessage.set("Internal Error");
+        }
     }
 }

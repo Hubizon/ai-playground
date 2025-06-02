@@ -1,5 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
+import javafx.beans.property.StringProperty;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
@@ -25,4 +26,14 @@ public interface IUserRepository {
     void updateUser(UUID userId, UpdateUserForm updateUserForm);
 
     int userTokenCount(UUID userId);
+
+    boolean isUserAdmin(UUID userId);
+
+    List<String> getUsernamesWithoutUser(UUID userId);
+
+    List<String> getRoleNames();
+
+    String getUserRole(StringProperty chosenUser);
+
+    void setRoleForUser(String username, String role);
 }

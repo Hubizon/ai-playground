@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
 DROP FUNCTION IF EXISTS calculate_training_cost CASCADE;
+DROP FUNCTION IF EXISTS calculate_event_price CASCADE;
 
 CREATE TABLE currencies
 (
@@ -271,7 +272,8 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('Saving New Model Version', -20, FALSE, TRUE),
        ('Model Training', -10, TRUE, FALSE),
        ('Model Stopping', -5, TRUE, FALSE),
-       ('Application Login', -1, FALSE, FALSE);
+       ('Application Login', -1, FALSE, FALSE),
+        ('BoughtTokens',0,FALSE,FALSE);
 
 INSERT INTO statuses (name, description)
 VALUES ('Queue', 'The training is waiting to start.'),
@@ -748,12 +750,21 @@ BEGIN
 
     SELECT COUNT(*) + 1
     INTO v_global_rank
-    FROM public_results pr
-             JOIN trainings t ON pr.training_id = t.id
-             JOIN model_versions mv ON t.model_version_id = mv.id
-             JOIN models m ON mv.model_id = m.id
-             JOIN users u ON m.user_id = u.id
-    WHERE pr.accuracy > NEW.accuracy;
+    FROM leaderboards lb
+        JOIN datasets d ON lb.dataset = d.name
+    WHERE d.id = v_dataset_id
+      AND (lb.accuracy > NEW.accuracy
+        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
+
+    SELECT COUNT(*) + 1
+    INTO v_country_rank
+    FROM leaderboards lb
+        JOIN datasets d ON lb.dataset = d.name
+        JOIN countries c ON lb.country = c.name
+    WHERE d.id = v_dataset_id
+      AND c.id = v_country_id
+      AND (lb.accuracy > NEW.accuracy
+        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
 
     v_description_country := NULL;
     IF v_country_rank = 1 THEN

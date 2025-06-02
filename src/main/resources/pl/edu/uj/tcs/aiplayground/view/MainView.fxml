@@ -104,6 +104,18 @@
                 </VBox>
             </content>
         </Tab>
+
+        <Tab text="User Actions">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="User Actions" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="User info" onAction="#onUserInfoClicked"/>
+                    </HBox>
+                    <Button text="Buy Tokens" onAction="#onBuyTokensClicked" styleClass="action-button"/>
+                </VBox>
+            </content>
+        </Tab>
     </TabPane>
 
     <!-- Center - bar container -->
@@ -148,7 +160,7 @@
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button fx:id="shareButton" text="Share" onAction="#onShareButtonClicked"/>
+            <Button text="Share" onAction="#onShareButtonClicked"/>
         </HBox>
 
 
