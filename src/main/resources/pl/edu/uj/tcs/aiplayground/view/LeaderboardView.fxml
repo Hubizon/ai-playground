@@ -3,8 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox fx:id="root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.LeaderboardViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
-      prefWidth="800" prefHeight="600">
-</HBox>
+      spacing="10" style="-fx-padding: 20;">
+    <Label text="Leaderboard" styleClass="leaderboard-title"/>
+    <TableView fx:id="leaderboardTable" styleClass="leaderboard-table" >
+        <columns>
+            <TableColumn fx:id="userColumn" text="User" styleClass="leaderboard-column" prefWidth="185"/>
+            <TableColumn fx:id="accuracyColumn" text="Accuracy" styleClass="leaderboard-column" prefWidth="185"/>
+            <TableColumn fx:id="lossColumn" text="Loss" styleClass="leaderboard-column" prefWidth="185"/>
+        </columns>
+    </TableView>
+</VBox>

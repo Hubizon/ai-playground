@@ -373,41 +373,43 @@ public class MainViewController {
     @FXML
     private void onShowLeaderboardsClicked() {
         try {
-            // Validate selections
-            DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
             String region = leaderbors_select_region_combobox.getValue();
+            DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
 
-            if (datasetType == null || region == null) {
-                alertMessage("Please select both dataset and region", false);
+            if (datasetType == null) {
+                alertMessage("Please select a dataset type", false);
                 return;
             }
 
-            // Load the view first
+            if (region == null) {
+                alertMessage("Please select a region (Country or Global)", false);
+                return;
+            }
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/LeaderboardView.fxml"));
             Parent root = loader.load();
             LeaderboardViewController controller = loader.getController();
             controller.initialize(factory);
 
-            // Get data after view is loaded
             LeaderboardViewModel leaderboardViewModel = factory.getLeaderboardViewModel();
-            List<LeaderboardDto> leaderboardData = "Global".equals(region)
-                    ? leaderboardViewModel.getLeaderboardGlobal(datasetType)
-                    : leaderboardViewModel.getLeaderboardLocal(datasetType, "Poland"); //TODO: atuomatic country detection
+            List<LeaderboardDto> leaderboardData;
+
+            if ("Global".equals(region)) {
+                leaderboardData = leaderboardViewModel.getLeaderboardGlobal(datasetType);
+            } else {
+                String country = userViewModel.getUser().countryName();
+                leaderboardData = leaderboardViewModel.getLeaderboardLocal(datasetType, country);
+            }
 
             controller.loadData(leaderboardData);
 
-            // Create and show window
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("AI Playground - Leaderboard (" + region + " - " + datasetType + ")");
+            stage.setScene(new Scene(root, 600, 400));
+            stage.setTitle("Leaderboard - " + region + " - " + datasetType);
             stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            alertMessage("Failed to load leaderboard view", false);
         } catch (Exception e) {
             e.printStackTrace();
-            alertMessage("Error loading leaderboard data", false);
+            alertMessage("Failed to load leaderboard: " + e.getMessage(), false);
         }
     }
 

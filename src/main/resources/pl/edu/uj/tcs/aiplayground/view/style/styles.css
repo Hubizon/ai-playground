@@ -236,3 +236,39 @@
 .scroll-pane .viewport {
     -fx-background-color: #3C3C3C;
 }
+
+.leaderboard-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+.leaderboard-table {
+    -fx-background-color: #3C3C3C;
+    -fx-table-cell-border-color: transparent;
+}
+
+.leaderboard-table .column-header {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.leaderboard-column {
+    -fx-alignment: CENTER;
+    -fx-text-fill: white;
+}
+
+.leaderboard-table .table-row-cell {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+}
+
+.leaderboard-table .table-row-cell:odd {
+    -fx-background-color: #353535;
+}
+
+.leaderboard-table .table-cell {
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
