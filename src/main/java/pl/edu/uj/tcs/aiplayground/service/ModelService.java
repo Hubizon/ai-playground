@@ -1,8 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.service;
 
+import javafx.util.Pair;
 import org.jooq.exception.DataAccessException;
 import org.postgresql.util.PSQLException;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 import pl.edu.uj.tcs.aiplayground.exception.*;
 import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
@@ -92,6 +95,16 @@ public class ModelService {
                     .filter(i -> i > modelVersion)
                     .min(Integer::compareTo)
                     .orElse(null);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    public Pair<TrainingDto, List<TrainingMetricDto>> getTrainingDataForModel(UUID modelVersionId) throws DatabaseException {
+        try {
+            TrainingDto trainingDto = modelRepository.getTrainingForModel(modelVersionId);
+            List<TrainingMetricDto> metrics = modelRepository.getMetricsForModel(modelVersionId);
+            return new Pair<>(trainingDto, metrics);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

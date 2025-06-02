@@ -57,9 +57,9 @@ public class TrainingRepository implements ITrainingRepository {
                         """,
                 trainingDto.modelVersionId(),
                 trainingDto.learningRate(),
-                trainingDto.dataset().getDbKey(),
-                trainingDto.optimizer().getDbKey(),
-                trainingDto.lossFunction().getDbKey(),
+                trainingDto.dataset().name(),
+                trainingDto.optimizer().name(),
+                trainingDto.lossFunction().name(),
                 trainingDto.maxEpochs(),
                 trainingDto.batchSize(),
                 DEFAULT_STATUS.getName()

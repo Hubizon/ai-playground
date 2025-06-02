@@ -17,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
@@ -140,6 +141,14 @@ public class MainViewController {
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
 
+        optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
+        lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
+        datasetComboBox.valueProperty().bindBidirectional(mainViewModel.datasetTypeProperty());
+
+        Bindings.bindBidirectional(learningRateField.textProperty(), mainViewModel.learningRateProperty(), new NumberStringConverter());
+        Bindings.bindBidirectional(batchField.textProperty(), mainViewModel.batchSizeProperty(), new NumberStringConverter("#"));
+        Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
+
         accuracyField.setText("0");
 
         leftTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
@@ -231,7 +240,7 @@ public class MainViewController {
         prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
         nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
 
-//        tokenField.textProperty().bind(mainViewModel.tokensProperty()); //TODO: uncomment when tokenProperty() in mainViewModel will be ready to use
+        tokenField.textProperty().bind(mainViewModel.userTokensProperty().asString());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {

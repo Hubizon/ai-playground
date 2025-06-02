@@ -29,7 +29,7 @@ public class LeaderboardRepository implements ILeaderboardRepository {
                     JOIN datasets d ON t.dataset_id = d.id
                     WHERE d.name = ?
                     ORDER BY u.username, pr.accuracy DESC, pr.loss ASC
-                """, datasetType.getDbKey()).into(LeaderboardDto.class);
+                """, datasetType.name()).into(LeaderboardDto.class);
     }
 
     @Override
@@ -49,6 +49,6 @@ public class LeaderboardRepository implements ILeaderboardRepository {
                     WHERE d.name = ?
                       AND c.name = ?
                     ORDER BY u.username, pr.accuracy DESC, pr.loss ASC
-                """, datasetType.getDbKey(), countryName).into(LeaderboardDto.class);
+                """, datasetType.name(), countryName).into(LeaderboardDto.class);
     }
 }

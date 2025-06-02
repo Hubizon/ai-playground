@@ -17,15 +17,20 @@ import pl.edu.uj.tcs.aiplayground.dto.validation.TrainingValidation;
 import pl.edu.uj.tcs.aiplayground.exception.*;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
+import pl.edu.uj.tcs.aiplayground.service.UserService;
 
+import javax.xml.crypto.Data;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainViewModel {
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
     private final ModelService modelService;
+    private final UserService userService;
     private final TrainingService trainingService;
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
     private final StringProperty modelName = new SimpleStringProperty();
+    private final IntegerProperty userTokens = new SimpleIntegerProperty();
     private final IntegerProperty modelVersion = new SimpleIntegerProperty();
     private final ObservableList<String> userModelNames = FXCollections.observableArrayList();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
@@ -34,14 +39,21 @@ public class MainViewModel {
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
+    private final DoubleProperty learningRate = new SimpleDoubleProperty(0.01);
+    private final IntegerProperty batchSize = new SimpleIntegerProperty(16);
+    private final IntegerProperty maxEpochs = new SimpleIntegerProperty(100);
+    private final ObjectProperty<DatasetType> datasetType = new SimpleObjectProperty<>();
+    private final ObjectProperty<OptimizerType> optimizerType = new SimpleObjectProperty<>();
+    private final ObjectProperty<LossFunctionType> lossFunctionType = new SimpleObjectProperty<>();
     private final ObjectProperty<AlertEvent> alertEvent = new SimpleObjectProperty<>();
     private final ObjectProperty<StatusType> trainingStatus = new SimpleObjectProperty<>();
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
 
-    public MainViewModel(ModelService modelService, TrainingService trainingService) {
+    public MainViewModel(ModelService modelService, UserService userService, TrainingService trainingService) {
         this.modelService = modelService;
+        this.userService = userService;
         this.trainingService = trainingService;
     }
 
@@ -54,8 +66,30 @@ public class MainViewModel {
             updateIsNextVersion();
             modelName.set(model.modelName());
             modelVersion.set(model.versionNumber());
+
+            try {
+                var training = modelService.getTrainingDataForModel(model.modelVersionId());
+                TrainingDto trainingDto = training.getKey();
+                List<TrainingMetricDto> metrics = training.getValue();
+                if (trainingDto != null) {
+                    learningRate.set(trainingDto.learningRate());
+                    batchSize.set(trainingDto.batchSize());
+                    maxEpochs.set(trainingDto.maxEpochs());
+                    datasetType.set(trainingDto.dataset());
+                    optimizerType.set(trainingDto.optimizer());
+                    lossFunctionType.set(trainingDto.lossFunction());
+                }
+                if (metrics != null) {
+                    liveMetrics.clear();
+                    liveMetrics.addAll(metrics);
+                }
+            } catch (DatabaseException e) {
+                logger.error("Failed to get model training data for model={}, error={}", model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+            }
         }
         isModelLoaded.set(model != null);
+        updateUserTokens();
     }
 
     private void updateUserModelNames() {
@@ -64,6 +98,15 @@ public class MainViewModel {
             userModelNames.addAll(modelService.getUserModelNames(user.userId()));
         } catch (DatabaseException e) {
             logger.error("Failed to get model names for user={}, error={}", user, e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+        }
+    }
+
+    private void updateUserTokens() {
+        try {
+            userTokens.set(userService.userTokenCount(user.userId()));
+        } catch (DatabaseException e) {
+            logger.error("Failed to get user tokens for user={}, error={}", user, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
         }
     }
@@ -100,6 +143,34 @@ public class MainViewModel {
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             isNextVersion.set(false);
         }
+    }
+
+    public DoubleProperty learningRateProperty() {
+        return learningRate;
+    }
+
+    public IntegerProperty batchSizeProperty() {
+        return batchSize;
+    }
+
+    public IntegerProperty maxEpochsProperty() {
+        return maxEpochs;
+    }
+
+    public IntegerProperty userTokensProperty() {
+        return userTokens;
+    }
+
+    public ObjectProperty<DatasetType> datasetTypeProperty() {
+        return datasetType;
+    }
+
+    public ObjectProperty<OptimizerType> optimizerTypeProperty() {
+        return optimizerType;
+    }
+
+    public ObjectProperty<LossFunctionType> lossFunctionTypeProperty() {
+        return lossFunctionType;
     }
 
     public ObjectProperty<AlertEvent> alertEventProperty() {
@@ -210,6 +281,7 @@ public class MainViewModel {
     public void setUser(UserDto user) {
         this.user = user;
         updateUserModelNames();
+        updateUserTokens();
     }
 
     public void setModel(UserDto user, String modelName) {
