@@ -12,6 +12,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -471,6 +472,7 @@ public class MainViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     @FXML
@@ -479,7 +481,6 @@ public class MainViewController {
     }
 
     @FXML
-
     private void onCreateNewModelClicked() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Create New Model");

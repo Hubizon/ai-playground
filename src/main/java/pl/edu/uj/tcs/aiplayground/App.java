@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.view.LoginViewController;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;

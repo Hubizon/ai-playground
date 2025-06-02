@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ public class RegisterController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     @FXML

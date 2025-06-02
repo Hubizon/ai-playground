@@ -3,13 +3,17 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.util.List;
 
 public class LeaderboardViewController {
+    private Stage stage;
+
     @FXML
     private VBox root;
 
@@ -46,6 +50,11 @@ public class LeaderboardViewController {
                 }
             }
         });
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     public void loadData(List<LeaderboardDto> data) {

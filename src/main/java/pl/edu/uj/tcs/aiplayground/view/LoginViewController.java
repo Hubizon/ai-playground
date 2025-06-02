@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class LoginViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     public void initialize(ViewModelFactory factory) {
@@ -72,6 +74,7 @@ public class LoginViewController {
     private void openMainWindow() {
         try {
             Stage mainStage = new Stage();
+            mainStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
             Scene scene = new Scene(loader.load());
 

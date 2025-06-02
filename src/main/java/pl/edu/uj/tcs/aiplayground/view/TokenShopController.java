@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -54,6 +55,7 @@ public class TokenShopController {
     public void setStage(Stage stage) {
         this.stage = stage;
         this.stage.setMinWidth(tokenViewModel.getTokenAmounts().size() * 100 + 100);
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
 
