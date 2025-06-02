@@ -15,12 +15,13 @@ public class TokenRepository implements ITokenRepository {
                         INSERT INTO token_history(user_id, amount, event_type, description, timestamp)
                             VALUES (?,
                                     ?,
-                                    (SELECT id FROM events WHERE name = newTokens),
+                                    (SELECT id FROM events WHERE name = ?),
                                     'to pole chb trzeba usunąć',
                                     now())
                         """,
                 user.userId(),
-                amount
+                amount,
+                "BoughtTokens"
         ).execute();
     }
     @Override

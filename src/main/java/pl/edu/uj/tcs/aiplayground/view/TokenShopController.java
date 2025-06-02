@@ -106,24 +106,23 @@ public class TokenShopController {
             Tab tab = new Tab(amount + " Tokens");
             tab.setId("tab" + amount + "Tokens");
 
-            // Create the content for each tab
-            VBox contentBox = new VBox(20); // 20px spacing
+            VBox contentBox = new VBox(20);
             contentBox.setAlignment(Pos.CENTER);
-            contentBox.getStyleClass().add("token-tab-content"); // Apply CSS if needed
+            contentBox.getStyleClass().add("token-tab-content");
 
             Label amountLabel = new Label("Buy " + amount + " Tokens");
             amountLabel.getStyleClass().add("amount-label");
 
             Label priceLabel = new Label("Loading price...");
-            priceLabel.setId("price" + amount + "TokensLabel"); // Set ID for easy retrieval
+            priceLabel.setId("price" + amount + "TokensLabel");
             priceLabel.getStyleClass().add("price-label");
-            priceLabel.setFont(new Font(36.0)); // Big centered price
+            priceLabel.setFont(new Font(36.0));
 
             Button buyButton = new Button("Buy Now!");
-            buyButton.setId("buy" + amount + "TokensButton"); // Set ID for unified handler
+            buyButton.setId("buy" + amount + "TokensButton");
             buyButton.getStyleClass().add("buy-button");
-            buyButton.setFont(new Font(24.0)); // Big buy button
-            buyButton.setOnAction(event -> confirmPurchase(amount)); // Direct action for simplicity
+            buyButton.setFont(new Font(24.0));
+            buyButton.setOnAction(event -> confirmPurchase(amount));
 
             contentBox.getChildren().addAll(amountLabel, priceLabel, buyButton);
             tab.setContent(contentBox);
@@ -132,7 +131,7 @@ public class TokenShopController {
     }
 
     private void updateCurrentTokensDisplay() {
-        currentTokensLabel.setText(String.valueOf(tokenViewModel.currentTokensProperty().getValue())); // Dummy value
+        currentTokensLabel.setText(String.valueOf(tokenViewModel.currentTokensProperty().getValue()));
     }
 
     private void updateAllTokenPrices(String currency) {

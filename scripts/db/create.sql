@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
 DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
 DROP FUNCTION IF EXISTS calculate_training_cost CASCADE;
-
+DROP FUNCTION  IF EXISTS  calculate_event_price CASCADE;
 CREATE TABLE currencies
 (
     id              SERIAL PRIMARY KEY,
@@ -271,7 +271,8 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('Saving New Model Version', -20, FALSE, TRUE),
        ('Model Training', -10, TRUE, FALSE),
        ('Model Stopping', -5, TRUE, FALSE),
-       ('Application Login', -1, FALSE, FALSE);
+       ('Application Login', -1, FALSE, FALSE),
+        ('BoughtTokens',0,FALSE,FALSE);
 
 INSERT INTO statuses (name, description)
 VALUES ('Queue', 'The training is waiting to start.'),
@@ -548,7 +549,7 @@ BEGIN
              JOIN models m ON mv.model_id = m.id
     WHERE mv.id = NEW.model_version_id;
 
-    event_price := calculate_event_price(model_user_id, training_event_id));
+    event_price := calculate_event_price(model_user_id, training_event_id);
 
     training_cost := -calculate_training_cost(NEW) + event_price;
 
