@@ -31,6 +31,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -299,6 +300,21 @@ public class MainViewController {
                 });
 
                 barContainer.getChildren().addAll(paramLabel, checkBox);
+            } else if (paramType == BigDecimal.class) {
+                TextField doubleField = new TextField();
+                doubleField.setPrefWidth(50);
+                doubleField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
+
+                doubleField.setText(String.valueOf(paramValue));
+
+                doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.matches("-?\\d*(\\.\\d+)?")) {
+                        updateLayerParams(barContainer, paramName,
+                                newVal.isEmpty() ? 0 : new BigDecimal(newVal));
+                    }
+                });
+
+                barContainer.getChildren().addAll(paramLabel, doubleField);
             }
         }
 

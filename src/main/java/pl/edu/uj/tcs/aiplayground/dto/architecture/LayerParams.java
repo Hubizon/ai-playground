@@ -31,7 +31,7 @@ public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, Linear
                 values.add(accessor.invoke(this));
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(); // TODO
+            throw new RuntimeException(e);
         }
 
         return values;
@@ -57,7 +57,7 @@ public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, Linear
             Constructor<?> ctor = rc.getDeclaredConstructor(getParamTypes().toArray(new Class<?>[0]));
             return (LayerParams) ctor.newInstance(args);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(); // TODO
+            throw new RuntimeException(e);
         }
     }
 
@@ -80,9 +80,6 @@ public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, Linear
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
             args[i] = json.get(names.get(i));
-            if(args[i].getClass() == BigDecimal.class){
-                args[i] = ((BigDecimal) args[i]).doubleValue();
-            }
         }
 
         try {
@@ -90,7 +87,7 @@ public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, Linear
             return (LayerParams) ctor.newInstance(args);
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
                  IllegalAccessException e) {
-            throw new RuntimeException(e); // TODO
+            throw new RuntimeException(e);
         }
     }
 }

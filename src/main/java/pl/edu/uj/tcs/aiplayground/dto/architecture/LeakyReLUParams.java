@@ -1,15 +1,11 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
-import org.json.JSONObject;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.List;
 
-public record LeakyReLUParams(double alpha) implements LayerParams {
-
+public record LeakyReLUParams(BigDecimal alpha) implements LayerParams {
     public LeakyReLUParams() {
-        this(0.01);
+        this(new BigDecimal("0.01"));
     }
 
     @Override

@@ -9,6 +9,7 @@ import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,7 +21,7 @@ public class TrainingCombined {
                 new LayerConfig(LayerType.LINEAR, new LinearParams(4, 12, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(12, 12, true)),
-                new LayerConfig(LayerType.LEAKYRELU, new LeakyReLUParams(0.3f)),
+                new LayerConfig(LayerType.LEAKYRELU, new LeakyReLUParams(new BigDecimal("0.3"))),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(12, 3, true))
         );
 
