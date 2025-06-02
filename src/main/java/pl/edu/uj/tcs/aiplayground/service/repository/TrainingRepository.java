@@ -1,19 +1,26 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
+import org.postgresql.PGConnection;
+import org.postgresql.PGNotification;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.util.List;
 import java.util.UUID;
+import java.sql.Connection;
 
 @SuppressWarnings("ConstantConditions")
 public class TrainingRepository implements ITrainingRepository {
     private static final StatusType DEFAULT_STATUS = StatusType.QUEUE;
+    private final Connection dbConnection;
     private final DSLContext dsl;
 
-    public TrainingRepository(DSLContext dslContext) {
+    public TrainingRepository(Connection dbConnection, DSLContext dslContext) {
+        this.dbConnection = dbConnection;
         this.dsl = dslContext;
     }
 
@@ -100,11 +107,22 @@ public class TrainingRepository implements ITrainingRepository {
     }
 
     @Override
-    public void shareTraining(UUID trainingId, Double accuracy, Double loss) {
+    public String shareTraining(UUID trainingId, Double accuracy, Double loss) throws SQLException {
+        PGConnection pgConnection = dbConnection.unwrap(PGConnection.class);
+        try (var statement = dbConnection.createStatement()) {
+            statement.execute("LISTEN reward_channel");
+        }
+
         dsl.query("""
                     INSERT INTO public_results (training_id, accuracy, loss)
                     VALUES (?, ?, ?)
                     ON CONFLICT (training_id) DO NOTHING
-                """, trainingId, accuracy, loss).execute();
+                    """, trainingId, accuracy, loss).execute();
+
+        PGNotification[] notifications = pgConnection.getNotifications();
+        if (notifications != null && notifications.length > 0)
+            return notifications[0].getParameter().replace("\\n", "\n");
+
+        return null;
     }
 }

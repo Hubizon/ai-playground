@@ -7,13 +7,17 @@ import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 import pl.edu.uj.tcs.aiplayground.service.repository.*;
 
+import java.sql.Connection;
+
 public class ViewModelFactory {
+    private final Connection conn;
     private final DSLContext dsl;
     private final UserViewModel userViewModel;
     private final MainViewModel mainViewModel;
     private final LeaderboardViewModel leaderboardViewModel;
 
     public ViewModelFactory() {
+        this.conn = JooqFactory.getConnection();
         this.dsl = JooqFactory.getDSLContext();
 
         var userRepository = new UserRepository(dsl);
@@ -22,7 +26,7 @@ public class ViewModelFactory {
 
         var modelRepository = new ModelRepository(dsl);
         var modelService = new ModelService(modelRepository);
-        var trainingRepository = new TrainingRepository(dsl);
+        var trainingRepository = new TrainingRepository(conn, dsl);
         var trainingService = new TrainingService(trainingRepository);
         this.mainViewModel = new MainViewModel(modelService, userService, trainingService);
 

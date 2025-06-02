@@ -27,7 +27,8 @@ public class TrainingCombined {
         NeuralNet nn = new NeuralNet(architecture);
 
         DatasetType datasetType = DatasetType.MNIST;
-        datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
+        datasetType.setTrainingService(new TrainingService(
+                new TrainingRepository(JooqFactory.getConnection(), JooqFactory.getDSLContext())));
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 1,

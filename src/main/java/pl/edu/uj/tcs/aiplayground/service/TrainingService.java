@@ -70,9 +70,9 @@ public class TrainingService {
         }
     }
 
-    public void shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
+    public String shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
         try {
-            trainingRepository.shareTraining(trainingId, accuracy, loss);
+            return trainingRepository.shareTraining(trainingId, accuracy, loss);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

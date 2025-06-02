@@ -322,7 +322,12 @@ public class MainViewModel {
     }
 
     public void shareTraining() {
-        trainingHandler.shareTraining();
+        if (trainingHandler != null) {
+            String mess = trainingHandler.shareTraining();
+            if (mess != null) {
+                alertEvent.set(AlertEvent.createAlertEvent(mess, true));
+            }
+        }
     }
 
     public void stopTraining() {

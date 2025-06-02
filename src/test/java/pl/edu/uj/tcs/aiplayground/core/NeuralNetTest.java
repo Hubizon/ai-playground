@@ -30,7 +30,8 @@ public class NeuralNetTest {
         NeuralNet nn = new NeuralNet(architecture);
 
         DatasetType datasetType = DatasetType.IRIS;
-        datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
+        datasetType.setTrainingService(new TrainingService(new TrainingRepository(
+                JooqFactory.getConnection(), JooqFactory.getDSLContext())));
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
                 10,
