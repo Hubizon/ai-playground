@@ -18,15 +18,18 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
+import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
+import pl.edu.uj.tcs.aiplayground.viewmodel.LeaderboardViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,6 +76,8 @@ public class MainViewController {
     private ComboBox<DatasetType> datasetComboBox;
     @FXML
     private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
+    @FXML
+    private ComboBox<String> leaderbors_select_region_combobox;
     @FXML
     private VBox layerButtonsContainer;
     @FXML
@@ -140,6 +145,7 @@ public class MainViewController {
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
+        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList("Country", "Global"));
 
         optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
         lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
@@ -365,12 +371,44 @@ public class MainViewController {
     }
 
     @FXML
-    private void onLeaderboardsClicked() {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Leaderboards");
-        alert.setHeaderText(null);
-        alert.setContentText("There will be leaderboards here in the future");
-        alert.showAndWait();
+    private void onShowLeaderboardsClicked() {
+        try {
+            // Validate selections
+            DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
+            String region = leaderbors_select_region_combobox.getValue();
+
+            if (datasetType == null || region == null) {
+                alertMessage("Please select both dataset and region", false);
+                return;
+            }
+
+            // Load the view first
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/LeaderboardView.fxml"));
+            Parent root = loader.load();
+            LeaderboardViewController controller = loader.getController();
+            controller.initialize(factory);
+
+            // Get data after view is loaded
+            LeaderboardViewModel leaderboardViewModel = factory.getLeaderboardViewModel();
+            List<LeaderboardDto> leaderboardData = "Global".equals(region)
+                    ? leaderboardViewModel.getLeaderboardGlobal(datasetType)
+                    : leaderboardViewModel.getLeaderboardLocal(datasetType, "Poland"); //TODO: atuomatic country detection
+
+            controller.loadData(leaderboardData);
+
+            // Create and show window
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("AI Playground - Leaderboard (" + region + " - " + datasetType + ")");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            alertMessage("Failed to load leaderboard view", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            alertMessage("Error loading leaderboard data", false);
+        }
     }
 
     @FXML

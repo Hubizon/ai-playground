@@ -91,14 +91,7 @@
                                style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="leaderbors_select_region" promptText="Region">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Global"/>
-                                    <String fx:value="Country"/>
-                                    <String fx:value="Only my models"/>
-                                </FXCollections>
-                            </items>
+                        <ComboBox fx:id="leaderbors_select_region_combobox" promptText="Region">
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -106,7 +99,7 @@
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="Show Leaderboards" onAction="#onLeaderboardsClicked"/>
+                        <Button text="Show Leaderboards" onAction="#onShowLeaderboardsClicked"/>
                     </HBox>
                 </VBox>
             </content>
