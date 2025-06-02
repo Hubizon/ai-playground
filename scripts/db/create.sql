@@ -655,6 +655,20 @@ SELECT
 FROM best_per_user_dataset;
 
 
+CREATE OR REPLACE FUNCTION ordinal(n int)
+    RETURNS text AS $$
+BEGIN
+    RETURN n || CASE
+                    WHEN (n % 100) BETWEEN 11 AND 13 THEN 'th'
+                    WHEN (n % 10) = 1 THEN 'st'
+                    WHEN (n % 10) = 2 THEN 'nd'
+                    WHEN (n % 10) = 3 THEN 'rd'
+                    ELSE 'th'
+        END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
 CREATE OR REPLACE VIEW best_results AS
 SELECT DISTINCT ON (th.user_id, d.id,
     CASE
@@ -806,8 +820,10 @@ BEGIN
         PERFORM pg_notify(
                 'reward_channel',
                 format(
-                        'Congratulations! You''ve shared the model. Currently, it holds the %s place globally and the %s place in your country.',
-                        v_global_rank, v_country_rank));
+                        'Congratulations! You''ve shared the model. It currently ranks %s globally and %s in your country.',
+                        ordinal(v_global_rank),
+                        ordinal(v_country_rank))
+                );
     END IF;
 
     RETURN NEW;
