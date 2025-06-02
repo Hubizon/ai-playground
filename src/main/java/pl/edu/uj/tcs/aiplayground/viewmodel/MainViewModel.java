@@ -35,6 +35,7 @@ public class MainViewModel {
     private final ObservableList<String> userModelNames = FXCollections.observableArrayList();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
     private final ObservableList<LayerConfig> layers = FXCollections.observableArrayList();
+    private final BooleanProperty isRecentTrainingAvailable = new SimpleBooleanProperty(false);
     private final BooleanProperty isTrainingInProgress = new SimpleBooleanProperty(false);
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
@@ -59,6 +60,7 @@ public class MainViewModel {
 
     private void setupModel() {
         layers.clear();
+        trainingHandler = null;
         if (model != null) {
             NeuralNet neuralNet = new NeuralNet(model.architecture());
             layers.addAll(neuralNet.toConfigList());
@@ -90,6 +92,7 @@ public class MainViewModel {
         }
         isModelLoaded.set(model != null);
         updateUserTokens();
+        updateIsRecentTrainingAvailable();
     }
 
     private void updateUserModelNames() {
@@ -143,6 +146,10 @@ public class MainViewModel {
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             isNextVersion.set(false);
         }
+    }
+
+    private void updateIsRecentTrainingAvailable() {
+        isRecentTrainingAvailable.set(trainingHandler != null);
     }
 
     public DoubleProperty learningRateProperty() {
@@ -200,6 +207,8 @@ public class MainViewModel {
     public BooleanProperty isTrainingInProgressProperty() {
         return isTrainingInProgress;
     }
+
+    public BooleanProperty isRecentTrainingAvailableProperty() { return isRecentTrainingAvailable; }
 
     public BooleanProperty isPreviousVersionProperty() {
         return isPreviousVersion;
@@ -402,7 +411,10 @@ public class MainViewModel {
                         alertEvent.set(AlertEvent.createAlertEvent("Illegal hyperparameters: " + e.getMessage(), false))
                 );
             } finally {
-                Platform.runLater(() -> isTrainingInProgress.set(false));
+                Platform.runLater(() -> {
+                    updateIsRecentTrainingAvailable();
+                    isTrainingInProgress.set(false);
+                });
             }
         }).start();
     }

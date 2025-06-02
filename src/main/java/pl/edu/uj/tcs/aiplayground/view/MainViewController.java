@@ -84,7 +84,7 @@ public class MainViewController {
     @FXML
     private Button nextVersionButton;
     @FXML
-    private Button shareButon;
+    private Button shareButton;
     @FXML
     private ListView<String> modelsListView;
 
@@ -205,7 +205,9 @@ public class MainViewController {
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
-
+        shareButton.disableProperty().bind(
+                mainViewModel.isRecentTrainingAvailableProperty().not().or(mainViewModel.isTrainingInProgressProperty())
+        );
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {
