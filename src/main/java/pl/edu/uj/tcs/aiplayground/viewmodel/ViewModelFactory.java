@@ -29,8 +29,8 @@ public class ViewModelFactory {
         this.mainViewModel = new MainViewModel(modelService, userService, trainingService);
 
         var leaderboardRepository = new LeaderboardRepository(dsl);
-        var leadeboardService = new LeaderboardService(leaderboardRepository);
-        this.leaderboardViewModel = new LeaderboardViewModel(leadeboardService);
+        var leaderboardService = new LeaderboardService(leaderboardRepository);
+        this.leaderboardViewModel = new LeaderboardViewModel(leaderboardService);
 
         var tokenRepository = new TokenRepository(dsl);
         var tokenService = new TokenService(tokenRepository);

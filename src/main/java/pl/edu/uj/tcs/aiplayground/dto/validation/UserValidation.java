@@ -34,13 +34,28 @@ public class UserValidation {
 
         if (!registerForm.password().matches(PASSWORD_REGEX))
             throw new UserModificationException("Invalid password");
+
+        if (registerForm.birthDate() == null)
+            throw new UserModificationException("Invalid birth date");
+
+        if (registerForm.country() == null)
+            throw new UserModificationException("Invalid country");
     }
 
     public static void validateUpdateUserForm(UpdateUserForm updateUserForm) throws UserModificationException {
-        if (!updateUserForm.email().matches(EMAIL_REGEX))
-            throw new UserModificationException("Invalid email address");
+        if (!updateUserForm.firstName().matches(FIRST_NAME_REGEX))
+            throw new UserModificationException("Invalid first name");
+
+        if (!updateUserForm.lastName().matches(LAST_NAME_REGEX))
+            throw new UserModificationException("Invalid last name");
 
         if (!updateUserForm.password().matches(PASSWORD_REGEX))
             throw new UserModificationException("Invalid password");
+
+        if (updateUserForm.birthDate() == null)
+            throw new UserModificationException("Invalid birth date");
+
+        if (updateUserForm.country() == null)
+            throw new UserModificationException("Invalid country");
     }
 }
