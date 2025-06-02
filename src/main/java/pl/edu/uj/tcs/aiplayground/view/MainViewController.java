@@ -47,6 +47,8 @@ public class MainViewController {
     @FXML
     private VBox barsContainer;
     @FXML
+    private Label tokenField;
+    @FXML
     private Label accuracyField;
     @FXML
     private Label lossField;
@@ -228,6 +230,8 @@ public class MainViewController {
 
         prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
         nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
+
+//        tokenField.textProperty().bind(mainViewModel.tokensProperty());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
@@ -401,6 +405,10 @@ public class MainViewController {
 
     public void setAccuracy(int accuracy) {
         accuracyField.setText(String.valueOf(accuracy));
+    }
+
+    public void setTokens(int tokens) {
+        tokenField.setText(String.valueOf(tokens));
     }
 
     public int getLossPercentage() {

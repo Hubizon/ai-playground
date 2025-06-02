@@ -86,6 +86,11 @@
                         <Button text="User info" onAction="#onUserInfoClicked"/>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Tokens:" style="-fx-text-fill: white;"/>
+                        <Label fx:id="tokenField"
+                               style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
                         <ComboBox fx:id="leaderbors_select_region" promptText="Region">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
