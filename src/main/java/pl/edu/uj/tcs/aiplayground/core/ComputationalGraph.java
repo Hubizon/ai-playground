@@ -6,8 +6,8 @@ public class ComputationalGraph {
 
     ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
 
-    public void addNode(Tensor result, ArrayList<Tensor> components, String operation) {
-        nodes.add(new CompGraphNode(result, components, operation));
+    public void addNode(Tensor result, ArrayList<Tensor> components, TensorOperator operation, ArrayList<Object> params) {
+        nodes.add(new CompGraphNode(result, components, operation,params));
     }
 
     public void propagate() {
@@ -23,16 +23,18 @@ public class ComputationalGraph {
     private static class CompGraphNode {
         Tensor result;
         ArrayList<Tensor> components;
-        String operation;
+        TensorOperator operation;
+        ArrayList<Object> params;
 
-        public CompGraphNode(Tensor result, ArrayList<Tensor> components, String operation) {
+        public CompGraphNode(Tensor result, ArrayList<Tensor> components, TensorOperator operation, ArrayList<Object> params) {
             this.result = result;
             this.components = components;
             this.operation = operation;
+            this.params = params;
         }
 
         public void propagateGradient() {
-            if (operation.equals("+")) {
+            if (operation.equals(TensorOperator.ADD)) {
                 for (Tensor component : components) {
                     for (int i = 0; i < component.rows; i++) {
                         for (int j = 0; j < component.cols; j++) {
@@ -40,7 +42,7 @@ public class ComputationalGraph {
                         }
                     }
                 }
-            } else if (operation.equals("*")) {
+            } else if (operation.equals(TensorOperator.MULTIPLY)) {
                 for (Tensor component : components) {
                     for (int i = 0; i < component.rows; i++) {
                         for (int j = 0; j < component.cols; j++) {
@@ -54,21 +56,21 @@ public class ComputationalGraph {
                         }
                     }
                 }
-            } else if (operation.equals("sumRows")) {
+            } else if (operation.equals(TensorOperator.SUMROWS)) {
                 Tensor base = components.get(0);
                 for (int i = 0; i < base.rows; i++) {
                     for (int j = 0; j < base.cols; j++) {
                         base.gradient[i][j] += result.gradient[0][j];
                     }
                 }
-            } else if (operation.equals("sumCols")) {
+            } else if (operation.equals(TensorOperator.SUMCOLS)) {
                 Tensor base = components.get(0);
                 for (int i = 0; i < base.rows; i++) {
                     for (int j = 0; j < base.cols; j++) {
                         base.gradient[i][j] += result.gradient[i][0];
                     }
                 }
-            } else if (operation.equals("relu")) {
+            } else if (operation.equals(TensorOperator.RELU)) {
                 Tensor input = components.get(0);
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
@@ -81,11 +83,10 @@ public class ComputationalGraph {
                     }
 
                 }
-            } else if (operation.equals("matMul")) {
+            } else if (operation.equals(TensorOperator.MATMUL)) {
                 Tensor a = components.get(0);
                 Tensor b = components.get(1);
 
-                // Gradient w.r.t. A: grad(C) * B^T
                 Tensor gradA = Tensor.zerosLike(a);
                 for (int i = 0; i < a.rows; i++) {
                     for (int k = 0; k < a.cols; k++) {
@@ -95,7 +96,6 @@ public class ComputationalGraph {
                     }
                 }
 
-                // Gradient w.r.t. B: A^T * grad(C)
                 Tensor gradB = Tensor.zerosLike(b);
                 for (int k = 0; k < a.cols; k++) {
                     for (int j = 0; j < b.cols; j++) {
@@ -105,7 +105,6 @@ public class ComputationalGraph {
                     }
                 }
 
-                // Accumulate gradients to the original tensors
                 for (int i = 0; i < a.rows; i++) {
                     for (int k = 0; k < a.cols; k++) {
                         a.gradient[i][k] += gradA.gradient[i][k];
@@ -116,7 +115,7 @@ public class ComputationalGraph {
                         b.gradient[k][j] += gradB.gradient[k][j];
                     }
                 }
-            } else if (operation.equals("sigmoid")) {
+            } else if (operation.equals(TensorOperator.SIGMOID)) {
                 Tensor input = components.get(0);
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
@@ -126,7 +125,7 @@ public class ComputationalGraph {
                         input.gradient[i][j] += result.gradient[i][j] * derivative;
                     }
                 }
-            } else if (operation.equals("softmax")) {
+            } else if (operation.equals(TensorOperator.SOFTMAX)) {
                 Tensor input = components.get(0);
                 for (int i = 0; i < input.cols; i++) {
                     for (int j = 0; j < input.rows; j++) {
@@ -140,17 +139,10 @@ public class ComputationalGraph {
                         input.gradient[j][i] += grad;
                     }
                 }
-            } else if (operation.startsWith("leakyRelu")) {
+            } else if (operation.equals(TensorOperator.LEAKYRELU)) {
                 Tensor input = components.get(0);
                 double alpha;
-                try {
-                    String[] parts = operation.split("=");
-                    alpha = Double.parseDouble(parts[1]);
-                } catch (Exception e) {
-                    System.err.println("Error parsing alpha for leakyRelu, using default: " + e.getMessage());
-                    alpha = 0.01;
-                }
-
+                alpha = (double) params.get(0);
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         if (input.data[i][j] > 0) {

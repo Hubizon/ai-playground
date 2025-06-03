@@ -133,7 +133,7 @@ public class NeuralNet {
 
                 double epochLoss = 0;
                 int processed = 0;
-                Dataset.DataLoader loader = dataset.getDataLoader("train", batchSize);
+                Dataset.DataLoader loader = dataset.getDataLoader(DataLoaderType.TRAIN, batchSize);
 
                 while (loader.hasNext()) {
                     List<Pair<Tensor, Tensor>> batch = loader.next();

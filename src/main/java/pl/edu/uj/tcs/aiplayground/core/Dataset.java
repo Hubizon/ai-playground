@@ -138,8 +138,8 @@ public class Dataset {
         Collections.shuffle(trainData);
     }
 
-    public DataLoader getDataLoader(String type, int batchSize) {
-        if (type.equals("train")) shuffle();
+    public DataLoader getDataLoader(DataLoaderType type, int batchSize) {
+        if (type.equals(DataLoaderType.TRAIN)) shuffle();
         return new DataLoader(type, batchSize);
     }
 
@@ -149,14 +149,14 @@ public class Dataset {
         int lastRet = -1;
         int batchSize;
         ArrayList<Pair<Tensor, Tensor>> data;
-        String type;
+        DataLoaderType type;
 
-        public DataLoader(String type, int batchSize) {
+        public DataLoader(DataLoaderType type, int batchSize) {
             this.type = type;
             this.batchSize = batchSize;
-            if (type.equals("train"))
+            if (type.equals(DataLoaderType.TRAIN))
                 data = trainData;
-            else
+            else if(type.equals(DataLoaderType.TEST))
                 data = testData;
         }
 

@@ -70,7 +70,7 @@ public class Tensor {
         addends.add(a);
         addends.add(b);
         if (graph != null) {
-            graph.addNode(result, addends, "+");
+            graph.addNode(result, addends, TensorOperator.ADD, new ArrayList<Object>());
         }
         return result;
     }
@@ -90,7 +90,7 @@ public class Tensor {
         factors.add(a);
         factors.add(b);
         if (graph != null) {
-            graph.addNode(result, factors, "*");
+            graph.addNode(result, factors, TensorOperator.MULTIPLY, new ArrayList<Object>());
         }
         return result;
     }
@@ -112,7 +112,7 @@ public class Tensor {
         factors.add(a);
         factors.add(b);
         if (graph != null) {
-            graph.addNode(result, factors, "matMul");
+            graph.addNode(result, factors, TensorOperator.MATMUL, new ArrayList<Object>());
         }
         return result;
     }
@@ -127,7 +127,7 @@ public class Tensor {
 
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.RELU, new ArrayList<Object>());
         }
         return result;
     }
@@ -144,7 +144,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), "leakyRelu: alpha=" + alpha);
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.LEAKYRELU, new ArrayList<Object>(List.of(alpha)));
         }
         return result;
     }
@@ -157,7 +157,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.SIGMOID, new ArrayList<Object>());
         }
         return result;
     }
@@ -186,7 +186,7 @@ public class Tensor {
         }
 
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(input)), "softmax");
+            graph.addNode(result, new ArrayList<>(List.of(input)), TensorOperator.SOFTMAX, new ArrayList<Object>());
         }
 
         return result;
@@ -210,7 +210,7 @@ public class Tensor {
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
         if (graph != null) {
-            graph.addNode(result, comps, "sumRows");
+            graph.addNode(result, comps, TensorOperator.SUMROWS, new ArrayList<Object>());
         }
         return result;
     }
@@ -226,7 +226,7 @@ public class Tensor {
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
         if (graph != null) {
-            graph.addNode(result, comps, "sumCols");
+            graph.addNode(result, comps, TensorOperator.SUMCOLS, new ArrayList<Object>());
         }
         return result;
     }
