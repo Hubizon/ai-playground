@@ -91,8 +91,8 @@ public class MainViewModel {
                     optimizerType.set(trainingDto.optimizer());
                     lossFunctionType.set(trainingDto.lossFunction());
                 }
+                liveMetrics.clear();
                 if (metrics != null) {
-                    liveMetrics.clear();
                     liveMetrics.addAll(metrics);
                     if (trainingId != null) {
                         trainingHandler = new TrainingHandler(trainingId, liveMetrics.getLast());
@@ -119,44 +119,56 @@ public class MainViewModel {
         }
     }
 
+    private void updateIsTrainingInProgress(boolean value) {
+        isTrainingInProgress.set(value);
+        updateIsPreviousVersion();
+        updateIsNextVersion();
+    }
+
     private void updateIsPreviousVersion() {
-        if (!isModelLoaded.get())
+        if (!isModelLoaded.get() || isTrainingInProgress.get()) {
             isPreviousVersion.set(false);
-        try {
-            Integer previousVersion = modelService.getPreviousVersion(
-                    user.userId(),
-                    model.modelName(),
-                    model.versionNumber());
-            isPreviousVersion.set(previousVersion != null);
-        } catch (DatabaseException e) {
-            logger.error("Failed to get the model version for model={}, error={}",
-                    model, e.getMessage(), e);
-            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
-            isPreviousVersion.set(false);
+        } else {
+            try {
+                Integer previousVersion = modelService.getPreviousVersion(
+                        user.userId(),
+                        model.modelName(),
+                        model.versionNumber());
+                isPreviousVersion.set(previousVersion != null);
+            } catch (DatabaseException e) {
+                logger.error("Failed to get the model version for model={}, error={}",
+                        model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+                isPreviousVersion.set(false);
+            }
         }
     }
 
     private void updateIsNextVersion() {
-        if (!isModelLoaded.get())
+        if (!isModelLoaded.get() || isTrainingInProgress.get())
             isNextVersion.set(false);
-        try {
-            Integer nextVersion = modelService.getNextVersion(
-                    user.userId(),
-                    model.modelName(),
-                    model.versionNumber());
-            isNextVersion.set(nextVersion != null);
-        } catch (DatabaseException e) {
-            logger.error("Failed to get the model version for model={}, error={}",
-                    model, e.getMessage(), e);
-            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
-            isNextVersion.set(false);
+        else {
+            try {
+                Integer nextVersion = modelService.getNextVersion(
+                        user.userId(),
+                        model.modelName(),
+                        model.versionNumber());
+                isNextVersion.set(nextVersion != null);
+            } catch (DatabaseException e) {
+                logger.error("Failed to get the model version for model={}, error={}",
+                        model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+                isNextVersion.set(false);
+            }
         }
     }
 
     private void updateIsRecentTrainingAvailable() {
         try {
             isRecentTrainingAvailable.set(trainingHandler != null
-                    && !modelService.hasUserAlreadySharedTraining(trainingHandler.getTrainingId()));
+                    && !modelService.hasUserAlreadySharedTraining(trainingHandler.getTrainingId())
+                    && !liveMetrics.isEmpty() && trainingStatus.get() != null
+                    && trainingStatus.get().getIsFinished());
         } catch (DatabaseException e) {
             logger.error("Failed to get information about shared training, error={}", e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
@@ -387,7 +399,7 @@ public class MainViewModel {
         }
 
         isCancelled.set(false);
-        isTrainingInProgress.set(true);
+        updateIsTrainingInProgress(true);
         liveMetrics.clear();
 
         new Thread(() -> {
@@ -443,7 +455,7 @@ public class MainViewModel {
             } finally {
                 Platform.runLater(() -> {
                     updateIsRecentTrainingAvailable();
-                    isTrainingInProgress.set(false);
+                    updateIsTrainingInProgress(false);
                 });
             }
         }).start();
