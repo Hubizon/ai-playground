@@ -12,25 +12,29 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
+import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
+import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
+import pl.edu.uj.tcs.aiplayground.viewmodel.LeaderboardViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.MainViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
-import javafx.scene.control.ListView;
-import javafx.scene.input.MouseEvent;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 public class MainViewController {
-
     private final double SPACER = 200;
     private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
@@ -39,6 +43,8 @@ public class MainViewController {
     @FXML
     public LineChart<Number, Number> accuracyChart;
     @FXML
+    public Label statusField;
+    @FXML
     private TabPane leftTabPane;
     private Stage stage;
     private ViewModelFactory factory;
@@ -46,6 +52,8 @@ public class MainViewController {
     private MainViewModel mainViewModel;
     @FXML
     private VBox barsContainer;
+    @FXML
+    private Label tokenField;
     @FXML
     private Label accuracyField;
     @FXML
@@ -71,6 +79,8 @@ public class MainViewController {
     @FXML
     private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
     @FXML
+    private ComboBox<String> leaderbors_select_region_combobox;
+    @FXML
     private VBox layerButtonsContainer;
     @FXML
     private Button runButton;
@@ -80,6 +90,8 @@ public class MainViewController {
     private Button prevVersionButton;
     @FXML
     private Button nextVersionButton;
+    @FXML
+    private Button shareButton;
     @FXML
     private ListView<String> modelsListView;
 
@@ -95,7 +107,7 @@ public class MainViewController {
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
@@ -131,10 +143,27 @@ public class MainViewController {
             }
         });
 
+        statusField.textProperty().bind(Bindings.createStringBinding(
+                () -> {
+                    StatusType status = mainViewModel.trainingStatusProperty().get();
+                    return status != null ? status.toString() : "-";
+                },
+                mainViewModel.trainingStatusProperty()
+        ));
+
         optimizerComboBox.setItems(FXCollections.observableArrayList(OptimizerType.values()));
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
+        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList("Country", "Global"));
+
+        optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
+        lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
+        datasetComboBox.valueProperty().bindBidirectional(mainViewModel.datasetTypeProperty());
+
+        Bindings.bindBidirectional(learningRateField.textProperty(), mainViewModel.learningRateProperty(), new NumberStringConverter());
+        Bindings.bindBidirectional(batchField.textProperty(), mainViewModel.batchSizeProperty(), new NumberStringConverter("#"));
+        Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
 
         accuracyField.setText("0");
 
@@ -192,7 +221,9 @@ public class MainViewController {
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
-
+        shareButton.disableProperty().bind(
+                mainViewModel.isRecentTrainingAvailableProperty().not().or(mainViewModel.isTrainingInProgressProperty())
+        );
 
         mainViewModel.layersProperty().addListener((ListChangeListener<LayerConfig>) change -> {
             while (change.next()) {
@@ -226,6 +257,8 @@ public class MainViewController {
 
         prevVersionButton.setOnAction(e -> mainViewModel.setPreviousVersion());
         nextVersionButton.setOnAction(e -> mainViewModel.setNextVersion());
+
+        tokenField.textProperty().bind(mainViewModel.userTokensProperty().asString());
     }
 
     private void addLayerBar(LayerConfig layerConfig) {
@@ -275,6 +308,21 @@ public class MainViewController {
                 });
 
                 barContainer.getChildren().addAll(paramLabel, checkBox);
+            } else if (paramType == BigDecimal.class) {
+                TextField doubleField = new TextField();
+                doubleField.setPrefWidth(50);
+                doubleField.setStyle("-fx-control-inner-background: #444; -fx-text-fill: white;");
+
+                doubleField.setText(String.valueOf(paramValue));
+
+                doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.matches("-?\\d*(\\.\\d+)?")) {
+                        updateLayerParams(barContainer, paramName,
+                                newVal.isEmpty() ? 0 : new BigDecimal(newVal));
+                    }
+                });
+
+                barContainer.getChildren().addAll(paramLabel, doubleField);
             }
         }
 
@@ -311,7 +359,6 @@ public class MainViewController {
             alert = new Alert(Alert.AlertType.INFORMATION);
         else
             alert = new Alert(AlertType.WARNING);
-        alert.setTitle("Missing Selection");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
@@ -348,12 +395,46 @@ public class MainViewController {
     }
 
     @FXML
-    private void onLeaderboardsClicked() {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Leaderboards");
-        alert.setHeaderText(null);
-        alert.setContentText("There will be leaderboards here in the future");
-        alert.showAndWait();
+    private void onShowLeaderboardsClicked() {
+        try {
+            String region = leaderbors_select_region_combobox.getValue();
+            DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
+
+            if (datasetType == null) {
+                alertMessage("Please select a dataset type", false);
+                return;
+            }
+
+            if (region == null) {
+                alertMessage("Please select a region (Country or Global)", false);
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/LeaderboardView.fxml"));
+            Parent root = loader.load();
+            LeaderboardViewController controller = loader.getController();
+            controller.initialize(factory);
+
+            LeaderboardViewModel leaderboardViewModel = factory.getLeaderboardViewModel();
+            List<LeaderboardDto> leaderboardData;
+
+            if ("Global".equals(region)) {
+                leaderboardData = leaderboardViewModel.getLeaderboardGlobal(datasetType);
+            } else {
+                String country = userViewModel.getUser().countryName();
+                leaderboardData = leaderboardViewModel.getLeaderboardLocal(datasetType, country);
+            }
+
+            controller.loadData(leaderboardData);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root, 600, 400));
+            stage.setTitle("Leaderboard - " + region + " - " + datasetType);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            alertMessage("Failed to load leaderboard: " + e.getMessage(), false);
+        }
     }
 
     @FXML
@@ -401,6 +482,10 @@ public class MainViewController {
         accuracyField.setText(String.valueOf(accuracy));
     }
 
+    public void setTokens(int tokens) {
+        tokenField.setText(String.valueOf(tokens));
+    }
+
     public int getLossPercentage() {
         return Integer.parseInt(lossField.getText());
     }
@@ -411,10 +496,15 @@ public class MainViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     @FXML
+    private void onShareButtonClicked() {
+        mainViewModel.shareTraining();
+    }
 
+    @FXML
     private void onCreateNewModelClicked() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Create New Model");
@@ -438,12 +528,35 @@ public class MainViewController {
         });
     }
 
+    @FXML
+    private void onBuyTokensClicked() {
+        try {
+            Stage stage = new Stage();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/TokenShopView.fxml"));
+            Scene scene = new Scene(loader.load());
+            scene.getStylesheets().add(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm());
+            TokenShopController controller = loader.getController();
+            controller.initialize(factory);
+            controller.setStage(stage);
+
+            stage.setTitle("AI Playground - Buy Tokens");
+            stage.setScene(scene);
+            stage.show();
+
+            stage.setOnCloseRequest(event -> {
+                mainViewModel.updateUserTokens();
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initializeModelsList() {
         modelsListView.setItems(mainViewModel.userModelNamesProperty());
         modelsListView.getStyleClass().add("custom-list-view");
 
         modelsListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
+            if (event.getClickCount() >= 2) {
                 String selectedModel = modelsListView.getSelectionModel().getSelectedItem();
                 if (selectedModel != null) {
                     mainViewModel.setModel(userViewModel.getUser(), selectedModel);

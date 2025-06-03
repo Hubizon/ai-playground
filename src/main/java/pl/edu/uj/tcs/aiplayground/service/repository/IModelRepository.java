@@ -1,6 +1,8 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
 
 import java.util.List;
@@ -20,4 +22,14 @@ public interface IModelRepository {
     List<Integer> getModelVersions(UUID userId, String modelName);
 
     boolean existUserModelName(UUID uuid, String name);
+
+    TrainingDto getTrainingForModel(UUID modelVersionId);
+
+    List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId);
+
+    UUID getTrainingIdForModel(UUID modelVersionId);
+
+    boolean hasUserAlreadySharedTraining(UUID trainingId);
+
+    String getTrainingStatusName(UUID trainingId);
 }

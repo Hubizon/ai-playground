@@ -1,7 +1,5 @@
 package pl.edu.uj.tcs.aiplayground.core.layers;
 
-import org.jooq.JSONB;
-import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.ComputationalGraph;
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
@@ -42,8 +40,8 @@ public class LinearLayer implements Layer {
     }
 
     public Tensor forward(Tensor input, ComputationalGraph graph) {
-        if( useBias) return Tensor.add(Tensor.matMul(matrix,input, graph), bias, graph);
-        else return Tensor.matMul(matrix,input, graph);
+        if (useBias) return Tensor.add(Tensor.matMul(matrix, input, graph), bias, graph);
+        else return Tensor.matMul(matrix, input, graph);
     }
 
     public ArrayList<Tensor> getParams() {

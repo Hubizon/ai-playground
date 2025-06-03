@@ -127,20 +127,40 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals("softmax")) {
-            Tensor input = components.get(0);
-            for (int i = 0; i < input.cols; i++) {
-                for (int j = 0; j < input.rows; j++) {
-                    double grad = 0;
-                    for (int k = 0; k < input.rows; k++) {
-                        double s_j = result.data[j][i];
-                        double s_k = result.data[k][i];
-                        double delta = (j == k) ? 1.0 : 0.0;
-                        grad += result.gradient[k][i] * s_j * (delta - s_k);
+                Tensor input = components.get(0);
+                for (int i = 0; i < input.cols; i++) {
+                    for (int j = 0; j < input.rows; j++) {
+                        double grad = 0;
+                        for (int k = 0; k < input.rows; k++) {
+                            double s_j = result.data[j][i];
+                            double s_k = result.data[k][i];
+                            double delta = (j == k) ? 1.0 : 0.0;
+                            grad += result.gradient[k][i] * s_j * (delta - s_k);
+                        }
+                        input.gradient[j][i] += grad;
                     }
-                    input.gradient[j][i] += grad;
+                }
+            } else if (operation.startsWith("leakyRelu")) {
+                Tensor input = components.get(0);
+                double alpha;
+                try {
+                    String[] parts = operation.split("=");
+                    alpha = Double.parseDouble(parts[1]);
+                } catch (Exception e) {
+                    System.err.println("Error parsing alpha for leakyRelu, using default: " + e.getMessage());
+                    alpha = 0.01;
+                }
+
+                for (int i = 0; i < input.rows; i++) {
+                    for (int j = 0; j < input.cols; j++) {
+                        if (input.data[i][j] > 0) {
+                            input.gradient[i][j] += result.gradient[i][j];
+                        } else {
+                            input.gradient[i][j] += result.gradient[i][j] * alpha;
+                        }
+                    }
                 }
             }
-        }
         }
     }
 }

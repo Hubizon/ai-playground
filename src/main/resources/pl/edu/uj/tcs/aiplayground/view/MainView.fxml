@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.lang.String?>
-
 <HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
       fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
@@ -83,17 +80,7 @@
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Leaderboards" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="User info" onAction="#onUserInfoClicked"/>
-                    </HBox>
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="leaderbors_select_region" promptText="Region">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Global"/>
-                                    <String fx:value="Country"/>
-                                    <String fx:value="Only my models"/>
-                                </FXCollections>
-                            </items>
+                        <ComboBox fx:id="leaderbors_select_region_combobox" promptText="Region">
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -101,8 +88,25 @@
                         </ComboBox>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="Show Leaderboards" onAction="#onLeaderboardsClicked"/>
+                        <Button text="Show Leaderboards" onAction="#onShowLeaderboardsClicked"/>
                     </HBox>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="User Actions">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="User Actions" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="User info" onAction="#onUserInfoClicked"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Tokens:" style="-fx-text-fill: white;"/>
+                        <Label fx:id="tokenField"
+                               style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Button text="Buy Tokens" onAction="#onBuyTokensClicked" styleClass="action-button"/>
                 </VBox>
             </content>
         </Tab>
@@ -149,6 +153,15 @@
             <Label fx:id="epochField" text="0"
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Status:" style="-fx-text-fill: white;"/>
+            <Label fx:id="statusField" text="Idle"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button fx:id="shareButton" text="Share" onAction="#onShareButtonClicked"/>
+        </HBox>
+
 
         <VBox style="-fx-padding: 10 0 0 0;">
             <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"

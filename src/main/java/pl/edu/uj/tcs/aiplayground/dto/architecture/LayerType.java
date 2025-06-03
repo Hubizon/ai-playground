@@ -8,7 +8,8 @@ public enum LayerType {
     LINEAR("Linear", new LinearParams(), params -> new LinearLayer((LinearParams) params)),
     RELU("ReLU", new EmptyParams(), params -> new ReluLayer()),
     SIGMOID("Sigmoid", new EmptyParams(), params -> new SigmoidLayer()),
-    SOFTMAX("Softmax", new EmptyParams(), params -> new SoftMaxLayer());
+    SOFTMAX("Softmax", new EmptyParams(), params -> new SoftMaxLayer()),
+    LEAKYRELU("LeakyReLU", new LeakyReLUParams(), params -> new LeakyReluLayer((LeakyReLUParams) params));
 
     private final String name;
     private final LayerParams params;

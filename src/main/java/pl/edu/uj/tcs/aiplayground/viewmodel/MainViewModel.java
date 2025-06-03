@@ -11,40 +11,49 @@ import pl.edu.uj.tcs.aiplayground.core.TrainingHandler;
 import pl.edu.uj.tcs.aiplayground.dto.*;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.*;
 import pl.edu.uj.tcs.aiplayground.dto.form.ModelForm;
-import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.TrainingForm;
 import pl.edu.uj.tcs.aiplayground.dto.validation.TrainingValidation;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
-import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
-import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
-import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
+import pl.edu.uj.tcs.aiplayground.exception.*;
 import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
+import pl.edu.uj.tcs.aiplayground.service.UserService;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainViewModel {
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
     private final ModelService modelService;
+    private final UserService userService;
     private final TrainingService trainingService;
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
     private final StringProperty modelName = new SimpleStringProperty();
+    private final IntegerProperty userTokens = new SimpleIntegerProperty();
     private final IntegerProperty modelVersion = new SimpleIntegerProperty();
     private final ObservableList<String> userModelNames = FXCollections.observableArrayList();
     private final ObservableList<TrainingMetricDto> liveMetrics = FXCollections.observableArrayList();
     private final ObservableList<LayerConfig> layers = FXCollections.observableArrayList();
+    private final BooleanProperty isRecentTrainingAvailable = new SimpleBooleanProperty(false);
     private final BooleanProperty isTrainingInProgress = new SimpleBooleanProperty(false);
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
+    private final DoubleProperty learningRate = new SimpleDoubleProperty(0.01);
+    private final IntegerProperty batchSize = new SimpleIntegerProperty(16);
+    private final IntegerProperty maxEpochs = new SimpleIntegerProperty(100);
+    private final ObjectProperty<DatasetType> datasetType = new SimpleObjectProperty<>();
+    private final ObjectProperty<OptimizerType> optimizerType = new SimpleObjectProperty<>();
+    private final ObjectProperty<LossFunctionType> lossFunctionType = new SimpleObjectProperty<>();
     private final ObjectProperty<AlertEvent> alertEvent = new SimpleObjectProperty<>();
     private final ObjectProperty<StatusType> trainingStatus = new SimpleObjectProperty<>();
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
 
-    public MainViewModel(ModelService modelService, TrainingService trainingService) {
+    public MainViewModel(ModelService modelService, UserService userService, TrainingService trainingService) {
         this.modelService = modelService;
+        this.userService = userService;
         this.trainingService = trainingService;
     }
 
@@ -57,8 +66,47 @@ public class MainViewModel {
             updateIsNextVersion();
             modelName.set(model.modelName());
             modelVersion.set(model.versionNumber());
-        }
+
+            try {
+                UUID trainingId = modelService.getTrainingIdForModel(model.modelVersionId());
+                TrainingDto trainingDto = modelService.getTrainingForModel(model.modelVersionId());
+                List<TrainingMetricDto> metrics = modelService.getMetricsForModel(model.modelVersionId());
+                String statusName = modelService.getTrainingStatus(trainingId);
+                if (statusName == null)
+                    trainingStatus.set(null);
+                else {
+                    try {
+                        trainingStatus.set(StatusType.valueOf(statusName));
+                    } catch (Exception e) {
+                        logger.error("{} is not a valid status value, error={}", statusName, e.getMessage(), e);
+                        trainingStatus.set(null);
+                    }
+                }
+
+                if (trainingDto != null) {
+                    learningRate.set(trainingDto.learningRate());
+                    batchSize.set(trainingDto.batchSize());
+                    maxEpochs.set(trainingDto.maxEpochs());
+                    datasetType.set(trainingDto.dataset());
+                    optimizerType.set(trainingDto.optimizer());
+                    lossFunctionType.set(trainingDto.lossFunction());
+                }
+                if (metrics != null) {
+                    liveMetrics.clear();
+                    liveMetrics.addAll(metrics);
+                    if (trainingId != null) {
+                        trainingHandler = new TrainingHandler(trainingId, liveMetrics.getLast());
+                    }
+                }
+            } catch (DatabaseException e) {
+                logger.error("Failed to get model training data for model={}, error={}", model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+            }
+        } else
+            trainingHandler = null;
         isModelLoaded.set(model != null);
+        updateUserTokens();
+        updateIsRecentTrainingAvailable();
     }
 
     private void updateUserModelNames() {
@@ -105,6 +153,45 @@ public class MainViewModel {
         }
     }
 
+    private void updateIsRecentTrainingAvailable() {
+        try {
+            isRecentTrainingAvailable.set(trainingHandler != null
+                    && !modelService.hasUserAlreadySharedTraining(trainingHandler.getTrainingId()));
+        } catch (DatabaseException e) {
+            logger.error("Failed to get information about shared training, error={}", e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+            isRecentTrainingAvailable.set(false);
+        }
+    }
+
+    public DoubleProperty learningRateProperty() {
+        return learningRate;
+    }
+
+    public IntegerProperty batchSizeProperty() {
+        return batchSize;
+    }
+
+    public IntegerProperty maxEpochsProperty() {
+        return maxEpochs;
+    }
+
+    public IntegerProperty userTokensProperty() {
+        return userTokens;
+    }
+
+    public ObjectProperty<DatasetType> datasetTypeProperty() {
+        return datasetType;
+    }
+
+    public ObjectProperty<OptimizerType> optimizerTypeProperty() {
+        return optimizerType;
+    }
+
+    public ObjectProperty<LossFunctionType> lossFunctionTypeProperty() {
+        return lossFunctionType;
+    }
+
     public ObjectProperty<AlertEvent> alertEventProperty() {
         return alertEvent;
     }
@@ -131,6 +218,10 @@ public class MainViewModel {
 
     public BooleanProperty isTrainingInProgressProperty() {
         return isTrainingInProgress;
+    }
+
+    public BooleanProperty isRecentTrainingAvailableProperty() {
+        return isRecentTrainingAvailable;
     }
 
     public BooleanProperty isPreviousVersionProperty() {
@@ -164,6 +255,15 @@ public class MainViewModel {
         LayerParams oldParams = layers.get(idx).params();
         LayerParams newParams = oldParams.updated(paramName, newValue);
         layers.set(idx, new LayerConfig(type, newParams));
+    }
+
+    public void updateUserTokens() {
+        try {
+            userTokens.set(userService.userTokenCount(user.userId()));
+        } catch (DatabaseException e) {
+            logger.error("Failed to get user tokens for user={}, error={}", user, e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
+        }
     }
 
     public boolean isLoggedIn() {
@@ -213,6 +313,7 @@ public class MainViewModel {
     public void setUser(UserDto user) {
         this.user = user;
         updateUserModelNames();
+        updateUserTokens();
     }
 
     public void setModel(UserDto user, String modelName) {
@@ -239,6 +340,10 @@ public class MainViewModel {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
             alertEvent.set(AlertEvent.createAlertEvent("Illegal model name: " + e.getMessage(), false));
+        } catch (InsufficientTokensException e) {
+            logger.error("Failed to create the model for user={}, modelName={}, error={}",
+                    user, modelName, e.getMessage(), e);
+            alertEvent.set(AlertEvent.createAlertEvent("Insufficient tokens: " + e.getMessage(), false));
         } catch (DatabaseException e) {
             logger.error("Failed to create the model for user={}, modelName={}, error={}",
                     user, modelName, e.getMessage(), e);
@@ -249,7 +354,13 @@ public class MainViewModel {
     }
 
     public void shareTraining() {
-        trainingHandler.shareTraining();
+        if (trainingHandler != null) {
+            String mess = trainingHandler.shareTraining();
+            if (mess != null) {
+                alertEvent.set(AlertEvent.createAlertEvent(mess, true));
+            }
+        }
+        updateIsRecentTrainingAvailable();
     }
 
     public void stopTraining() {
@@ -259,7 +370,9 @@ public class MainViewModel {
     private void runTraining(TrainingDto dto, NeuralNet net, TrainingHandler handler) throws TrainingException {
         net.train(dto, isCancelled, metric -> {
             Platform.runLater(() -> {
-                handler.addNewTrainingMetric(metric);
+                if (handler != null) {
+                    handler.addNewTrainingMetric(metric);
+                }
                 liveMetrics.add(metric);
             });
         });
@@ -268,7 +381,7 @@ public class MainViewModel {
     public void train(TrainingForm trainingForm) {
         try {
             TrainingValidation.validateTrainingForm(trainingForm);
-        } catch(InvalidHyperparametersException e) {
+        } catch (InvalidHyperparametersException e) {
             alertEvent.set(AlertEvent.createAlertEvent("Invalid hyperparameters: " + e.getMessage(), false));
             return;
         }
@@ -285,39 +398,53 @@ public class MainViewModel {
 
                 TrainingDto trainingDto = trainingForm.toDto(model.modelVersionId());
                 trainingDto.dataset().setTrainingService(trainingService);
-                trainingHandler = new TrainingHandler(trainingDto, trainingStatus::set);
+                trainingHandler = new TrainingHandler(trainingDto,
+                        (StatusType statusType) -> Platform.runLater(() -> trainingStatus.set(statusType)));
                 trainingHandler.updateTrainingStatus(StatusType.IN_PROGRESS);
 
                 runTraining(trainingDto, net, trainingHandler);
 
-                if (isCancelled.get()) { // TODO to powinno być tutaj a nie po stronie core?
-                    trainingHandler.updateTrainingStatus(StatusType.CANCELLED);
-                } else {
-                    trainingHandler.updateTrainingStatus(StatusType.FINISHED);
+                if (trainingHandler != null) {
+                    if (isCancelled.get()) {
+                        trainingHandler.updateTrainingStatus(StatusType.CANCELLED);
+                    } else {
+                        trainingHandler.updateTrainingStatus(StatusType.FINISHED);
+                    }
                 }
             } catch (TrainingException e) {
+                logger.error("Training error", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Training error", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Training failed: " + e.getMessage(), false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Training failed: " + e.getMessage(), false))
+                );
+            } catch (InsufficientTokensException e) {
+                logger.error("Insufficient Tokens", e);
+                if (trainingHandler != null)
+                    trainingHandler.updateTrainingStatus(StatusType.ERROR);
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Insufficient Tokens: " + e.getMessage(),
+                        false))
                 );
             } catch (DatabaseException e) {
+                logger.error("Internal error", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Internal error", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Internal error", false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Internal error", false))
                 );
             } catch (ModelModificationException e) {
+                logger.error("Illegal hyperparameters", e);
                 if (trainingHandler != null)
                     trainingHandler.updateTrainingStatus(StatusType.ERROR);
-                logger.error("Illegal hyperparameters", e);
-                Platform.runLater(() ->
-                        alertEvent.set(AlertEvent.createAlertEvent("Illegal hyperparameters: " + e.getMessage(), false))
+                Platform.runLater(() -> alertEvent.set(AlertEvent.createAlertEvent(
+                        "Illegal hyperparameters: " + e.getMessage(), false))
                 );
             } finally {
-                Platform.runLater(() -> isTrainingInProgress.set(false));
+                Platform.runLater(() -> {
+                    updateIsRecentTrainingAvailable();
+                    isTrainingInProgress.set(false);
+                });
             }
         }).start();
     }

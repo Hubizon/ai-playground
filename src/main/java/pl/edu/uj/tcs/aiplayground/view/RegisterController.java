@@ -8,14 +8,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LossFunctionType;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
-import pl.edu.uj.tcs.jooq.tables.Countries;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -26,10 +25,9 @@ public class RegisterController {
     public TextField firstNameField;
     public TextField lastNameField;
     public TextField emailField;
+    public TextField visiblePasswordField;
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
-    public TextField visiblePasswordField;
-
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -61,6 +59,7 @@ public class RegisterController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     @FXML

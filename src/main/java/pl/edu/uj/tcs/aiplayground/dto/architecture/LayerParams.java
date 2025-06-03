@@ -7,10 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public sealed interface LayerParams permits LinearParams, EmptyParams {
+public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, LinearParams {
     List<String> getParamNames();
 
     default List<Class<?>> getParamTypes() {
@@ -31,7 +30,7 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
                 values.add(accessor.invoke(this));
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(); // TODO
+            throw new RuntimeException(e);
         }
 
         return values;
@@ -57,7 +56,7 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
             Constructor<?> ctor = rc.getDeclaredConstructor(getParamTypes().toArray(new Class<?>[0]));
             return (LayerParams) ctor.newInstance(args);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(); // TODO
+            throw new RuntimeException(e);
         }
     }
 
@@ -87,7 +86,7 @@ public sealed interface LayerParams permits LinearParams, EmptyParams {
             return (LayerParams) ctor.newInstance(args);
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
                  IllegalAccessException e) {
-            throw new RuntimeException(e); // TODO
+            throw new RuntimeException(e);
         }
     }
 }

@@ -40,3 +40,4 @@ build/
 .DS_Store
 
 lib/
+src/main/resources/datasets/MNIST.csv

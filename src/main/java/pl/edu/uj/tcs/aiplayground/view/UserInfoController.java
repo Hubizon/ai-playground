@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.view;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
@@ -66,6 +67,7 @@ public class UserInfoController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
     }
 
     @FXML
@@ -75,7 +77,6 @@ public class UserInfoController {
         passwordVisible = !passwordVisible;
 
         if (passwordVisible) {
-            // Show password
             String password = passwordField.getText();
             visiblePasswordField.setText(password);
             visiblePasswordField.setManaged(true);
@@ -106,7 +107,8 @@ public class UserInfoController {
         String password = passwordVisible ? visiblePasswordField.getText() : passwordField.getText();
 
         UpdateUserForm updateUserForm = new UpdateUserForm(
-                emailInfoField.getText(),
+                firstNameInfoField.getText(),
+                lastNameInfoField.getText(),
                 password,
                 countryInfoComboBox.getValue(),
                 birthDateInfoDatePicker.getValue()
@@ -119,17 +121,26 @@ public class UserInfoController {
                 stage.close();
             }
         } else {
-            // TODO
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Invalid data");
+            alert.setHeaderText(null);
+            alert.setContentText(userViewModel.statusMessageProperty().getValue());
+            alert.getDialogPane().getStylesheets().add(
+                    getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+            );
+            alert.getDialogPane().getStyleClass().add("dialog-pane");
+            ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+            alert.getButtonTypes().setAll(okButton);
+            alert.showAndWait();
         }
     }
 
     @FXML
     public void onCancelClick() {
-        // Reset to original values
         UserDto user = userViewModel.getUser();
         if (user != null) {
             emailInfoField.setText(user.email());
-            passwordField.setText(""); // Clear password for security
+            passwordField.setText("");
             visiblePasswordField.setText("");
             countryInfoComboBox.setValue(user.countryName());
             birthDateInfoDatePicker.setValue(user.birthDate());
@@ -139,23 +150,22 @@ public class UserInfoController {
         updateEditability();
 
         if (passwordVisible) {
-            handleShowPassword(); // Switch back to password field if visible
+            handleShowPassword();
         }
     }
 
     private void updateEditability() {
-        usernameInfoField.setEditable(editMode);
+        usernameInfoField.setEditable(false);
         firstNameInfoField.setEditable(editMode);
         lastNameInfoField.setEditable(editMode);
 
-        emailInfoField.setEditable(editMode);
+        emailInfoField.setEditable(false);
         passwordField.setEditable(editMode);
         visiblePasswordField.setEditable(editMode);
         countryInfoComboBox.setDisable(!editMode);
         birthDateInfoDatePicker.setDisable(!editMode);
         showPasswordButton.setDisable(!editMode);
 
-        // Toggle button visibility
         editInfoButton.setDisable(editMode);
         saveButton.setDisable(!editMode);
         cancelButton.setDisable(!editMode);

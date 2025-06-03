@@ -9,6 +9,7 @@ import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.repository.JooqFactory;
 import pl.edu.uj.tcs.aiplayground.service.repository.TrainingRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,20 +18,21 @@ import java.util.function.Consumer;
 public class TrainingCombined {
     public static void main(String[] args) {
         List<LayerConfig> architecture = List.of(
-                new LayerConfig(LayerType.LINEAR, new LinearParams(784,512, true)),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(4, 12, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(512,64,true)),
-                new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
-                new LayerConfig(LayerType.LINEAR, new LinearParams(64,10,true))
+                new LayerConfig(LayerType.LINEAR, new LinearParams(12, 12, true)),
+                new LayerConfig(LayerType.LEAKYRELU, new LeakyReLUParams(new BigDecimal("0.3"))),
+                new LayerConfig(LayerType.LINEAR, new LinearParams(12, 3, true))
         );
 
         NeuralNet nn = new NeuralNet(architecture);
 
-        DatasetType datasetType = DatasetType.MNIST;
-        datasetType.setTrainingService(new TrainingService(new TrainingRepository(JooqFactory.getDSLContext())));
+        DatasetType datasetType = DatasetType.IRIS;
+        datasetType.setTrainingService(new TrainingService(
+                new TrainingRepository(JooqFactory.getConnection(), JooqFactory.getDSLContext())));
         TrainingDto dto = new TrainingDto(
                 UUID.randomUUID(),
-                1,
+                100,
                 32,
                 0.001,
                 datasetType,
