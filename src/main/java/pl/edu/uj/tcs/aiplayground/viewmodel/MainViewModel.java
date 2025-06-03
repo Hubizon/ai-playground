@@ -18,11 +18,16 @@ import pl.edu.uj.tcs.aiplayground.service.ModelService;
 import pl.edu.uj.tcs.aiplayground.service.TrainingService;
 import pl.edu.uj.tcs.aiplayground.service.UserService;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainViewModel {
+    private static final Properties config = new Properties();
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
     private final ModelService modelService;
     private final UserService userService;
@@ -39,9 +44,15 @@ public class MainViewModel {
     private final BooleanProperty isPreviousVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isNextVersion = new SimpleBooleanProperty(false);
     private final BooleanProperty isModelLoaded = new SimpleBooleanProperty(false);
-    private final DoubleProperty learningRate = new SimpleDoubleProperty(0.01);
-    private final IntegerProperty batchSize = new SimpleIntegerProperty(16);
-    private final IntegerProperty maxEpochs = new SimpleIntegerProperty(100);
+    private final IntegerProperty batchSize = new SimpleIntegerProperty(
+            Integer.parseInt(config.getProperty("training.default.batchSize"))
+    );
+    private final IntegerProperty maxEpochs = new SimpleIntegerProperty(
+            Integer.parseInt(config.getProperty("training.default.maxEpochs"))
+    );
+    private final DoubleProperty learningRate = new SimpleDoubleProperty(
+            Double.parseDouble(config.getProperty("training.default.learningRate"))
+    );
     private final ObjectProperty<DatasetType> datasetType = new SimpleObjectProperty<>();
     private final ObjectProperty<OptimizerType> optimizerType = new SimpleObjectProperty<>();
     private final ObjectProperty<LossFunctionType> lossFunctionType = new SimpleObjectProperty<>();
@@ -50,6 +61,18 @@ public class MainViewModel {
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
+
+    static {
+        try (InputStream input = MainViewModel.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                config.load(input);
+            } else {
+                throw new FileNotFoundException("config.properties not found");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load config", e);
+        }
+    }
 
     public MainViewModel(ModelService modelService, UserService userService, TrainingService trainingService) {
         this.modelService = modelService;
@@ -62,8 +85,6 @@ public class MainViewModel {
         if (model != null) {
             NeuralNet neuralNet = new NeuralNet(model.architecture());
             layers.addAll(neuralNet.toConfigList());
-            updateIsPreviousVersion();
-            updateIsNextVersion();
             modelName.set(model.modelName());
             modelVersion.set(model.versionNumber());
 
@@ -105,6 +126,8 @@ public class MainViewModel {
         } else
             trainingHandler = null;
         isModelLoaded.set(model != null);
+        updateIsPreviousVersion();
+        updateIsNextVersion();
         updateUserTokens();
         updateIsRecentTrainingAvailable();
     }
@@ -278,17 +301,12 @@ public class MainViewModel {
         }
     }
 
-    public boolean isLoggedIn() {
-        return user != null;
-    }
-
-    public String getModelName() {
-        if (isModelLoaded.get())
-            return model.modelName();
-        return null;
-    }
-
     public void setPreviousVersion() {
+        if (isTrainingInProgress.get()) {
+            alertEvent.set(AlertEvent.createAlertEvent("Wait for the current training to end", false));
+            return;
+        }
+
         if (!isPreviousVersion.get())
             return;
         try {
@@ -306,6 +324,11 @@ public class MainViewModel {
     }
 
     public void setNextVersion() {
+        if (isTrainingInProgress.get()) {
+            alertEvent.set(AlertEvent.createAlertEvent("Wait for the current training to end", false));
+            return;
+        }
+
         if (!isNextVersion.get())
             return;
         try {
@@ -329,6 +352,11 @@ public class MainViewModel {
     }
 
     public void setModel(UserDto user, String modelName) {
+        if (isTrainingInProgress.get()) {
+            alertEvent.set(AlertEvent.createAlertEvent("Wait for the current training to end", false));
+            return;
+        }
+
         try {
             this.model = modelService.getModel(user.userId(), modelName);
         } catch (DatabaseException e) {
@@ -340,6 +368,11 @@ public class MainViewModel {
     }
 
     public void createNewModel(UserDto user, String modelName) {
+        if (isTrainingInProgress.get()) {
+            alertEvent.set(AlertEvent.createAlertEvent("Wait for the current training to end", false));
+            return;
+        }
+
         try {
             NeuralNet neuralNet = new NeuralNet();
             ModelForm modelForm = new ModelForm(
@@ -380,14 +413,12 @@ public class MainViewModel {
     }
 
     private void runTraining(TrainingDto dto, NeuralNet net, TrainingHandler handler) throws TrainingException {
-        net.train(dto, isCancelled, metric -> {
-            Platform.runLater(() -> {
-                if (handler != null) {
-                    handler.addNewTrainingMetric(metric);
-                }
-                liveMetrics.add(metric);
-            });
-        });
+        net.train(dto, isCancelled, metric -> Platform.runLater(() -> {
+            if (handler != null) {
+                handler.addNewTrainingMetric(metric);
+            }
+            liveMetrics.add(metric);
+        }));
     }
 
     public void train(TrainingForm trainingForm) {

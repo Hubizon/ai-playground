@@ -19,6 +19,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
+import org.jooq.impl.QOM;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -36,7 +37,22 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainViewController {
-    private final double SPACER = 200;
+    public enum LeaderboardRegion {
+        COUNTRY("Country"),
+        GLOBAL("Global");
+
+        private final String displayName;
+
+        LeaderboardRegion(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
     private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
     @FXML
@@ -80,7 +96,7 @@ public class MainViewController {
     @FXML
     private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
     @FXML
-    private ComboBox<String> leaderbors_select_region_combobox;
+    private ComboBox<LeaderboardRegion> leaderbors_select_region_combobox;
     @FXML
     private VBox layerButtonsContainer;
     @FXML
@@ -101,7 +117,6 @@ public class MainViewController {
         this.userViewModel = factory.getUserViewModel();
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
-
 
         leftTabPane.getSelectionModel().select(1); // "My models" tab
 
@@ -192,7 +207,7 @@ public class MainViewController {
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
-        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList("Country", "Global"));
+        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList(LeaderboardRegion.values()));
 
         optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
         lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
@@ -358,7 +373,7 @@ public class MainViewController {
 
         barsContainer.getChildren().add(barContainer);
 
-        //scrolling to the bottom of layer (newly added)
+        // scrolling to the bottom of layer
         Parent parent = barsContainer.getParent();
         while (parent != null && !(parent instanceof ScrollPane)) {
             parent = parent.getParent();
@@ -412,7 +427,7 @@ public class MainViewController {
     @FXML
     private void onShowLeaderboardsClicked() {
         try {
-            String region = leaderbors_select_region_combobox.getValue();
+            LeaderboardRegion region = leaderbors_select_region_combobox.getValue();
             DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
 
             if (datasetType == null) {
@@ -421,7 +436,7 @@ public class MainViewController {
             }
 
             if (region == null) {
-                alertMessage("Please select a region (Country or Global)", false);
+                alertMessage("Please select a region", false);
                 return;
             }
 
@@ -433,12 +448,13 @@ public class MainViewController {
             LeaderboardViewModel leaderboardViewModel = factory.getLeaderboardViewModel();
             List<LeaderboardDto> leaderboardData;
 
-            if ("Global".equals(region)) {
+            if (LeaderboardRegion.GLOBAL.equals(region)) {
                 leaderboardData = leaderboardViewModel.getLeaderboardGlobal(datasetType);
-            } else {
+            } else if (LeaderboardRegion.COUNTRY.equals(region)) {
                 String country = userViewModel.getUser().countryName();
                 leaderboardData = leaderboardViewModel.getLeaderboardLocal(datasetType, country);
-            }
+            } else
+                return;
 
             controller.loadData(leaderboardData);
 
