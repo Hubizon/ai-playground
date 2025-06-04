@@ -164,7 +164,8 @@
 
 
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+            <LineChart fx:id="lossChart" title="Loss vs Epoch"
+                       style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
                     <NumberAxis autoRanging="true"/>
@@ -175,13 +176,14 @@
             </LineChart>
         </VBox>
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+            <LineChart fx:id="accuracyChart" title="Accuracy vs Epoch"
+                       style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
                     <NumberAxis autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis autoRanging="true"/>
+                    <NumberAxis lowerBound="0" upperBound="1" autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>

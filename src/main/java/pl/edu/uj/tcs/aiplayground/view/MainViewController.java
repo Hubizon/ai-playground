@@ -19,6 +19,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
+import org.jooq.impl.QOM;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -31,11 +32,27 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class MainViewController {
-    private final double SPACER = 200;
+    public enum LeaderboardRegion {
+        COUNTRY("Country"),
+        GLOBAL("Global");
+
+        private final String displayName;
+
+        LeaderboardRegion(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
     private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
     @FXML
@@ -79,7 +96,7 @@ public class MainViewController {
     @FXML
     private ComboBox<DatasetType> leaderboards_select_dataset_combobox;
     @FXML
-    private ComboBox<String> leaderbors_select_region_combobox;
+    private ComboBox<LeaderboardRegion> leaderbors_select_region_combobox;
     @FXML
     private VBox layerButtonsContainer;
     @FXML
@@ -101,7 +118,6 @@ public class MainViewController {
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
 
-
         leftTabPane.getSelectionModel().select(1); // "My models" tab
 
         initializeModelsList();
@@ -113,34 +129,70 @@ public class MainViewController {
         }
 
         lossChart.setCreateSymbols(false);
+        lossChart.setAnimated(false);
         accuracyChart.setCreateSymbols(false);
+        accuracyChart.setAnimated(false);
         lossChart.getData().add(lossSeries);
         accuracyChart.getData().add(accuracySeries);
+        epochField.setText("-");
+        accuracyField.setText("-");
+        lossField.setText("-");
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
+            // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
+            List<XYChart.Data<Number, Number>> newLossData = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newAccuracyData = new ArrayList<>();
+            boolean shouldClear = false;
+
             while (change.next()) {
-                if (change.wasAdded()) {
+                if (mainViewModel.liveMetricsProperty().isEmpty()) {
+                    shouldClear = true;
+                } else if (change.wasAdded()) {
+                    if (shouldClear) {
+                        newLossData.clear();
+                        newAccuracyData.clear();
+                        shouldClear = false;
+                    }
                     for (TrainingMetricDto m : change.getAddedSubList()) {
-                        lossSeries.getData().add(new XYChart.Data<>(m.epoch(), m.loss()));
-                        accuracySeries.getData().add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                        newLossData.add(new XYChart.Data<>(m.epoch(), m.loss()));
+                        newAccuracyData.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
                     }
                 }
-                if (change.wasRemoved()) {
-                    for (TrainingMetricDto m : change.getRemoved()) {
-                        lossSeries.getData().removeIf(d -> d.getXValue().intValue() == m.epoch());
-                        accuracySeries.getData().removeIf(d -> d.getXValue().intValue() == m.epoch());
-                    }
+            }
+
+            TrainingMetricDto lastMetric = null;
+            if (!mainViewModel.liveMetricsProperty().isEmpty()) {
+                lastMetric = mainViewModel.liveMetricsProperty().getLast();
+            }
+
+            boolean finalShouldClear = shouldClear;
+            TrainingMetricDto finalLastMetric = lastMetric;
+
+            Platform.runLater(() -> {
+                if (finalShouldClear) {
+                    // The charts refuse to update when cleared unless reset
+                    lossSeries.getData().clear();
+                    accuracySeries.getData().clear();
+                    lossChart.getData().remove(lossSeries);
+                    accuracyChart.getData().remove(accuracySeries);
+                    lossChart.layout();
+                    accuracyChart.layout();
+                    lossChart.getData().add(lossSeries);
+                    accuracyChart.getData().add(accuracySeries);
+                } else {
+                    lossSeries.getData().addAll(newLossData);
+                    accuracySeries.getData().addAll(newAccuracyData);
                 }
 
-                TrainingMetricDto lastMetric = mainViewModel.liveMetricsProperty().isEmpty() ? null :
-                        mainViewModel.liveMetricsProperty().getLast();
-                Platform.runLater(() -> {
-                    if (lastMetric != null) {
-                        epochField.setText(String.valueOf(lastMetric.epoch()));
-                        accuracyField.setText(String.format("%.3f", lastMetric.accuracy()));
-                        lossField.setText(String.format("%.3f", lastMetric.loss()));
-                    }
-                });
-            }
+                if (finalLastMetric != null) {
+                    epochField.setText(String.valueOf(finalLastMetric.epoch()));
+                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy()));
+                    lossField.setText(String.format("%.3f", finalLastMetric.loss()));
+                } else {
+                    epochField.setText("-");
+                    accuracyField.setText("-");
+                    lossField.setText("-");
+                }
+            });
         });
 
         statusField.textProperty().bind(Bindings.createStringBinding(
@@ -155,7 +207,7 @@ public class MainViewController {
         lossComboBox.setItems(FXCollections.observableArrayList(LossFunctionType.values()));
         datasetComboBox.setItems(FXCollections.observableArrayList(DatasetType.values()));
         leaderboards_select_dataset_combobox.setItems(FXCollections.observableArrayList(DatasetType.values()));
-        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList("Country", "Global"));
+        leaderbors_select_region_combobox.setItems(FXCollections.observableArrayList(LeaderboardRegion.values()));
 
         optimizerComboBox.valueProperty().bindBidirectional(mainViewModel.optimizerTypeProperty());
         lossComboBox.valueProperty().bindBidirectional(mainViewModel.lossFunctionTypeProperty());
@@ -165,59 +217,38 @@ public class MainViewController {
         Bindings.bindBidirectional(batchField.textProperty(), mainViewModel.batchSizeProperty(), new NumberStringConverter("#"));
         Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
 
-        accuracyField.setText("0");
-
-        leftTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            System.out.println("Tab changed to: " + newTab.getText());
-        });
-
-        datasetComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                System.out.println("Selected dataset: " + newVal);
-            }
-        });
-        optimizerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                System.out.println("Selected optimizer: " + newVal);
-            }
-        });
-        lossComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                System.out.println("Selected loss function: " + newVal);
-            }
-        });
-        leaderboards_select_dataset_combobox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                System.out.println("Selected dataset for leaderboards sorting: " + newVal);
-            }
-        });
         maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
             if (change.getControlNewText().matches("\\d*")) {
                 return change;
             }
             return null;
         }));
+
         learningRateField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*(\\.\\d*)?")) {
                 learningRateField.setText(oldValue);
             }
         });
+
         batchField.setTextFormatter(new TextFormatter<>(change -> {
             if (change.getControlNewText().matches("\\d*")) {
                 return change;
             }
             return null;
         }));
+
         modelNameField.textProperty().bind(
                 Bindings.when(mainViewModel.isModelLoadedProperty())
                         .then(mainViewModel.modelNameProperty())
-                        .otherwise("model not loaded")
+                        .otherwise("Model not loaded")
         );
+
         modelVersionField.textProperty().bind(
                 Bindings.when(mainViewModel.isModelLoadedProperty())
                         .then(Bindings.concat(" v", mainViewModel.modelVersionProperty()))
                         .otherwise("")
         );
+
         createLayerButtons();
         runButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty());
         cancelButton.disableProperty().bind(mainViewModel.isTrainingInProgressProperty().not());
@@ -243,7 +274,6 @@ public class MainViewController {
                 alertMessage(newValue.message(), newValue.isInfo());
             }
         });
-
 
         prevVersionButton.disableProperty().bind(
                 mainViewModel.isModelLoadedProperty().not()
@@ -343,7 +373,7 @@ public class MainViewController {
 
         barsContainer.getChildren().add(barContainer);
 
-        //scrolling to the bottom of layer (newly added)
+        // scrolling to the bottom of layer
         Parent parent = barsContainer.getParent();
         while (parent != null && !(parent instanceof ScrollPane)) {
             parent = parent.getParent();
@@ -397,7 +427,7 @@ public class MainViewController {
     @FXML
     private void onShowLeaderboardsClicked() {
         try {
-            String region = leaderbors_select_region_combobox.getValue();
+            LeaderboardRegion region = leaderbors_select_region_combobox.getValue();
             DatasetType datasetType = leaderboards_select_dataset_combobox.getValue();
 
             if (datasetType == null) {
@@ -406,7 +436,7 @@ public class MainViewController {
             }
 
             if (region == null) {
-                alertMessage("Please select a region (Country or Global)", false);
+                alertMessage("Please select a region", false);
                 return;
             }
 
@@ -418,12 +448,13 @@ public class MainViewController {
             LeaderboardViewModel leaderboardViewModel = factory.getLeaderboardViewModel();
             List<LeaderboardDto> leaderboardData;
 
-            if ("Global".equals(region)) {
+            if (LeaderboardRegion.GLOBAL.equals(region)) {
                 leaderboardData = leaderboardViewModel.getLeaderboardGlobal(datasetType);
-            } else {
+            } else if (LeaderboardRegion.COUNTRY.equals(region)) {
                 String country = userViewModel.getUser().countryName();
                 leaderboardData = leaderboardViewModel.getLeaderboardLocal(datasetType, country);
-            }
+            } else
+                return;
 
             controller.loadData(leaderboardData);
 
