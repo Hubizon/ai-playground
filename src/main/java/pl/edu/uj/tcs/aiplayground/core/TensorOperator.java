@@ -11,5 +11,6 @@ public enum TensorOperator {
     SIGMOID,
     MATMUL,
     SOFTMAX,
-    LEAKYRELU;
+    LEAKYRELU,
+    DROPOUT;
 }

@@ -7,7 +7,7 @@ public class ComputationalGraph {
     ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
 
     public void addNode(Tensor result, ArrayList<Tensor> components, TensorOperator operation, ArrayList<Object> params) {
-        nodes.add(new CompGraphNode(result, components, operation,params));
+        nodes.add(new CompGraphNode(result, components, operation, params));
     }
 
     public void propagate() {
@@ -140,15 +140,24 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.LEAKYRELU)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 double alpha;
-                alpha = (double) params.get(0);
+                alpha = (double) params.getFirst();
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         if (input.data[i][j] > 0) {
                             input.gradient[i][j] += result.gradient[i][j];
                         } else {
                             input.gradient[i][j] += result.gradient[i][j] * alpha;
+                        }
+                    }
+                }
+            } else if (operation.equals(TensorOperator.DROPOUT)) {
+                Tensor input = components.getFirst();
+                for (int i = 0; i < input.rows; i++) {
+                    for (int j = 0; j < input.cols; j++) {
+                        if (input.data[i][j] != 0) {
+                            input.gradient[i][j] += result.gradient[i][j];
                         }
                     }
                 }

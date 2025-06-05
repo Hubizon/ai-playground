@@ -9,7 +9,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.List;
 
-public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, LinearParams {
+public sealed interface LayerParams permits DropoutParams, EmptyParams, LeakyReLUParams, LinearParams {
     List<String> getParamNames();
 
     default List<Class<?>> getParamTypes() {

@@ -241,4 +241,21 @@ public class Tensor {
         }
         return new Tensor(transposedData, cols, rows);
     }
+
+    public static Tensor dropout(Tensor x, double amount, ComputationalGraph graph){
+        Tensor newMatrix  = randomMatrix(x.rows, x.cols, 0,1);
+        for (int i = 0; i < newMatrix.rows; i++) {
+            for (int j = 0; j < newMatrix.cols; j++) {
+                if(newMatrix.data[i][j] < amount){
+                    newMatrix.data[i][j] = 0;
+                }
+            }
+        }
+        if (graph != null) {
+            ArrayList<Tensor> comps = new ArrayList<>();
+            comps.add(x);
+            graph.addNode(newMatrix,comps, TensorOperator.DROPOUT,new ArrayList<Object>());
+        }
+        return newMatrix;
+    }
 }
