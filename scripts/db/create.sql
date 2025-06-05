@@ -212,11 +212,8 @@ CREATE TABLE token_history
 CREATE TABLE public_results
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID             NOT NULL REFERENCES trainings (id) UNIQUE,
-    accuracy    NUMERIC(5, 2)    NOT NULL,
-    loss        DOUBLE PRECISION NOT NULL,
-    shared_at   TIMESTAMPTZ      DEFAULT now(),
-    CHECK (accuracy >= 0.0 AND accuracy <= 1.0)
+    training_id UUID NOT NULL REFERENCES trainings (id) UNIQUE,
+    shared_at   TIMESTAMPTZ      DEFAULT now()
 );
 
 CREATE TABLE custom_event_prices
@@ -438,8 +435,6 @@ CREATE OR REPLACE FUNCTION calculate_event_price(
 $$
 DECLARE
     v_role_id      INTEGER;
-    v_custom_price INTEGER;
-    v_base_price   INTEGER;
     v_final_price  INTEGER;
 BEGIN
 
@@ -631,13 +626,20 @@ CREATE OR REPLACE TRIGGER update_token_history_after_starting_model_training
 EXECUTE FUNCTION update_token_history_after_training();
 
 CREATE OR REPLACE VIEW leaderboards AS
-WITH best_per_user_dataset AS (SELECT DISTINCT ON (u.id, d.id) u.id   AS user_id,
+WITH last_test_metrics AS (SELECT DISTINCT ON (training_id) training_id,
+                                                            epoch,
+                                                            accuracy,
+                                                            loss
+                           FROM training_metrics
+                           WHERE type = 'TEST'
+                           ORDER BY training_id, epoch DESC),
+     best_per_user_dataset AS (SELECT DISTINCT ON (u.id, d.id) u.id   AS user_id,
                                                                u.username,
                                                                c.name AS country,
                                                                d.id   AS dataset_id,
                                                                d.name AS dataset,
-                                                               pr.accuracy,
-                                                               pr.loss
+                                                               ltm.accuracy,
+                                                               ltm.loss
                                FROM public_results pr
                                         JOIN trainings t ON pr.training_id = t.id
                                         JOIN datasets d ON t.dataset_id = d.id
@@ -645,7 +647,8 @@ WITH best_per_user_dataset AS (SELECT DISTINCT ON (u.id, d.id) u.id   AS user_id
                                         JOIN models m ON mv.model_id = m.id
                                         JOIN users u ON m.user_id = u.id
                                         JOIN countries c ON u.country_id = c.id
-                               ORDER BY u.id, d.id, pr.accuracy DESC, pr.loss ASC)
+                                        JOIN last_test_metrics ltm ON pr.training_id = ltm.training_id
+                               ORDER BY u.id, d.id, ltm.accuracy DESC, ltm.loss ASC)
 SELECT RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
        username,
        country,
@@ -653,7 +656,6 @@ SELECT RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
        accuracy,
        loss
 FROM best_per_user_dataset;
-
 
 CREATE OR REPLACE FUNCTION ordinal(n int)
     RETURNS text AS
@@ -667,7 +669,7 @@ BEGIN
                     ELSE 'th'
         END;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE VIEW best_results AS
@@ -712,6 +714,8 @@ DECLARE
     v_dataset_id              UUID;
     v_old_best_reward_global  INTEGER;
     v_old_best_reward_country INTEGER;
+    v_new_loss                DOUBLE PRECISION;
+    v_new_accuracy            NUMERIC(6, 3);
 BEGIN
     SELECT u.id, u.country_id
     INTO v_user_id, v_country_id
@@ -720,6 +724,13 @@ BEGIN
              JOIN models m ON mv.model_id = m.id
              JOIN users u ON m.user_id = u.id
     WHERE t.id = NEW.training_id;
+
+    SELECT accuracy, loss
+    INTO v_new_accuracy, v_new_loss
+    FROM training_metrics
+    WHERE training_id = NEW.training_id AND type = 'TEST'
+    ORDER BY epoch DESC
+    LIMIT 1;
 
     SELECT dataset_id INTO v_dataset_id FROM trainings WHERE id = NEW.training_id;
 
@@ -738,22 +749,12 @@ BEGIN
     INTO v_old_best_reward_country;
 
     SELECT COUNT(*) + 1
-    INTO v_country_rank
-    FROM public_results pr
-             JOIN trainings t ON pr.training_id = t.id
-             JOIN model_versions mv ON t.model_version_id = mv.id
-             JOIN models m ON mv.model_id = m.id
-             JOIN users u ON m.user_id = u.id
-    WHERE u.country_id = v_country_id
-      AND pr.accuracy > NEW.accuracy;
-
-    SELECT COUNT(*) + 1
     INTO v_global_rank
     FROM leaderboards lb
              JOIN datasets d ON lb.dataset = d.name
     WHERE d.id = v_dataset_id
-      AND (lb.accuracy > NEW.accuracy
-        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
+      AND (lb.accuracy > v_new_accuracy
+        OR (lb.accuracy = v_new_accuracy AND lb.loss < v_new_loss));
 
     SELECT COUNT(*) + 1
     INTO v_country_rank
@@ -762,22 +763,22 @@ BEGIN
              JOIN countries c ON lb.country = c.name
     WHERE d.id = v_dataset_id
       AND c.id = v_country_id
-      AND (lb.accuracy > NEW.accuracy
-        OR (lb.accuracy = NEW.accuracy AND lb.loss < NEW.loss));
+      AND (lb.accuracy > v_new_accuracy
+        OR (lb.accuracy = v_new_accuracy AND lb.loss < v_new_loss));
 
     v_description_country := NULL;
     IF v_country_rank = 1 THEN
         v_event_id := (SELECT id FROM events WHERE name = '1st Place Country');
         v_reward_country := calculate_event_price(v_user_id, v_event_id);
-        v_description_country := '1st place in country with accuracy: ' || NEW.accuracy;
+        v_description_country := '1st place in country with accuracy: ' || v_new_accuracy;
     ELSIF v_country_rank = 2 THEN
         v_event_id := (SELECT id FROM events WHERE name = '2nd Place Country');
         v_reward_country := calculate_event_price(v_user_id, v_event_id);
-        v_description_country := '2nd place in country with accuracy: ' || NEW.accuracy;
+        v_description_country := '2nd place in country with accuracy: ' || v_new_accuracy;
     ELSIF v_country_rank = 3 THEN
         v_event_id := (SELECT id FROM events WHERE name = '3rd Place Country');
         v_reward_country := calculate_event_price(v_user_id, v_event_id);
-        v_description_country := '3rd place in country with accuracy: ' || NEW.accuracy;
+        v_description_country := '3rd place in country with accuracy: ' || v_new_accuracy;
     END IF;
 
     v_reward_country := GREATEST(0, v_reward_country - v_old_best_reward_country);
@@ -790,15 +791,15 @@ BEGIN
     IF v_global_rank = 1 THEN
         v_event_id := (SELECT id FROM events WHERE name = '1st Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '1st place globally with accuracy: ' || NEW.accuracy;
+        v_description_global := '1st place globally with accuracy: ' || v_new_accuracy;
     ELSIF v_global_rank = 2 THEN
         v_event_id := (SELECT id FROM events WHERE name = '2nd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '2nd place globally with accuracy: ' || NEW.accuracy;
+        v_description_global := '2nd place globally with accuracy: ' || v_new_accuracy;
     ELSIF v_global_rank = 3 THEN
         v_event_id := (SELECT id FROM events WHERE name = '3rd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '3rd place globally with accuracy: ' || NEW.accuracy;
+        v_description_global := '3rd place globally with accuracy: ' || v_new_accuracy;
     END IF;
 
     v_reward_global := GREATEST(0, v_reward_global - v_old_best_reward_global);
