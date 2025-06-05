@@ -192,7 +192,7 @@ CREATE TABLE training_metrics
     type        TEXT                           NOT NULL,
     timestamp   TIMESTAMPTZ      DEFAULT now() NOT NULL,
     CHECK (epoch >= 0),
-    CHECK (accuracy >= 0.0 AND accuracy <= 1.0)
+    CHECK (accuracy >= 0.0)
 );
 
 CREATE TABLE token_history
