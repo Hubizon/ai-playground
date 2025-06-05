@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
@@ -57,10 +58,15 @@ public class MainViewController {
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
+    private double maxAccuracy = 0;
+    private double minAccuracy = 100;
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
     public LineChart<Number, Number> accuracyChart;
+    @FXML
+    private NumberAxis accY;
+
     @FXML
     public Label statusField;
     @FXML
@@ -129,13 +135,13 @@ public class MainViewController {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
-
         lossChart.setCreateSymbols(false);
         lossChart.setAnimated(false);
         lossChart.setLegendVisible(true);
         accuracyChart.setCreateSymbols(false);
         accuracyChart.setAnimated(false);
         accuracyChart.setLegendVisible(true);
+        accY.setAutoRanging(false);
         lossSeriesTest.setName("Test loss");
         lossChart.getData().add(lossSeriesTest);
         accuracySeriesTest.setName("Test accuracy");
@@ -168,12 +174,12 @@ public class MainViewController {
                     }
                     for (TrainingMetricDto m : change.getAddedSubList()) {
                         if (m.type() == DataLoaderType.TEST) {
-                            newLossDataTest.add(new XYChart.Data<>(m.epoch(), m.loss()));
-                            newAccuracyDataTest.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                            newLossDataTest.add(new XYChart.Data<>(m.iter(), m.loss()));
+                            newAccuracyDataTest.add(new XYChart.Data<>(m.iter(), m.accuracy()));
                         }
                         else if (m.type() == DataLoaderType.TRAIN) {
-                            newLossDataTrain.add(new XYChart.Data<>(m.epoch(), m.loss()));
-                            newAccuracyDataTrain.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                            newLossDataTrain.add(new XYChart.Data<>(m.iter(), m.loss()));
+                            newAccuracyDataTrain.add(new XYChart.Data<>(m.iter(), m.accuracy()));
                         }
                     }
                 }
@@ -215,6 +221,15 @@ public class MainViewController {
                     epochField.setText(String.valueOf(finalLastMetric.epoch()));
                     accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy())+"%");
                     lossField.setText(String.format("%.3f", finalLastMetric.loss()));
+                    if(finalLastMetric.accuracy() > maxAccuracy) {
+                        maxAccuracy = finalLastMetric.accuracy();
+                        accY.setUpperBound(maxAccuracy);
+                    }
+                    if(finalLastMetric.accuracy() < minAccuracy) {
+                        minAccuracy = finalLastMetric.accuracy();
+                        accY.setLowerBound(minAccuracy);
+                    }
+
                 } else {
                     epochField.setText("-");
                     accuracyField.setText("-");

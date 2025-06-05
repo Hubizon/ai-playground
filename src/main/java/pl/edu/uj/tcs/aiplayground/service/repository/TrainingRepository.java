@@ -42,6 +42,7 @@ public class TrainingRepository implements ITrainingRepository {
         return records.stream()
                 .map(r -> new TrainingMetricDto(
                         r.get("epoch", Integer.class),
+                        r.get("iter", Integer.class),
                         r.get("loss", Double.class),
                         r.get("accuracy", Double.class),
                         DataLoaderType.valueOf(r.get("type", String.class))
@@ -52,11 +53,12 @@ public class TrainingRepository implements ITrainingRepository {
     @Override
     public void insertTrainingMetric(UUID trainingId, TrainingMetricDto trainingMetricDto) {
         dsl.query("""
-                        INSERT INTO training_metrics(id, training_id, epoch, loss, accuracy, type, timestamp)
-                        VALUES (DEFAULT, ?, ?, ?, ?, ?, now());
+                        INSERT INTO training_metrics(id, training_id, epoch,iter, loss, accuracy, type, timestamp)
+                        VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, now());
                         """,
                 trainingId,
                 trainingMetricDto.epoch(),
+                trainingMetricDto.iter(),
                 trainingMetricDto.loss(),
                 trainingMetricDto.accuracy(),
                 trainingMetricDto.type().name()

@@ -187,12 +187,13 @@ CREATE TABLE training_metrics
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     training_id UUID                           NOT NULL REFERENCES trainings (id),
     epoch       INT                            NOT NULL,
+    iter        INT                            NOT NULL,
     loss        DOUBLE PRECISION               NOT NULL,
     accuracy    NUMERIC(5, 2)                  NOT NULL,
     type        TEXT                           NOT NULL,
     timestamp   TIMESTAMPTZ      DEFAULT now() NOT NULL,
     CHECK (epoch >= 0),
-    CHECK (accuracy >= 0.0 AND accuracy <= 1.0)
+    CHECK (accuracy >= 0.0 AND accuracy <= 100.0)
 );
 
 CREATE TABLE token_history

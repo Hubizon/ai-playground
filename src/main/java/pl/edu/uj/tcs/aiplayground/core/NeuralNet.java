@@ -116,6 +116,31 @@ public class NeuralNet {
                 .toList();
     }
 
+    public static Pair<Double, Integer> SingleExampleTraining(Pair<Tensor, Tensor> dp,NeuralNet model, LossFunc lossFn) {
+        ComputationalGraph g = new ComputationalGraph();
+        Tensor x = dp.getKey().transpose();
+        Tensor y = dp.getValue().transpose();
+        Tensor pred = model.forward(x, g);
+        double l = lossFn.loss(pred, y);
+        double max = Double.NEGATIVE_INFINITY;
+        int maxIndex1 = -1, maxIndex2 = -1;
+        for (int i = 0; i < pred.rows; i++) {
+            for (int j = 0; j < pred.cols; j++) {
+                if (pred.data[i][j] > max) {
+                    max = pred.data[i][j];
+                    maxIndex1 = i;
+                    maxIndex2 = j;
+                }
+            }
+        }
+        int correct = 0;
+        if (dp.getValue().transpose().data[maxIndex1][maxIndex2] == 1) {
+            correct = 1;
+        }
+        g.propagate();
+        return new Pair<Double, Integer>(l, correct);
+    }
+
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
 
         final int batchSize = dto.batchSize();
@@ -127,74 +152,79 @@ public class NeuralNet {
         for (Layer layer : layers) {
             if (layer.getClass() == LinearLayer.class) {
                 LinearLayer linearLayer = (LinearLayer) layer;
-                if(dataset.inputShape.getFirst()!= linearLayer.inputSize && lastLayer == null){
-                    throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for dataset with input size: "+dataset.inputShape.getFirst());
+                if (dataset.inputShape.getFirst() != linearLayer.inputSize && lastLayer == null) {
+                    throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for dataset with input size: " + dataset.inputShape.getFirst());
                 }
-                if(lastLayer != null)
-                {
-                    if(linearLayer.inputSize != lastLayer.outputSize)
-                    {
-                        throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for layer with output size: "+lastLayer.outputSize);
+                if (lastLayer != null) {
+                    if (linearLayer.inputSize != lastLayer.outputSize) {
+                        throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for layer with output size: " + lastLayer.outputSize);
                     }
                 }
                 lastLayer = linearLayer;
             }
         }
-        if(lastLayer == null){
+        if (lastLayer == null) {
             throw new TrainingException("No LinearLayer found in architecture");
         }
-        if(lastLayer.outputSize != dataset.outputShape.getFirst()){
-            throw new TrainingException("Wrong output size: " + lastLayer.outputSize + " for dataset with output size: "+dataset.outputShape.getFirst());
+        if (lastLayer.outputSize != dataset.outputShape.getFirst()) {
+            throw new TrainingException("Wrong output size: " + lastLayer.outputSize + " for dataset with output size: " + dataset.outputShape.getFirst());
         }
         LossFunc lossFn = dto.lossFunction().create();
         Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
 
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
-        Instant t0 = Instant.now();
-        double lossValue, lossItem, accuracy;
         try {
+            double lastLoss = 0;
+            double lastAccuracy = 0;
+            int iter = 0;
             for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
                 if (isCancelled.get()) break;
-
-                double epochLoss = 0;
                 int processed = 0;
                 Dataset.DataLoader loader = dataset.getDataLoader(DataLoaderType.TRAIN, batchSize);
-
+                int num_correct = 0;
                 while (loader.hasNext()) {
                     List<Pair<Tensor, Tensor>> batch = loader.next();
                     optimizer.zeroGradient();
-                    List<Future<Double>> futures = new ArrayList<>(batch.size());
+                    List<Future<Pair<Double,Integer>>> futures = new ArrayList<>(batch.size());
                     for (Pair<Tensor, Tensor> dp : batch) {
                         futures.add(exec.submit(() -> {
-                            ComputationalGraph g = new ComputationalGraph();
-                            Tensor x = dp.getKey().transpose();
-                            Tensor y = dp.getValue().transpose();
-                            Tensor pred = forward(x, g);
-                            double l = lossFn.loss(pred, y);
-                            g.propagate();
-                            return l;
+                            return SingleExampleTraining(dp, this, lossFn);
                         }));
                     }
                     double batchLoss = 0;
-                    for (Future<Double> f : futures) {
-                        batchLoss += f.get();
+                    for (Future<Pair<Double,Integer>> f : futures) {
+                        batchLoss += f.get().getKey();
+                        num_correct += f.get().getValue();
                     }
-                    epochLoss += batchLoss;
                     for (Tensor p : getParams()) {
                         for (int i = 0; i < p.rows; i++)
                             for (int j = 0; j < p.cols; j++)
                                 p.gradient[i][j] /= batchSize;
                     }
-                    epochLoss += batchLoss;
+                    lastLoss += batchLoss;
                     optimizer.optimize();
                     processed += batchSize;
+
+                    if (processed >= 1024) {
+                        Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
+                        callback.accept(new TrainingMetricDto(epoch, iter, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
+                        callback.accept(new TrainingMetricDto(epoch, iter, lastLoss / processed, (double) num_correct *100/processed, DataLoaderType.TRAIN));
+                        processed = 0;
+                        lastLoss = 0;
+                        num_correct = 0;
+                        iter++;
+                        if (isCancelled.get())
+                            break;
+                    }
                 }
 
                 Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
                 Accuracy.AccAndLoss acc_train = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TRAIN, 1), lossFn);
 
-                callback.accept(new TrainingMetricDto(epoch, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
-                callback.accept(new TrainingMetricDto(epoch, acc_train.loss(), acc_train.accuracy(), DataLoaderType.TRAIN));
+                callback.accept(new TrainingMetricDto(epoch, iter, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
+                callback.accept(new TrainingMetricDto(epoch, iter, acc_train.loss(), acc_train.accuracy(), DataLoaderType.TRAIN));
+                lastAccuracy = acc_train.accuracy();
+                iter++;
 
                 if (isCancelled.get())
                     break;

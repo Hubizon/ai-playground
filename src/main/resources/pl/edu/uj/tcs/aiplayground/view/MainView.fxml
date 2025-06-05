@@ -168,10 +168,10 @@
                        style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis autoRanging="true"/>
+                    <NumberAxis fx:id="lossX" autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis autoRanging="true"/>
+                    <NumberAxis fx:id="lossY" autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>
@@ -180,10 +180,10 @@
                        style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis autoRanging="true"/>
+                    <NumberAxis fx:id="accX" autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="1" autoRanging="true"/>
+                    <NumberAxis fx:id="accY" lowerBound="50" upperBound="100"/>
                 </yAxis>
             </LineChart>
         </VBox>
