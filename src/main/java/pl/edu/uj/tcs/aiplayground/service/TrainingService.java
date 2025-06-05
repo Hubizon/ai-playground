@@ -68,9 +68,9 @@ public class TrainingService {
         }
     }
 
-    public String shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
+    public String shareTraining(UUID trainingId) throws DatabaseException {
         try {
-            return trainingRepository.shareTraining(trainingId, accuracy, loss);
+            return trainingRepository.shareTraining(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

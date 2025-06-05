@@ -122,17 +122,17 @@ public class TrainingRepository implements ITrainingRepository {
     }
 
     @Override
-    public String shareTraining(UUID trainingId, Double accuracy, Double loss) throws SQLException {
+    public String shareTraining(UUID trainingId) throws SQLException {
         PGConnection pgConnection = dbConnection.unwrap(PGConnection.class);
         try (var statement = dbConnection.createStatement()) {
             statement.execute("LISTEN reward_channel");
         }
 
         dsl.query("""
-                INSERT INTO public_results (training_id, accuracy, loss)
-                VALUES (?, ?, ?)
+                INSERT INTO public_results (training_id)
+                VALUES (?)
                 ON CONFLICT (training_id) DO NOTHING
-                """, trainingId, accuracy, loss).execute();
+                """, trainingId).execute();
 
         PGNotification[] notifications = pgConnection.getNotifications();
         if (notifications != null && notifications.length > 0)

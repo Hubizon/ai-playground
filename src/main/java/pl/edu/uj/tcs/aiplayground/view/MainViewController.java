@@ -447,14 +447,18 @@ public class MainViewController {
     @FXML
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
-        mainViewModel.train(new TrainingForm(
-                Integer.parseInt(maxEpochField.getText()),
-                Integer.parseInt(batchField.getText()),
-                Double.parseDouble(learningRateField.getText()),
-                datasetComboBox.getValue(),
-                optimizerComboBox.getValue(),
-                lossComboBox.getValue())
-        );
+        try {
+            mainViewModel.train(new TrainingForm(
+                    Integer.parseInt(maxEpochField.getText()),
+                    Integer.parseInt(batchField.getText()),
+                    Double.parseDouble(learningRateField.getText()),
+                    datasetComboBox.getValue(),
+                    optimizerComboBox.getValue(),
+                    lossComboBox.getValue())
+            );
+        } catch (Exception e) {
+            alertMessage("Invalid hyperparameters", false);
+        }
     }
 
     @FXML
