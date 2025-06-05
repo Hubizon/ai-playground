@@ -58,8 +58,6 @@ public class MainViewController {
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
-    private double maxAccuracy = 0;
-    private double minAccuracy = 100;
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
@@ -232,22 +230,6 @@ public class MainViewController {
                     testLossField.setText(String.format("%.3f", finalLastTestMetric.loss()));
                     trainAccuracyField.setText(String.format("%.2f",  finalLastTrainMetric.accuracy()) + "%");
                     trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
-                    if(finalLastTestMetric.accuracy() > maxAccuracy) {
-                        maxAccuracy = finalLastTestMetric.accuracy();
-                        accY.setUpperBound(maxAccuracy);
-                    }
-                    if(finalLastTestMetric.accuracy() < minAccuracy) {
-                        minAccuracy = finalLastTrainMetric.accuracy();
-                        accY.setLowerBound(minAccuracy);
-                    }
-                    if(finalLastTestMetric.accuracy() > maxAccuracy) {
-                        maxAccuracy = finalLastTestMetric.accuracy();
-                        accY.setUpperBound(maxAccuracy);
-                    }
-                    if(finalLastTestMetric.accuracy() < minAccuracy) {
-                        minAccuracy = finalLastTestMetric.accuracy();
-                        accY.setLowerBound(minAccuracy);
-                    }
 
                 } else {
                     epochField.setText("-");

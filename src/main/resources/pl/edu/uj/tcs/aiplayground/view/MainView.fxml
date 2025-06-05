@@ -188,7 +188,7 @@
                     <NumberAxis fx:id="accX" autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis fx:id="accY" lowerBound="0" upperBound="100"/>
+                    <NumberAxis fx:id="accY" lowerBound="50" upperBound="100" autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>
