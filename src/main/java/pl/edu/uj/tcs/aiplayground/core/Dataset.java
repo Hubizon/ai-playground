@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
 import javafx.util.Pair;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 
 import java.io.BufferedReader;
 import java.io.IOException;

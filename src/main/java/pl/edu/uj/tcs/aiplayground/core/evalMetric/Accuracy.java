@@ -1,7 +1,6 @@
 package pl.edu.uj.tcs.aiplayground.core.evalMetric;
 
 import javafx.util.Pair;
-import pl.edu.uj.tcs.aiplayground.core.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.core.Dataset;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
@@ -9,13 +8,12 @@ import pl.edu.uj.tcs.aiplayground.core.Tensor;
 import java.util.ArrayList;
 
 public class Accuracy {
-    public double eval(Dataset dataset, NeuralNet neuralNet) {
-        Dataset.DataLoader testLoader = dataset.getDataLoader(DataLoaderType.TEST, 1);
+    public static double eval(NeuralNet neuralNet, Dataset.DataLoader dataLoader) {
         int correct = 0;
         int all = 0;
         ArrayList<Pair<Tensor, Tensor>> datapoints;
-        while (testLoader.hasNext()) {
-            datapoints = testLoader.next();
+        while (dataLoader.hasNext()) {
+            datapoints = dataLoader.next();
             Tensor output;
             for (Pair<Tensor, Tensor> pair : datapoints) {
                 output = neuralNet.forward(pair.getKey().transpose(), null);
@@ -38,6 +36,4 @@ public class Accuracy {
         }
         return (double) correct / (double) all;
     }
-
-
 }

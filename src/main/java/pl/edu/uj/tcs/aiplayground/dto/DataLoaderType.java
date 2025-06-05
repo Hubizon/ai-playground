@@ -1,4 +1,4 @@
-package pl.edu.uj.tcs.aiplayground.core;
+package pl.edu.uj.tcs.aiplayground.dto;
 
 public enum DataLoaderType {
     TRAIN,

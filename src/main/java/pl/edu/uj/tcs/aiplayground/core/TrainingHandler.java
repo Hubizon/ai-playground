@@ -84,6 +84,8 @@ public class TrainingHandler {
     }
 
     public String shareTraining() {
+        if (recentMetric == null)
+            return null;
         try {
             return trainingService.shareTraining(trainingId, recentMetric.accuracy(), recentMetric.loss());
         } catch (DatabaseException e) {

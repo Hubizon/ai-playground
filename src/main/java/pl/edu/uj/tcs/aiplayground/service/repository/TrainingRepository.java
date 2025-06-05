@@ -1,8 +1,10 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -11,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
 public class TrainingRepository implements ITrainingRepository {
@@ -25,25 +28,38 @@ public class TrainingRepository implements ITrainingRepository {
 
     @Override
     public List<TrainingMetricDto> getTrainingMetrics(UUID trainingId) {
-        return dsl.fetch("""
-                SELECT epoch, loss, accuracy
+        List<Record> records = dsl.fetch("""
+                SELECT epoch, loss, accuracy, type
                 FROM training_metrics
                 WHERE training_id = ?
                 ORDER BY epoch;
                 """, trainingId
-        ).into(TrainingMetricDto.class);
+        );
+
+        if (records == null || records.isEmpty())
+            return null;
+
+        return records.stream()
+                .map(r -> new TrainingMetricDto(
+                        r.get("epoch", Integer.class),
+                        r.get("loss", Double.class),
+                        r.get("accuracy", Double.class),
+                        DataLoaderType.valueOf(r.get("type", String.class))
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void insertTrainingMetric(UUID trainingId, TrainingMetricDto trainingMetricDto) {
         dsl.query("""
-                        INSERT INTO training_metrics(id, training_id, epoch, loss, accuracy, timestamp)
-                        VALUES (DEFAULT, ?, ?, ?, ?, now());
+                        INSERT INTO training_metrics(id, training_id, epoch, loss, accuracy, type, timestamp)
+                        VALUES (DEFAULT, ?, ?, ?, ?, ?, now());
                         """,
                 trainingId,
                 trainingMetricDto.epoch(),
                 trainingMetricDto.loss(),
-                trainingMetricDto.accuracy()
+                trainingMetricDto.accuracy(),
+                trainingMetricDto.type().name()
         ).execute();
     }
 
