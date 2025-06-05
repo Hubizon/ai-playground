@@ -166,11 +166,11 @@ public class NeuralNet {
                     processed += batchSize;
                 }
 
-                double acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1));
-                double acc_train = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TRAIN, 1));
+                Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
+                Accuracy.AccAndLoss acc_train = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TRAIN, 1), lossFn);
 
-                callback.accept(new TrainingMetricDto(epoch, epochLoss + 1, acc_test, DataLoaderType.TEST)); // TODO: loss
-                callback.accept(new TrainingMetricDto(epoch, epochLoss, acc_train, DataLoaderType.TRAIN));
+                callback.accept(new TrainingMetricDto(epoch, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
+                callback.accept(new TrainingMetricDto(epoch, acc_train.loss(), acc_train.accuracy(), DataLoaderType.TRAIN));
 
                 if (isCancelled.get())
                     break;

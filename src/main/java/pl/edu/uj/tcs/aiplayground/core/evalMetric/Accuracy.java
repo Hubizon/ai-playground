@@ -4,13 +4,17 @@ import javafx.util.Pair;
 import pl.edu.uj.tcs.aiplayground.core.Dataset;
 import pl.edu.uj.tcs.aiplayground.core.NeuralNet;
 import pl.edu.uj.tcs.aiplayground.core.Tensor;
+import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 
 import java.util.ArrayList;
 
 public class Accuracy {
-    public static double eval(NeuralNet neuralNet, Dataset.DataLoader dataLoader) {
+    public record AccAndLoss(double accuracy, double loss) {
+    }
+    public static AccAndLoss eval(NeuralNet neuralNet, Dataset.DataLoader dataLoader, LossFunc lossFunc) {
         int correct = 0;
         int all = 0;
+        double loss = 0;
         ArrayList<Pair<Tensor, Tensor>> datapoints;
         while (dataLoader.hasNext()) {
             datapoints = dataLoader.next();
@@ -28,12 +32,15 @@ public class Accuracy {
                         }
                     }
                 }
+
                 if (pair.getValue().transpose().data[maxIndex1][maxIndex2] == 1) {
                     correct++;
                 }
                 all++;
+
+                loss += lossFunc.loss(output, pair.getValue().transpose());
             }
         }
-        return (double) correct / (double) all;
+        return new AccAndLoss((double) correct / (double) all,loss/all);
     }
 }
