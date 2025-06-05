@@ -152,6 +152,34 @@ public class ComputationalGraph {
                         }
                     }
                 }
+            } else if (operation.equals(TensorOperator.TANH)) {
+                Tensor input = components.get(0);
+                for (int i = 0; i < input.rows; i++) {
+                    for (int j = 0; j < input.cols; j++) {
+                        double tanhValue = result.data[i][j];
+                        double derivative = 1.0 - (tanhValue * tanhValue);
+                        input.gradient[i][j] += result.gradient[i][j] * derivative;
+                    }
+                }
+            } else if (operation.equals(TensorOperator.GELU)) {
+                Tensor input = components.get(0);
+                final double SQRT_2_OVER_PI = Math.sqrt(2.0 / Math.PI);
+                final double CONST_0_044715 = 0.044715;
+
+                for (int i = 0; i < input.rows; i++) {
+                    for (int j = 0; j < input.cols; j++) {
+                        double x = input.data[i][j];
+                        double x_cubed = x * x * x;
+                        double inner_term = x + CONST_0_044715 * x_cubed;
+                        double tanh_arg = SQRT_2_OVER_PI * inner_term;
+                        double tanh_val = Math.tanh(tanh_arg);
+                        double derivative_inner_term = 1.0 + 3.0 * CONST_0_044715 * (x * x);
+                        double sech2_val = 1.0 - (tanh_val * tanh_val);
+                        double derivative_tanh_component = sech2_val * SQRT_2_OVER_PI * derivative_inner_term;
+                        double derivative_gelu = 0.5 * (1.0 + tanh_val) + 0.5 * x * derivative_tanh_component;
+                        input.gradient[i][j] += result.gradient[i][j] * derivative_gelu;
+                    }
+                }
             }
         }
     }
