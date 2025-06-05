@@ -80,9 +80,13 @@ public class MainViewController {
     @FXML
     private Label tokenField;
     @FXML
-    private Label accuracyField;
+    private Label trainAccuracyField;
     @FXML
-    private Label lossField;
+    private Label trainLossField;
+    @FXML
+    private Label testAccuracyField;
+    @FXML
+    private Label testLossField;
     @FXML
     private Label epochField;
     @FXML
@@ -135,6 +139,7 @@ public class MainViewController {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
+
         lossChart.setCreateSymbols(false);
         lossChart.setAnimated(false);
         lossChart.setLegendVisible(true);
@@ -151,8 +156,10 @@ public class MainViewController {
         accuracySeriesTrain.setName("Train accuracy");
         accuracyChart.getData().add(accuracySeriesTrain);
         epochField.setText("-");
-        accuracyField.setText("-");
-        lossField.setText("-");
+        trainAccuracyField.setText("-");
+        trainLossField.setText("-");
+        testAccuracyField.setText("-");
+        testLossField.setText("-");
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
             // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
             List<XYChart.Data<Number, Number>> newLossDataTest = new ArrayList<>();
@@ -185,13 +192,15 @@ public class MainViewController {
                 }
             }
 
-            TrainingMetricDto lastMetric = null;
+            TrainingMetricDto lastTestMetric = null, lastTrainMetric = null;
             if (!mainViewModel.liveMetricsProperty().isEmpty()) {
-                lastMetric = mainViewModel.liveMetricsProperty().getLast();
+                lastTestMetric = TrainingMetricDto.lastMetric(mainViewModel.liveMetricsProperty(), DataLoaderType.TEST);
+                lastTrainMetric = TrainingMetricDto.lastMetric(mainViewModel.liveMetricsProperty(), DataLoaderType.TRAIN);
             }
 
             boolean finalShouldClear = shouldClear;
-            TrainingMetricDto finalLastMetric = lastMetric;
+            TrainingMetricDto finalLastTestMetric = lastTrainMetric;
+            TrainingMetricDto finalLastTrainMetric = lastTestMetric;
 
             Platform.runLater(() -> {
                 if (finalShouldClear) {
@@ -217,10 +226,13 @@ public class MainViewController {
                     accuracySeriesTrain.getData().addAll(newAccuracyDataTrain);
                 }
 
-                if (finalLastMetric != null) {
+                if (finalLastTestMetric != null && finalLastTrainMetric != null) {
+                    epochField.setText(String.valueOf(finalLastTestMetric.epoch()));
+                    testAccuracyField.setText(String.format("%.2f",  finalLastTestMetric.accuracy()) + "%");
+                    testLossField.setText(String.format("%.3f", finalLastTestMetric.loss()));
+                    trainAccuracyField.setText(String.format("%.2f",  finalLastTrainMetric.accuracy()) + "%");
+                    trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
                     epochField.setText(String.valueOf(finalLastMetric.epoch()));
-                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy())+"%");
-                    lossField.setText(String.format("%.3f", finalLastMetric.loss()));
                     if(finalLastMetric.accuracy() > maxAccuracy) {
                         maxAccuracy = finalLastMetric.accuracy();
                         accY.setUpperBound(maxAccuracy);
@@ -232,8 +244,10 @@ public class MainViewController {
 
                 } else {
                     epochField.setText("-");
-                    accuracyField.setText("-");
-                    lossField.setText("-");
+                    testAccuracyField.setText("-");
+                    testLossField.setText("-");
+                    trainAccuracyField.setText("-");
+                    trainLossField.setText("-");
                 }
             });
         });
@@ -390,8 +404,12 @@ public class MainViewController {
 
                 doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
                     if (newVal.matches("-?\\d*(\\.\\d+)?")) {
-                        updateLayerParams(barContainer, paramName,
-                                newVal.isEmpty() ? 0 : new BigDecimal(newVal));
+                        try {
+                            BigDecimal value = new BigDecimal(newVal);
+                            updateLayerParams(barContainer, paramName, value);
+                        } catch (Exception e) {
+                            System.out.println("Invalid model parameters");
+                        }
                     }
                 });
 
@@ -446,14 +464,18 @@ public class MainViewController {
     @FXML
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
-        mainViewModel.train(new TrainingForm(
-                Integer.parseInt(maxEpochField.getText()),
-                Integer.parseInt(batchField.getText()),
-                Double.parseDouble(learningRateField.getText()),
-                datasetComboBox.getValue(),
-                optimizerComboBox.getValue(),
-                lossComboBox.getValue())
-        );
+        try {
+            mainViewModel.train(new TrainingForm(
+                    Integer.parseInt(maxEpochField.getText()),
+                    Integer.parseInt(batchField.getText()),
+                    Double.parseDouble(learningRateField.getText()),
+                    datasetComboBox.getValue(),
+                    optimizerComboBox.getValue(),
+                    lossComboBox.getValue())
+            );
+        } catch (Exception e) {
+            alertMessage("Invalid hyperparameters", false);
+        }
     }
 
     @FXML
@@ -546,26 +568,6 @@ public class MainViewController {
 
     private void clearBars() {
         mainViewModel.layersProperty().clear();
-    }
-
-    public int getAccuracy() {
-        return Integer.parseInt(accuracyField.getText());
-    }
-
-    public void setAccuracy(int accuracy) {
-        accuracyField.setText(String.valueOf(accuracy));
-    }
-
-    public void setTokens(int tokens) {
-        tokenField.setText(String.valueOf(tokens));
-    }
-
-    public int getLossPercentage() {
-        return Integer.parseInt(lossField.getText());
-    }
-
-    public void setLossPercentage(int lossPercentage) {
-        lossField.setText(String.valueOf(lossPercentage));
     }
 
     public void setStage(Stage stage) {

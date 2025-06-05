@@ -189,7 +189,7 @@ CREATE TABLE training_metrics
     epoch       INT                            NOT NULL,
     iter        INT                            NOT NULL,
     loss        DOUBLE PRECISION               NOT NULL,
-    accuracy    NUMERIC(5, 2)                  NOT NULL,
+    accuracy    NUMERIC(6, 3)                  NOT NULL,
     type        TEXT                           NOT NULL,
     timestamp   TIMESTAMPTZ      DEFAULT now() NOT NULL,
     CHECK (epoch >= 0),

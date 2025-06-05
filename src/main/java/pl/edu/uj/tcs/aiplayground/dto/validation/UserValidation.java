@@ -7,8 +7,8 @@ import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 
 public class UserValidation {
     private static final String USERNAME_REGEX = "^[A-Za-z0-9_.]{3,50}$";
-    private static final String FIRST_NAME_REGEX = "^[A-Za-zÀ-ÿ'\\- ]{1,100}$";
-    private static final String LAST_NAME_REGEX = "^[A-Za-zÀ-ÿ'\\- ]{1,100}$";
+    private static final String FIRST_NAME_REGEX = "^[A-Za-z\\- ]{1,100}$";
+    private static final String LAST_NAME_REGEX = "^[A-Za-z\\- ]{1,100}$";
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     private static final String PASSWORD_REGEX = "^.{5,50}$";
 

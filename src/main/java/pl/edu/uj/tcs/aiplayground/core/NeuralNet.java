@@ -15,6 +15,7 @@ import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
+import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
 import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
 import java.time.Instant;
@@ -42,7 +43,7 @@ public class NeuralNet {
                 .toList();
     }
 
-    public NeuralNet(JSONB architecture) {
+    public NeuralNet(JSONB architecture) throws InvalidHyperparametersException  {
         String jsonString = architecture.data();
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray layersArray = jsonObject.getJSONArray("layers");

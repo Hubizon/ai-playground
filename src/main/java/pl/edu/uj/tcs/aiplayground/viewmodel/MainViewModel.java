@@ -81,9 +81,17 @@ public class MainViewModel {
     }
 
     private void setupModel() {
-        layers.clear();
         if (model != null) {
-            NeuralNet neuralNet = new NeuralNet(model.architecture());
+            NeuralNet neuralNet;
+            try {
+                neuralNet = new NeuralNet(model.architecture());
+            } catch (InvalidHyperparametersException e) {
+                logger.error("Failed to convert model parameters model={}, error={}", model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Invalid model parameters", false));
+                return;
+            }
+
+            layers.clear();
             layers.addAll(neuralNet.toConfigList());
             modelName.set(model.modelName());
             modelVersion.set(model.versionNumber());
