@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
+import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
 import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
@@ -122,6 +123,29 @@ public class NeuralNet {
         System.out.println("Using " + numThreads + " threads");
 
         Dataset dataset = dto.dataset().create();
+        LinearLayer lastLayer = null;
+        for (Layer layer : layers) {
+            if (layer.getClass() == LinearLayer.class) {
+                LinearLayer linearLayer = (LinearLayer) layer;
+                if(dataset.inputShape.getFirst()!= linearLayer.inputSize && lastLayer == null){
+                    throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for dataset with input size: "+dataset.inputShape.getFirst());
+                }
+                if(lastLayer != null)
+                {
+                    if(linearLayer.inputSize != lastLayer.outputSize)
+                    {
+                        throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for layer with output size: "+lastLayer.outputSize);
+                    }
+                }
+                lastLayer = linearLayer;
+            }
+        }
+        if(lastLayer == null){
+            throw new TrainingException("No LinearLayer found in architecture");
+        }
+        if(lastLayer.outputSize != dataset.outputShape.getFirst()){
+            throw new TrainingException("Wrong output size: " + lastLayer.outputSize + " for dataset with output size: "+dataset.outputShape.getFirst());
+        }
         LossFunc lossFn = dto.lossFunction().create();
         Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
 

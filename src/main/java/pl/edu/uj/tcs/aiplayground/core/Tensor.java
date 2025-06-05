@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 public class Tensor {
 
     public double[][] data;
@@ -246,8 +248,11 @@ public class Tensor {
         Tensor newMatrix  = randomMatrix(x.rows, x.cols, 0,1);
         for (int i = 0; i < newMatrix.rows; i++) {
             for (int j = 0; j < newMatrix.cols; j++) {
-                if(newMatrix.data[i][j] < amount){
+                if(abs(newMatrix.data[i][j]) < amount){
                     newMatrix.data[i][j] = 0;
+                }
+                else {
+                    newMatrix.data[i][j] = x.data[i][j];
                 }
             }
         }

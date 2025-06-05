@@ -9,7 +9,7 @@ import pl.edu.uj.tcs.aiplayground.dto.architecture.LinearParams;
 import java.util.ArrayList;
 
 public class LinearLayer implements Layer {
-    int inputSize, outputSize;
+    public int inputSize, outputSize;
     boolean useBias;
     Tensor matrix;
     Tensor bias;

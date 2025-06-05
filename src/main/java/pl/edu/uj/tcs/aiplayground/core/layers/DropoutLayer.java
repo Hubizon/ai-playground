@@ -34,7 +34,7 @@ public class DropoutLayer implements  Layer{
 
     @Override
     public LayerConfig toConfig() {
-        return new LayerConfig(LayerType.LEAKYRELU, new LeakyReLUParams(amount));
+        return new LayerConfig(LayerType.DROPOUT, new DropoutParams(amount));
     }
 
 }
