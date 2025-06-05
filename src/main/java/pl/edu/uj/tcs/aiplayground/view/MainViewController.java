@@ -232,13 +232,20 @@ public class MainViewController {
                     testLossField.setText(String.format("%.3f", finalLastTestMetric.loss()));
                     trainAccuracyField.setText(String.format("%.2f",  finalLastTrainMetric.accuracy()) + "%");
                     trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
-                    epochField.setText(String.valueOf(finalLastMetric.epoch()));
-                    if(finalLastMetric.accuracy() > maxAccuracy) {
-                        maxAccuracy = finalLastMetric.accuracy();
+                    if(finalLastTestMetric.accuracy() > maxAccuracy) {
+                        maxAccuracy = finalLastTestMetric.accuracy();
                         accY.setUpperBound(maxAccuracy);
                     }
-                    if(finalLastMetric.accuracy() < minAccuracy) {
-                        minAccuracy = finalLastMetric.accuracy();
+                    if(finalLastTestMetric.accuracy() < minAccuracy) {
+                        minAccuracy = finalLastTrainMetric.accuracy();
+                        accY.setLowerBound(minAccuracy);
+                    }
+                    if(finalLastTestMetric.accuracy() > maxAccuracy) {
+                        maxAccuracy = finalLastTestMetric.accuracy();
+                        accY.setUpperBound(maxAccuracy);
+                    }
+                    if(finalLastTestMetric.accuracy() < minAccuracy) {
+                        minAccuracy = finalLastTestMetric.accuracy();
                         accY.setLowerBound(minAccuracy);
                     }
 

@@ -175,12 +175,11 @@ public class NeuralNet {
 
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
         try {
-            double lastLoss = 0;
-            double lastAccuracy = 0;
             int iter = 0;
             for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
                 if (isCancelled.get()) break;
                 int processed = 0;
+                double lastLoss = 0;
                 Dataset.DataLoader loader = dataset.getDataLoader(DataLoaderType.TRAIN, batchSize);
                 int num_correct = 0;
                 while (loader.hasNext()) {
@@ -206,7 +205,7 @@ public class NeuralNet {
                     optimizer.optimize();
                     processed += batchSize;
 
-                    if (processed >= 1024) {
+                    if (processed >= dataset.trainData.size()*dto.maxEpochs()/100) {
                         Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
                         callback.accept(new TrainingMetricDto(epoch, iter, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
                         callback.accept(new TrainingMetricDto(epoch, iter, lastLoss / processed, (double) num_correct *100/processed, DataLoaderType.TRAIN));
@@ -224,7 +223,6 @@ public class NeuralNet {
 
                 callback.accept(new TrainingMetricDto(epoch, iter, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
                 callback.accept(new TrainingMetricDto(epoch, iter, acc_train.loss(), acc_train.accuracy(), DataLoaderType.TRAIN));
-                lastAccuracy = acc_train.accuracy();
                 iter++;
 
                 if (isCancelled.get())
