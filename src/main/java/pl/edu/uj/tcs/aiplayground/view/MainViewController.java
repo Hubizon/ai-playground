@@ -213,7 +213,7 @@ public class MainViewController {
 
                 if (finalLastMetric != null) {
                     epochField.setText(String.valueOf(finalLastMetric.epoch()));
-                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy()));
+                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy())+"%");
                     lossField.setText(String.format("%.3f", finalLastMetric.loss()));
                 } else {
                     epochField.setText("-");

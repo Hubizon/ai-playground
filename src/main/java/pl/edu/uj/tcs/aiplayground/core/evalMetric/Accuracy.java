@@ -41,6 +41,6 @@ public class Accuracy {
                 loss += lossFunc.loss(output, pair.getValue().transpose());
             }
         }
-        return new AccAndLoss((double) correct / (double) all,loss/all);
+        return new AccAndLoss((double) correct / (double) all *100,loss/all);
     }
 }
