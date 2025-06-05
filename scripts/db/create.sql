@@ -189,6 +189,7 @@ CREATE TABLE training_metrics
     epoch       INT                            NOT NULL,
     loss        DOUBLE PRECISION               NOT NULL,
     accuracy    NUMERIC(5, 2)                  NOT NULL,
+    type        TEXT                           NOT NULL,
     timestamp   TIMESTAMPTZ      DEFAULT now() NOT NULL,
     CHECK (epoch >= 0),
     CHECK (accuracy >= 0.0 AND accuracy <= 1.0)

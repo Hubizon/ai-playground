@@ -8,6 +8,7 @@ import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
 import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
@@ -165,12 +166,14 @@ public class NeuralNet {
                     processed += batchSize;
                 }
 
-                Accuracy acc = new Accuracy();
-                accuracy = acc.eval(dataset, this);
+                Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
+                Accuracy.AccAndLoss acc_train = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TRAIN, 1), lossFn);
+
+                callback.accept(new TrainingMetricDto(epoch, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
+                callback.accept(new TrainingMetricDto(epoch, acc_train.loss(), acc_train.accuracy(), DataLoaderType.TRAIN));
+
                 if (isCancelled.get())
                     break;
-                TrainingMetricDto metric = new TrainingMetricDto(epoch, epochLoss, accuracy);
-                callback.accept(metric);
             }
         } catch (InterruptedException | ExecutionException e) {
             throw new TrainingException(e);

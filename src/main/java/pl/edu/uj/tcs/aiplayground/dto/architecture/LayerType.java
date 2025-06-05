@@ -10,8 +10,9 @@ public enum LayerType {
     SIGMOID("Sigmoid", new EmptyParams(), params -> new SigmoidLayer()),
     SOFTMAX("Softmax", new EmptyParams(), params -> new SoftMaxLayer()),
     LEAKYRELU("LeakyReLU", new LeakyReLUParams(), params -> new LeakyReluLayer((LeakyReLUParams) params)),
-    DROPOUT("Dropout", new DropoutParams(), params -> new DropoutLayer((DropoutParams) params));
-
+    DROPOUT("Dropout", new DropoutParams(), params -> new DropoutLayer((DropoutParams) params)),
+    GELU("GELU", new EmptyParams(), params -> new GeluLayer()),
+    TANH("Tanh", new EmptyParams(), params -> new TanhLayer());
     private final String name;
     private final LayerParams params;
     private final Function<LayerParams, Layer> factory;

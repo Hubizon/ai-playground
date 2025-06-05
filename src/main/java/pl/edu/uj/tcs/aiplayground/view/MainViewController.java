@@ -19,7 +19,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
-import org.jooq.impl.QOM;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -53,8 +53,10 @@ public class MainViewController {
         }
     }
 
-    private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
-    private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
@@ -130,17 +132,27 @@ public class MainViewController {
 
         lossChart.setCreateSymbols(false);
         lossChart.setAnimated(false);
+        lossChart.setLegendVisible(true);
         accuracyChart.setCreateSymbols(false);
         accuracyChart.setAnimated(false);
-        lossChart.getData().add(lossSeries);
-        accuracyChart.getData().add(accuracySeries);
+        accuracyChart.setLegendVisible(true);
+        lossSeriesTest.setName("Test loss");
+        lossChart.getData().add(lossSeriesTest);
+        accuracySeriesTest.setName("Test accuracy");
+        accuracyChart.getData().add(accuracySeriesTest);
+        lossSeriesTrain.setName("Train loss");
+        lossChart.getData().add(lossSeriesTrain);
+        accuracySeriesTrain.setName("Train accuracy");
+        accuracyChart.getData().add(accuracySeriesTrain);
         epochField.setText("-");
         accuracyField.setText("-");
         lossField.setText("-");
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
             // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
-            List<XYChart.Data<Number, Number>> newLossData = new ArrayList<>();
-            List<XYChart.Data<Number, Number>> newAccuracyData = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newLossDataTest = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newAccuracyDataTest = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newLossDataTrain = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newAccuracyDataTrain = new ArrayList<>();
             boolean shouldClear = false;
 
             while (change.next()) {
@@ -148,13 +160,21 @@ public class MainViewController {
                     shouldClear = true;
                 } else if (change.wasAdded()) {
                     if (shouldClear) {
-                        newLossData.clear();
-                        newAccuracyData.clear();
+                        newLossDataTest.clear();
+                        newAccuracyDataTest.clear();
+                        newLossDataTrain.clear();
+                        newAccuracyDataTrain.clear();
                         shouldClear = false;
                     }
                     for (TrainingMetricDto m : change.getAddedSubList()) {
-                        newLossData.add(new XYChart.Data<>(m.epoch(), m.loss()));
-                        newAccuracyData.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                        if (m.type() == DataLoaderType.TEST) {
+                            newLossDataTest.add(new XYChart.Data<>(m.epoch(), m.loss()));
+                            newAccuracyDataTest.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                        }
+                        else if (m.type() == DataLoaderType.TRAIN) {
+                            newLossDataTrain.add(new XYChart.Data<>(m.epoch(), m.loss()));
+                            newAccuracyDataTrain.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                        }
                     }
                 }
             }
@@ -170,22 +190,30 @@ public class MainViewController {
             Platform.runLater(() -> {
                 if (finalShouldClear) {
                     // The charts refuse to update when cleared unless reset
-                    lossSeries.getData().clear();
-                    accuracySeries.getData().clear();
-                    lossChart.getData().remove(lossSeries);
-                    accuracyChart.getData().remove(accuracySeries);
+                    lossSeriesTest.getData().clear();
+                    accuracySeriesTest.getData().clear();
+                    lossSeriesTrain.getData().clear();
+                    accuracySeriesTrain.getData().clear();
+                    lossChart.getData().remove(lossSeriesTest);
+                    accuracyChart.getData().remove(accuracySeriesTest);
+                    lossChart.getData().remove(lossSeriesTrain);
+                    accuracyChart.getData().remove(accuracySeriesTrain);
                     lossChart.layout();
                     accuracyChart.layout();
-                    lossChart.getData().add(lossSeries);
-                    accuracyChart.getData().add(accuracySeries);
+                    lossChart.getData().add(lossSeriesTest);
+                    accuracyChart.getData().add(accuracySeriesTest);
+                    lossChart.getData().add(lossSeriesTrain);
+                    accuracyChart.getData().add(accuracySeriesTrain);
                 } else {
-                    lossSeries.getData().addAll(newLossData);
-                    accuracySeries.getData().addAll(newAccuracyData);
+                    lossSeriesTest.getData().addAll(newLossDataTest);
+                    accuracySeriesTest.getData().addAll(newAccuracyDataTest);
+                    lossSeriesTrain.getData().addAll(newLossDataTrain);
+                    accuracySeriesTrain.getData().addAll(newAccuracyDataTrain);
                 }
 
                 if (finalLastMetric != null) {
                     epochField.setText(String.valueOf(finalLastMetric.epoch()));
-                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy()));
+                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy())+"%");
                     lossField.setText(String.format("%.3f", finalLastMetric.loss()));
                 } else {
                     epochField.setText("-");

@@ -12,5 +12,7 @@ public enum TensorOperator {
     MATMUL,
     SOFTMAX,
     LEAKYRELU,
-    DROPOUT;
+    DROPOUT,
+    TANH,
+    GELU;
 }
