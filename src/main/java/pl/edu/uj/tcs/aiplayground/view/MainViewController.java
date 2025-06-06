@@ -124,6 +124,8 @@ public class MainViewController {
     private Button shareButton;
     @FXML
     private ListView<String> modelsListView;
+    @FXML
+    private Tab adminTab;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -131,12 +133,26 @@ public class MainViewController {
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
 
+        //    adminTab.disableProperty().bind(userViewModel.isAdminProperty().not()); //disabled instead of invisible
+        if (!userViewModel.isAdminProperty().get()) {
+            leftTabPane.getTabs().remove(adminTab);
+        }
+        userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal && !leftTabPane.getTabs().contains(adminTab)) {
+                leftTabPane.getTabs().add(leftTabPane.getTabs().size(), adminTab);
+            } else if (!newVal) {
+                leftTabPane.getTabs().remove(adminTab);
+            }
+        });
+        //
+
+
         leftTabPane.getSelectionModel().select(1); // "My models" tab
 
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText()) && !"Admin Tab".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }

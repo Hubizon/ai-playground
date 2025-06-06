@@ -110,6 +110,14 @@
                 </VBox>
             </content>
         </Tab>
+
+        <Tab text="Admin Tab" fx:id="adminTab">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Admin Panel" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                </VBox>
+            </content>
+        </Tab>
     </TabPane>
 
     <!-- Center - bar container -->
