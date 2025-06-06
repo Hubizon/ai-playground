@@ -1,5 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -19,6 +21,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
 import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
@@ -430,14 +433,18 @@ public class MainViewController {
 
         barsContainer.getChildren().add(barContainer);
 
-        // scrolling to the bottom of layer
-        Parent parent = barsContainer.getParent();
-        while (parent != null && !(parent instanceof ScrollPane)) {
-            parent = parent.getParent();
-        }
-        if (parent != null) {
-            ((ScrollPane) parent).setVvalue(1.0);
-        }
+        Platform.runLater(() -> {
+            new Timeline(new KeyFrame(Duration.millis(100), e -> {
+                Parent parent = barsContainer.getParent();
+                while (parent != null && !(parent instanceof ScrollPane)) {
+                    parent = parent.getParent();
+                }
+                if (parent != null) {
+                    ScrollPane scrollPane = (ScrollPane) parent;
+                    scrollPane.setVvalue(scrollPane.getVmax());
+                }
+            })).play();
+        });
     }
 
     private void alertMessage(String message, Boolean isInfo) {
