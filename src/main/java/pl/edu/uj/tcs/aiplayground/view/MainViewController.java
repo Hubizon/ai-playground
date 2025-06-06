@@ -638,7 +638,7 @@ public class MainViewController {
 
             stage.setOnCloseRequest(event -> mainViewModel.updateUserTokens());
         } catch (IOException e) {
-            logger.error("Failed to load scene, error={}", e.getMessage(), e);
+            e.printStackTrace();
         }
     }
 
