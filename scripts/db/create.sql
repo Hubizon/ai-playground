@@ -200,137 +200,6 @@ CREATE TABLE custom_event_prices
     price    INTEGER
 );
 
-INSERT INTO currencies (name, conversion_rate)
-VALUES ('USD', 1),
-       ('PLN', 4),
-       ('EUR', 0.9),
-       ('GBP', 0.8),
-       ('CNY', 8);
-
-INSERT INTO countries (name, currency)
-VALUES ('Poland', 2),
-       ('Germany', 3),
-       ('USA', 1),
-       ('United Kingdom', 4),
-       ('China', 5),
-       ('France', 3);
-
-INSERT INTO categories (name)
-VALUES ('Image Recognition'),
-       ('Natural Language Processing'),
-       ('Time Series Analysis'),
-       ('Recommendation Systems'),
-       ('Tabular Data'),
-       ('Reinforcement Learning'),
-       ('Generative Models');
-
-INSERT INTO optimizers (name, price)
-VALUES ('ADAM', 1.5),
-       ('SGD', 1),
-       ('RMSPROP', 1.2),
-       ('ADADELTA', 1.2),
-       ('ADAGRAD', 1.2);
-
-INSERT INTO loss_functions (name, price)
-VALUES ('MSE', 1),
-       ('BCE', 1.1),
-       ('CrossEntropy', 1.2),
-       ('HarmonicLoss', 1.05);
-
-INSERT INTO events (name, base_price, training_related, model_related)
-VALUES ('3rd Place Global', 100, TRUE, FALSE),
-       ('3rd Place Country', 50, TRUE, FALSE),
-       ('2nd Place Global', 200, TRUE, FALSE),
-       ('2nd Place Country', 100, TRUE, FALSE),
-       ('1st Place Global', 500, TRUE, FALSE),
-       ('1st Place Country', 250, TRUE, FALSE),
-       ('Model Creation', -50, FALSE, TRUE),
-       ('Model Training', -10, TRUE, FALSE),
-       ('Bought Tokens', 0, FALSE, FALSE),
-       ('New Role Tokens', 0, FALSE, FALSE);
-
-INSERT INTO statuses (name, description)
-VALUES ('QUEUE', 'The training is waiting to start.'),
-       ('IN_PROGRESS', 'The training is currently running.'),
-       ('FINISHED', 'The training completed successfully.'),
-       ('ERROR', 'The training finished with an error.'),
-       ('CANCELLED', 'The training was cancelled by the user or system.');
-
-INSERT INTO roles (name, initial_tokens)
-VALUES ('Basic User', 1000),
-       ('Premium User', 5000),
-       ('Administrator', 99999);
-
-WITH inserted_users AS (
-    INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
-                       birth_date) VALUES ('admin', 'admin', 'admin', 'admin@admin.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
-                                           '2000-01-01'),
-                                          ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
-                                           '1960-01-01'),
-                                          ('hubizon', 'Hubert', 'Jastrzebski', 'hubizon@mail.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
-                                           '2004-02-29'),
-                                          ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
-                                           '2000-01-01')
-        RETURNING id, username)
-INSERT
-INTO user_roles (user_id, role_id, is_active)
-VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
-        (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
-        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
-        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'Igas'),
-        (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
-
-INSERT INTO datasets (name, description, category_id, price)
-VALUES ('IRIS',
-        'A classic dataset for classification, containing 3 classes of 50 instances each, where each class refers to a type of iris plant.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('MOONS',
-        'A synthetic dataset for binary classification, shaped like two interleaving half-circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('BLOBS',
-        'A synthetic dataset for clustering, consisting of isotropic Gaussian blobs.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('CIRCLES',
-        'A synthetic dataset for binary classification, shaped like two concentric circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('MNIST',
-        'A large database of handwritten digits commonly used for training image processing systems.',
-        (SELECT id FROM categories WHERE name = 'Image Recognition'), 10);
-
-UPDATE datasets
-SET path = 'datasets/' || name || '.csv';
-
-CREATE OR REPLACE FUNCTION insert_custom_event_price(
-    event_name TEXT,
-    role_name TEXT,
-    price NUMERIC
-)
-    RETURNS VOID AS
-$$
-BEGIN
-    INSERT INTO custom_event_prices (event_id, role_id, price)
-    VALUES ((SELECT id FROM events WHERE name = event_name),
-            (SELECT id FROM roles WHERE name = role_name),
-            price);
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT insert_custom_event_price('Model Training', 'Administrator', 0);
-SELECT insert_custom_event_price('Model Training', 'Premium User', -5);
-SELECT insert_custom_event_price('1st Place Global', 'Premium User', 1500);
-SELECT insert_custom_event_price('1st Place Country', 'Premium User', 700);
-SELECT insert_custom_event_price('2nd Place Global', 'Premium User', 400);
-SELECT insert_custom_event_price('2nd Place Country', 'Premium User', 300);
-SELECT insert_custom_event_price('3nd Place Global', 'Premium User', 200);
-SELECT insert_custom_event_price('3nd Place Country', 'Premium User', 100);
-
 CREATE OR REPLACE FUNCTION check_sequential_model_version()
     RETURNS TRIGGER AS
 $$
@@ -481,39 +350,6 @@ begin
     return version_number + 1;
 end;
 $$;
-
-CREATE OR REPLACE FUNCTION give_basic_role() RETURNS trigger AS
-$$
-BEGIN
-    INSERT INTO user_roles
-    VALUES (NEW.id, (SELECT id FROM roles WHERE name = 'Basic User'), now(), True);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER give_basic_role
-    AFTER INSERT
-    ON users
-    FOR EACH ROW
-EXECUTE PROCEDURE give_basic_role();
-
-CREATE OR REPLACE FUNCTION one_active_role() RETURNS trigger AS
-$$
-BEGIN
-    UPDATE user_roles
-    SET is_active = FALSE
-    WHERE user_id = NEW.user_id
-      AND (role_id != NEW.role_id OR assigned_at != NEW.assigned_at)
-      AND is_active = TRUE;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER one_active_role
-    AFTER INSERT
-    ON user_roles
-    FOR EACH ROW
-EXECUTE PROCEDURE one_active_role();
 
 CREATE OR REPLACE FUNCTION calculate_training_cost(rec RECORD)
     RETURNS INTEGER AS
@@ -975,5 +811,169 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     ON public_results
     FOR EACH ROW
 EXECUTE FUNCTION update_token_history_after_public_results();
+
+INSERT INTO currencies (name, conversion_rate)
+VALUES ('USD', 1),
+       ('PLN', 4),
+       ('EUR', 0.9),
+       ('GBP', 0.8),
+       ('CNY', 8);
+
+INSERT INTO countries (name, currency)
+VALUES ('Poland', 2),
+       ('Germany', 3),
+       ('USA', 1),
+       ('United Kingdom', 4),
+       ('China', 5),
+       ('France', 3);
+
+INSERT INTO categories (name)
+VALUES ('Image Recognition'),
+       ('Natural Language Processing'),
+       ('Time Series Analysis'),
+       ('Recommendation Systems'),
+       ('Tabular Data'),
+       ('Reinforcement Learning'),
+       ('Generative Models');
+
+INSERT INTO optimizers (name, price)
+VALUES ('ADAM', 1.5),
+       ('SGD', 1),
+       ('RMSPROP', 1.2),
+       ('ADADELTA', 1.2),
+       ('ADAGRAD', 1.2);
+
+INSERT INTO loss_functions (name, price)
+VALUES ('MSE', 1),
+       ('BCE', 1.1),
+       ('CrossEntropy', 1.2),
+       ('HarmonicLoss', 1.05);
+
+INSERT INTO events (name, base_price, training_related, model_related)
+VALUES ('3rd Place Global', 100, TRUE, FALSE),
+       ('3rd Place Country', 50, TRUE, FALSE),
+       ('2nd Place Global', 200, TRUE, FALSE),
+       ('2nd Place Country', 100, TRUE, FALSE),
+       ('1st Place Global', 500, TRUE, FALSE),
+       ('1st Place Country', 250, TRUE, FALSE),
+       ('Model Creation', -50, FALSE, TRUE),
+       ('Model Training', -10, TRUE, FALSE),
+       ('Bought Tokens', 0, FALSE, FALSE),
+       ('New Role Tokens', 0, FALSE, FALSE);
+
+INSERT INTO statuses (name, description)
+VALUES ('QUEUE', 'The training is waiting to start.'),
+       ('IN_PROGRESS', 'The training is currently running.'),
+       ('FINISHED', 'The training completed successfully.'),
+       ('ERROR', 'The training finished with an error.'),
+       ('CANCELLED', 'The training was cancelled by the user or system.');
+
+INSERT INTO roles (name, initial_tokens)
+VALUES ('Basic User', 1000),
+       ('Premium User', 5000),
+       ('Administrator', 99999);
+
+WITH inserted_users AS (
+    INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
+                       birth_date) VALUES ('admin', 'admin', 'admin', 'admin@admin.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
+                                           '2000-01-01'),
+                                          ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
+                                           '1960-01-01'),
+                                          ('hubizon', 'Hubert', 'Jastrzebski', 'hubizon@mail.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
+                                           '2004-02-29'),
+                                          ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
+                                           '2000-01-01')
+        RETURNING id, username)
+INSERT
+INTO user_roles (user_id, role_id, is_active)
+VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
+        (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
+        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
+        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'Igas'),
+        (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
+
+INSERT INTO datasets (name, description, category_id, price)
+VALUES ('IRIS',
+        'A classic dataset for classification, containing 3 classes of 50 instances each, where each class refers to a type of iris plant.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('MOONS',
+        'A synthetic dataset for binary classification, shaped like two interleaving half-circles.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('BLOBS',
+        'A synthetic dataset for clustering, consisting of isotropic Gaussian blobs.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('CIRCLES',
+        'A synthetic dataset for binary classification, shaped like two concentric circles.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('MNIST',
+        'A large database of handwritten digits commonly used for training image processing systems.',
+        (SELECT id FROM categories WHERE name = 'Image Recognition'), 10);
+
+UPDATE datasets
+SET path = 'datasets/' || name || '.csv';
+
+CREATE OR REPLACE FUNCTION insert_custom_event_price(
+    event_name TEXT,
+    role_name TEXT,
+    price NUMERIC
+)
+    RETURNS VOID AS
+$$
+BEGIN
+    INSERT INTO custom_event_prices (event_id, role_id, price)
+    VALUES ((SELECT id FROM events WHERE name = event_name),
+            (SELECT id FROM roles WHERE name = role_name),
+            price);
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT insert_custom_event_price('Model Training', 'Administrator', 0);
+SELECT insert_custom_event_price('Model Training', 'Premium User', -5);
+SELECT insert_custom_event_price('1st Place Global', 'Premium User', 1500);
+SELECT insert_custom_event_price('1st Place Country', 'Premium User', 700);
+SELECT insert_custom_event_price('2nd Place Global', 'Premium User', 400);
+SELECT insert_custom_event_price('2nd Place Country', 'Premium User', 300);
+SELECT insert_custom_event_price('3nd Place Global', 'Premium User', 200);
+SELECT insert_custom_event_price('3nd Place Country', 'Premium User', 100);
+
+CREATE OR REPLACE FUNCTION give_basic_role() RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO user_roles
+    VALUES (NEW.id, (SELECT id FROM roles WHERE name = 'Basic User'), now(), True);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER give_basic_role
+    AFTER INSERT
+    ON users
+    FOR EACH ROW
+EXECUTE PROCEDURE give_basic_role();
+
+CREATE OR REPLACE FUNCTION one_active_role() RETURNS trigger AS
+$$
+BEGIN
+    UPDATE user_roles
+    SET is_active = FALSE
+    WHERE user_id = NEW.user_id
+      AND (role_id != NEW.role_id OR assigned_at != NEW.assigned_at)
+      AND is_active = TRUE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER one_active_role
+    AFTER INSERT
+    ON user_roles
+    FOR EACH ROW
+EXECUTE PROCEDURE one_active_role();
 
 COMMIT;
