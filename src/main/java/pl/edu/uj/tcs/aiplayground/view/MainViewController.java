@@ -133,7 +133,7 @@ public class MainViewController {
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
 
-        //    adminTab.disableProperty().bind(userViewModel.isAdminProperty().not()); //disabled instead of invisible
+
         if (!userViewModel.isAdminProperty().get()) {
             leftTabPane.getTabs().remove(adminTab);
         }
@@ -144,7 +144,6 @@ public class MainViewController {
                 leftTabPane.getTabs().remove(adminTab);
             }
         });
-        //
 
 
         leftTabPane.getSelectionModel().select(1); // "My models" tab
