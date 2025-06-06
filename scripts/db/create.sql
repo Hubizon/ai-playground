@@ -108,7 +108,7 @@ CREATE TABLE roles
 
 CREATE TABLE user_roles
 (
-    user_id     UUID    NOT NULL REFERENCES users (id),
+    user_id     UUID    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     role_id     INT     NOT NULL REFERENCES roles (id),
     assigned_at TIMESTAMPTZ DEFAULT now(),
     is_active   BOOLEAN NOT NULL,
@@ -118,14 +118,14 @@ CREATE TABLE user_roles
 CREATE TABLE models
 (
     id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID         NOT NULL REFERENCES users (id),
+    user_id UUID         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     name    VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE model_versions
 (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    model_id       UUID  NOT NULL REFERENCES models (id),
+    model_id       UUID  NOT NULL REFERENCES models (id) ON DELETE CASCADE,
     version_number INT   NOT NULL   DEFAULT 1,
     architecture   JSONB NOT NULL,
     created_at     TIMESTAMPTZ      DEFAULT now()
@@ -180,7 +180,7 @@ CREATE TABLE datasets
 CREATE TABLE trainings
 (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    model_version_id UUID                           NOT NULL REFERENCES model_versions (id),
+    model_version_id UUID                           NOT NULL REFERENCES model_versions (id) ON DELETE CASCADE,
     dataset_id       UUID                           NOT NULL REFERENCES datasets (id),
     learning_rate    REAL                           NOT NULL,
     optimizer        INT                            NOT NULL REFERENCES optimizers (id),
@@ -197,7 +197,7 @@ CREATE TABLE trainings
 CREATE TABLE training_metrics
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID                           NOT NULL REFERENCES trainings (id),
+    training_id UUID                           NOT NULL REFERENCES trainings (id) ON DELETE CASCADE,
     epoch       INT                            NOT NULL,
     iter        INT                            NOT NULL,
     loss        DOUBLE PRECISION               NOT NULL,
@@ -211,27 +211,27 @@ CREATE TABLE training_metrics
 CREATE TABLE token_history
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES users (id),
+    user_id     UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     amount      INT  NOT NULL,
     event_type  INT  NOT NULL REFERENCES events (id),
     description TEXT,
     timestamp   TIMESTAMPTZ      DEFAULT now(),
-    training_id UUID REFERENCES trainings,
-    model_id    UUID REFERENCES models
+    training_id UUID REFERENCES trainings ON DELETE CASCADE,
+    model_id    UUID REFERENCES models ON DELETE CASCADE
         CHECK (amount != 0)
 );
 
 CREATE TABLE public_results
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID NOT NULL REFERENCES trainings (id) UNIQUE,
+    training_id UUID NOT NULL REFERENCES trainings (id) ON DELETE CASCADE UNIQUE,
     shared_at   TIMESTAMPTZ      DEFAULT now()
 );
 
 CREATE TABLE custom_event_prices
 (
-    event_id INTEGER REFERENCES events,
-    role_id  INTEGER REFERENCES roles,
+    event_id INTEGER REFERENCES events ON DELETE CASCADE,
+    role_id  INTEGER REFERENCES roles ON DELETE CASCADE,
     price    INTEGER
 );
 

@@ -167,4 +167,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+ALTER TABLE user_roles        DROP CONSTRAINT user_roles_user_id_fkey;
+ALTER TABLE models            DROP CONSTRAINT models_user_id_fkey;
+ALTER TABLE token_history     DROP CONSTRAINT token_history_user_id_fkey;
+
+ALTER TABLE user_roles
+    ADD CONSTRAINT user_roles_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE models
+    ADD CONSTRAINT models_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE token_history
+    ADD CONSTRAINT token_history_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE model_versions    DROP CONSTRAINT model_versions_model_id_fkey;
+ALTER TABLE trainings         DROP CONSTRAINT trainings_model_version_id_fkey;
+ALTER TABLE training_metrics  DROP CONSTRAINT training_metrics_training_id_fkey;
+ALTER TABLE public_results    DROP CONSTRAINT public_results_training_id_fkey;
+ALTER TABLE token_history     DROP CONSTRAINT token_history_training_id_fkey;
+ALTER TABLE token_history     DROP CONSTRAINT token_history_model_id_fkey;
+
+ALTER TABLE model_versions
+    ADD CONSTRAINT model_versions_model_id_fkey
+        FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE;
+
+ALTER TABLE trainings
+    ADD CONSTRAINT trainings_model_version_id_fkey
+        FOREIGN KEY (model_version_id) REFERENCES model_versions(id) ON DELETE CASCADE;
+
+ALTER TABLE training_metrics
+    ADD CONSTRAINT training_metrics_training_id_fkey
+        FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE;
+
+ALTER TABLE public_results
+    ADD CONSTRAINT public_results_training_id_fkey
+        FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE;
+
+ALTER TABLE token_history
+    ADD CONSTRAINT token_history_training_id_fkey
+        FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE;
+
+ALTER TABLE token_history
+    ADD CONSTRAINT token_history_model_id_fkey
+        FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE;
+
 COMMIT;
