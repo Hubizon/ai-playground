@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -126,6 +127,14 @@ public class MainViewController {
     private ListView<String> modelsListView;
     @FXML
     private Tab adminTab;
+    @FXML
+    private TableView<String> usersTableView;
+    @FXML
+    private ComboBox<String> rolesComboBox;
+    @FXML
+    private Button assignRoleButton;
+    @FXML
+    private Label currentRoleLabel;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -133,9 +142,10 @@ public class MainViewController {
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
 
-
         if (!userViewModel.isAdminProperty().get()) {
             leftTabPane.getTabs().remove(adminTab);
+        } else {
+            initializeAdminTab();
         }
         userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal && !leftTabPane.getTabs().contains(adminTab)) {
@@ -659,6 +669,53 @@ public class MainViewController {
                 if (selectedModel != null) {
                     mainViewModel.setModel(userViewModel.getUser(), selectedModel);
                 }
+            }
+        });
+    }
+
+    private void initializeAdminTab() {
+        if (!userViewModel.isAdminProperty().get()) {
+            return;
+        }
+
+        TableColumn<String, String> userColumn = new TableColumn<>("Users");
+        userColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+        userColumn.setPrefWidth(150);
+
+        usersTableView.getColumns().setAll(userColumn);
+        usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+
+        usersTableView.setRowFactory(tv -> {
+            TableRow<String> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 1) {
+                    String selectedUser = row.getItem();
+                    userViewModel.chosenUserProperty().set(selectedUser);
+                }
+            });
+            return row;
+        });
+
+        rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
+        rolesComboBox.valueProperty().bindBidirectional(userViewModel.chosenRoleProperty());
+
+        currentRoleLabel.textProperty().bind(Bindings.concat("Current role: ").concat(userViewModel.chosenUserRoleProperty()));
+
+        assignRoleButton.setOnAction(event -> {
+            if (userViewModel.chosenUserProperty().get() != null &&
+                    userViewModel.chosenRoleProperty().get() != null) {
+                userViewModel.setRoleForUser();
+                // Refresh the view
+                usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+            } else {
+                alertMessage("Please select both a user and a role", false);
+            }
+        });
+
+        userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+                rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
             }
         });
     }

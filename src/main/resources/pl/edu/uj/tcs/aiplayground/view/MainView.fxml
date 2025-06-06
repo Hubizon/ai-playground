@@ -115,6 +115,17 @@
             <content>
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Admin Panel" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <TableView fx:id="usersTableView" style="-fx-background-color: #3C3C3C;">
+                        <columns>
+                            <TableColumn text="Users" prefWidth="150" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Role:" style="-fx-text-fill: white;"/>
+                        <ComboBox fx:id="rolesComboBox" promptText="Select role" prefWidth="150"/>
+                        <Button fx:id="assignRoleButton" text="Assign Role" style="-fx-background-color: #1E90FF; -fx-text-fill: white;"/>
+                    </HBox>
+                    <Label fx:id="currentRoleLabel" style="-fx-text-fill: white;"/>
                 </VBox>
             </content>
         </Tab>
