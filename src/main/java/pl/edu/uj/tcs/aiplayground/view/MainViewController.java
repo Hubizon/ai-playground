@@ -693,8 +693,6 @@ public class MainViewController {
             if (userViewModel.chosenUserProperty().get() != null &&
                     userViewModel.chosenRoleProperty().get() != null) {
                 userViewModel.setRoleForUser();
-                // Refresh the view
-                usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
             } else {
                 alertMessage("Please select both a user and a role", false);
             }

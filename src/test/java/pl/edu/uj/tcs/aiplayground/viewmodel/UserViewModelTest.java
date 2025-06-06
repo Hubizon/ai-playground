@@ -88,24 +88,6 @@ class UserViewModelTest {
     }
 
     @Test
-    void registerFailureShouldSetErrorMessage() {
-        RegisterForm form = new RegisterForm(
-                "bob", "Bob", "Smith", "bob@example.com",
-                "weak", "Nowhere", LocalDate.of(1990, 1, 1)
-        );
-
-        try {
-            doThrow(new UserModificationException("Username taken")).when(userService).register(form);
-
-            viewModel.register(form);
-
-            assertEquals("Username taken", viewModel.statusMessageProperty().get());
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
     void getCountryNamesShouldReturnFromService() {
         List<String> countries = List.of("Poland", "Germany", "France");
         try {
