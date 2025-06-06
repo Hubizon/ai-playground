@@ -125,6 +125,23 @@
 .date-picker:disabled .arrow {
     -fx-background-color: transparent;
 }
+.date-picker .month-year-pane {
+    -fx-background-color: #3C3C3C;
+}
+
+.date-picker .month-year-pane .label {
+    -fx-text-fill: white;
+}
+
+.date-picker .month-year-pane .left-arrow-button,
+.date-picker .month-year-pane .right-arrow-button {
+    -fx-background-color: #3C3C3C;
+}
+
+.date-picker .month-year-pane .left-arrow-button .arrow,
+.date-picker .month-year-pane .right-arrow-button .arrow {
+    -fx-background-color: white;
+}
 
 .number-field {
     -fx-background-color: #444444;
