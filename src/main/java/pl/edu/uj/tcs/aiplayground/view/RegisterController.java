@@ -32,8 +32,6 @@ public class RegisterController {
     @FXML
     private ComboBox<String> countryComboBox;
     @FXML
-    private Label statusLabel;
-    @FXML
     public DatePicker birthDatePicker;
 
     private Stage stage;
@@ -91,24 +89,6 @@ public class RegisterController {
             visiblePasswordField.setManaged(false);
             visiblePasswordField.setVisible(false);
             showPasswordButton.setText("Show Password");
-        }
-    }
-
-    private void openMainWindow() {
-        try {
-            Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
-            Scene scene = new Scene(loader.load());
-
-            MainViewController controller = loader.getController();
-            controller.initialize(factory);
-            controller.setStage(stage);
-
-            mainStage.setTitle("AI Playground");
-            mainStage.setScene(scene);
-            mainStage.show();
-        } catch (IOException e) {
-            logger.error("Problem with loading the scene, error={}", e.getMessage(), e);
         }
     }
 
