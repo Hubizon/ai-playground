@@ -698,6 +698,7 @@ public class MainViewController {
 
         deleteUserButton.setOnAction(event -> {
             userViewModel.deleteUser();
+            usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
         });
 
         userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
