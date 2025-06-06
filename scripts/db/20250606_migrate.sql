@@ -89,4 +89,82 @@ SELECT insert_custom_event_price('2nd Place Country', 'Premium User', 300);
 SELECT insert_custom_event_price('3rd Place Global', 'Premium User', 200);
 SELECT insert_custom_event_price('3rd Place Country', 'Premium User', 100);
 
+CREATE OR REPLACE FUNCTION insert_token_history_on_new_role()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    existing_count    INT;
+    parallel_tokens   INT;
+    existing_roles    INT;
+    granted_tokens    INT;
+    role_tokens       INT;
+    new_role_event_id INT;
+BEGIN
+    SELECT id
+    INTO new_role_event_id
+    FROM events
+    WHERE name = 'New Role Tokens';
+
+    SELECT initial_tokens
+    INTO role_tokens
+    FROM roles
+    WHERE id = NEW.role_id;
+
+    SELECT MAX(r2.initial_tokens)
+    INTO parallel_tokens
+    FROM user_roles u
+             JOIN roles r2 ON u.role_id = r2.id
+    WHERE u.user_id = NEW.user_id
+      AND u.assigned_at = NEW.assigned_at;
+
+    IF role_tokens < parallel_tokens THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT COUNT(*)
+    INTO existing_roles
+    FROM user_roles u
+             LEFT JOIN roles r2 on u.role_id = r2.id
+    WHERE u.user_id = NEW.user_id
+      AND u.assigned_at < NEW.assigned_at;
+
+    IF existing_roles = 0 THEN
+        INSERT INTO token_history (user_id, amount, event_type, description)
+        VALUES (NEW.user_id,
+                role_tokens,
+                new_role_event_id,
+                'Granted initial tokens for new role');
+        RETURN NEW;
+    END IF;
+
+    SELECT COUNT(*)
+    INTO existing_count
+    FROM user_roles
+    WHERE user_id = NEW.user_id
+      AND role_id = NEW.role_id
+      AND assigned_at < NEW.assigned_at;
+
+    IF existing_count = 0 THEN
+        SELECT MAX(initial_tokens)
+        INTO granted_tokens
+        FROM user_roles
+                 LEFT JOIN roles r on r.id = user_roles.role_id
+        WHERE user_id = NEW.user_id
+          AND assigned_at < NEW.assigned_at
+          AND role_id != NEW.role_id;
+
+
+        IF role_tokens - granted_tokens > 0 THEN
+            INSERT INTO token_history (user_id, amount, event_type, description)
+            VALUES (NEW.user_id,
+                    role_tokens - granted_tokens,
+                    new_role_event_id,
+                    'Granted initial tokens for new role');
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 COMMIT;

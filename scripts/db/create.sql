@@ -423,8 +423,6 @@ INSERT
 INTO user_roles (user_id, role_id, is_active)
 VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
         (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'admin'),
-        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
         (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
