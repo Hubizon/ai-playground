@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.edu.uj.tcs.aiplayground.dto.AlertEvent;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
@@ -20,6 +21,7 @@ public class UserViewModel {
 
     private final BooleanProperty isAdmin = new SimpleBooleanProperty(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
+    private final ObjectProperty<AlertEvent> registerAlertEvent = new SimpleObjectProperty<>();
 
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
     private final StringProperty chosenUser = new SimpleStringProperty();
@@ -61,6 +63,10 @@ public class UserViewModel {
 
     public StringProperty statusMessageProperty() {
         return statusMessage;
+    }
+
+    public ObjectProperty<AlertEvent> registerAlertEventProperty() {
+        return registerAlertEvent;
     }
 
     public ObjectProperty<UserDto> userProperty() {
@@ -138,11 +144,11 @@ public class UserViewModel {
             statusMessage.set("Registration Successful");
             return true;
         } catch (UserModificationException e) {
-            statusMessage.set(e.getMessage());
+            registerAlertEvent.set(AlertEvent.createAlertEvent(e.getMessage(), false));
             setupUser(null);
         } catch (DatabaseException e) {
             logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);
-            statusMessage.set("Internal Error");
+            registerAlertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             setupUser(null);
         }
         return false;
