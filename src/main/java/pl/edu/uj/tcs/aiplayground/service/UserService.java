@@ -148,14 +148,24 @@ public class UserService {
     }
 
     public void deleteUser(String username) throws DatabaseException, UserModificationException {
+        UUID userId;
+        boolean isAdmin;
         try {
-            UUID userId = userRepository.findByUsername(username).getId();
-            if (userRepository.isUserAdmin(userId))
-                throw new UserModificationException("Cannot delete admin user");
-            else
-                userRepository.deleteUser(userId);
+            userId = userRepository.findByUsername(username).getId();
+            isAdmin = userRepository.isUserAdmin(userId);
         } catch (Exception e) {
             throw new DatabaseException(e);
+        }
+
+        if (isAdmin) {
+            throw new UserModificationException("Cannot delete admin user");
+        }
+        else {
+            try {
+                userRepository.deleteUser(userId);
+            } catch (Exception e) {
+                throw new DatabaseException(e);
+            }
         }
     }
 }
