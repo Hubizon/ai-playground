@@ -38,14 +38,7 @@ public class TokenRepository implements ITokenRepository {
                         """,
                 user.userId()
         ).into(Integer.class);
-        int start_tokens = dsl.fetchOne("""
-                        SELECT SUM(r.initial_tokens) 
-                        FROM user_roles ur LEFT JOIN roles r ON ur.role_id = r.id
-                        WHERE ur.user_id = ?;
-                        """,
-                user.userId()
-        ).into(Integer.class);
-        return changed_tokens + start_tokens;
+        return changed_tokens;
     }
 
     @Override

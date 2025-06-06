@@ -272,7 +272,8 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('Model Training', -10, TRUE, FALSE),
        ('Model Stopping', -5, TRUE, FALSE),
        ('Application Login', -1, FALSE, FALSE),
-       ('BoughtTokens', 0, FALSE, FALSE);
+       ('BoughtTokens', 0, FALSE, FALSE),
+       ('New Role Tokens', 0, FALSE, FALSE);
 
 INSERT INTO statuses (name, description)
 VALUES ('QUEUE', 'The training is waiting to start.'),
@@ -285,6 +286,82 @@ INSERT INTO roles (name, initial_tokens)
 VALUES ('Basic User', 1000),
        ('Premium User', 5000),
        ('Administrator', 99999);
+
+CREATE OR REPLACE FUNCTION insert_token_history_on_new_role()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    existing_count INT;
+    paralel_tokens INT;
+    existing_roles INT;
+    granted_tokens INT;
+    role_tokens    INT;
+    event_id       INT := 13;
+BEGIN
+    SELECT initial_tokens
+    INTO role_tokens
+    FROM roles
+    WHERE id = NEW.role_id;
+
+    SELECT MAX(r2.initial_tokens)
+    INTO paralel_tokens
+    FROM user_roles u
+             JOIN roles r2 ON u.role_id = r2.id
+    WHERE u.user_id = NEW.user_id
+      AND u.assigned_at = NEW.assigned_at;
+
+    IF role_tokens < paralel_tokens THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT COUNT(*)
+    INTO existing_roles
+    FROM user_roles u LEFT JOIN roles r2 on u.role_id = r2.id
+    WHERE u.user_id = NEW.user_id
+      AND u.assigned_at < NEW.assigned_at;
+    IF existing_roles =0 THEN
+        INSERT INTO token_history (user_id, amount, event_type, description)
+        VALUES (NEW.user_id,
+                    role_tokens,
+                    event_id,
+                    'Granted initial tokens for new role');
+        RETURN NEW;
+    end if;
+    SELECT COUNT(*)
+    INTO existing_count
+    FROM user_roles
+    WHERE user_id = NEW.user_id
+      AND role_id = NEW.role_id
+      AND assigned_at < NEW.assigned_at;
+
+    IF existing_count = 0 THEN
+        SELECT MAX(initial_tokens)
+        INTO granted_tokens
+        FROM user_roles LEFT JOIN roles r on r.id = user_roles.role_id
+        WHERE user_id = NEW.user_id
+          AND assigned_at < NEW.assigned_at
+          AND role_id!=NEW.role_id;
+
+
+        IF role_tokens -granted_tokens > 0 THEN
+            INSERT INTO token_history (user_id, amount, event_type, description)
+            VALUES (NEW.user_id,
+                    role_tokens -granted_tokens,
+                    event_id,
+                    'Granted initial tokens for new role');
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_insert_token_on_new_role
+    AFTER INSERT
+    ON user_roles
+    FOR EACH ROW
+EXECUTE FUNCTION insert_token_history_on_new_role();
 
 WITH inserted_users AS (
     INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
@@ -301,11 +378,12 @@ WITH inserted_users AS (
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
                                            '2000-01-01')
         RETURNING id, username)
-
 INSERT
 INTO user_roles (user_id, role_id, is_active)
 VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
         (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'admin'),
+        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
         (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
@@ -393,29 +471,15 @@ CREATE OR REPLACE FUNCTION get_user_token_balance(user_id_param UUID)
     RETURNS INTEGER AS
 $$
 DECLARE
-    initial_tokens  INTEGER;
     token_changes   INTEGER;
     current_balance INTEGER;
 BEGIN
-    SELECT r.initial_tokens
-    INTO initial_tokens
-    FROM user_roles ur
-             JOIN roles r ON ur.role_id = r.id
-    WHERE ur.user_id = user_id_param
-      AND ur.is_active = TRUE
-    ORDER BY ur.assigned_at DESC
-    LIMIT 1;
-
-    IF initial_tokens IS NULL THEN
-        RETURN 0;
-    END IF;
-
     SELECT COALESCE(SUM(th.amount), 0)
     INTO token_changes
     FROM token_history th
     WHERE th.user_id = user_id_param;
 
-    current_balance := initial_tokens + token_changes;
+    current_balance := token_changes;
 
 --should never occur
     IF current_balance < 0 THEN
@@ -434,8 +498,8 @@ CREATE OR REPLACE FUNCTION calculate_event_price(
 ) RETURNS INTEGER AS
 $$
 DECLARE
-    v_role_id      INTEGER;
-    v_final_price  INTEGER;
+    v_role_id     INTEGER;
+    v_final_price INTEGER;
 BEGIN
 
     SELECT ur.role_id
@@ -728,7 +792,8 @@ BEGIN
     SELECT accuracy, loss
     INTO v_new_accuracy, v_new_loss
     FROM training_metrics
-    WHERE training_id = NEW.training_id AND type = 'TEST'
+    WHERE training_id = NEW.training_id
+      AND type = 'TEST'
     ORDER BY epoch DESC
     LIMIT 1;
 
@@ -846,5 +911,9 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     ON public_results
     FOR EACH ROW
 EXECUTE FUNCTION update_token_history_after_public_results();
+
+
+
+
 
 COMMIT;
