@@ -38,17 +38,15 @@ public class UserViewModel {
             try {
                 isAdmin.set(userService.isUserAdmin(user.userId()));
                 if (isAdmin.get()) {
-                    chosenUser.addListener((observable, oldValue, newValue) -> {
-                        Platform.runLater(() -> {
-                            try {
-                                chosenUserRole.set(userService.getUserRole(chosenUser));
-                            } catch (DatabaseException e) {
-                                logger.error("Failed to get user role, chosenUser={}, error={}",
-                                        chosenUser, e.getMessage(), e);
-                                statusMessage.set("Internal Error");
-                            }
-                        });
-                    });
+                    chosenUser.addListener((observable, oldValue, newValue) -> Platform.runLater(() -> {
+                        try {
+                            chosenUserRole.set(userService.getUserRole(chosenUser));
+                        } catch (DatabaseException e) {
+                            logger.error("Failed to get user role, chosenUser={}, error={}",
+                                    chosenUser, e.getMessage(), e);
+                            statusMessage.set("Internal Error");
+                        }
+                    }));
                 }
             } catch (DatabaseException e) {
                 logger.error("Failed to get information about user, user={}, error={}", user, e.getMessage(), e);

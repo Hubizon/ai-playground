@@ -57,21 +57,21 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.SUMROWS)) {
-                Tensor base = components.get(0);
+                Tensor base = components.getFirst();
                 for (int i = 0; i < base.rows; i++) {
                     for (int j = 0; j < base.cols; j++) {
                         base.gradient[i][j] += result.gradient[0][j];
                     }
                 }
             } else if (operation.equals(TensorOperator.SUMCOLS)) {
-                Tensor base = components.get(0);
+                Tensor base = components.getFirst();
                 for (int i = 0; i < base.rows; i++) {
                     for (int j = 0; j < base.cols; j++) {
                         base.gradient[i][j] += result.gradient[i][0];
                     }
                 }
             } else if (operation.equals(TensorOperator.RELU)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         if (input.data[i][j] > 0) {
@@ -79,9 +79,7 @@ public class ComputationalGraph {
                         } else {
                             input.gradient[i][j] = 0;
                         }
-
                     }
-
                 }
             } else if (operation.equals(TensorOperator.MATMUL)) {
                 Tensor a = components.get(0);
@@ -116,7 +114,7 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.SIGMOID)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         double sigmoidValue = result.data[i][j];
@@ -126,7 +124,7 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.SOFTMAX)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 for (int i = 0; i < input.cols; i++) {
                     for (int j = 0; j < input.rows; j++) {
                         double grad = 0;
@@ -140,9 +138,9 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.LEAKYRELU)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 double alpha;
-                alpha = (double) params.get(0);
+                alpha = (double) params.getFirst();
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         if (input.data[i][j] > 0) {
@@ -153,7 +151,7 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.TANH)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 for (int i = 0; i < input.rows; i++) {
                     for (int j = 0; j < input.cols; j++) {
                         double tanhValue = result.data[i][j];
@@ -162,7 +160,7 @@ public class ComputationalGraph {
                     }
                 }
             } else if (operation.equals(TensorOperator.GELU)) {
-                Tensor input = components.get(0);
+                Tensor input = components.getFirst();
                 final double SQRT_2_OVER_PI = Math.sqrt(2.0 / Math.PI);
                 final double CONST_0_044715 = 0.044715;
 

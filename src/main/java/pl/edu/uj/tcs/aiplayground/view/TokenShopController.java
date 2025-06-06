@@ -12,6 +12,8 @@ import javafx.stage.Stage;
 import pl.edu.uj.tcs.aiplayground.viewmodel.TokenViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
+import java.util.Objects;
+
 public class TokenShopController {
 
     @FXML
@@ -56,7 +58,7 @@ public class TokenShopController {
     public void setStage(Stage stage) {
         this.stage = stage;
         this.stage.setMinWidth(tokenViewModel.getTokenAmounts().size() * 100 + 100);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
 
@@ -124,7 +126,7 @@ public class TokenShopController {
 
         alert.setContentText(String.format("Are you sure you want to buy %d tokens for %.2f %s?", amount, Price, currency));
         alert.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         alert.getDialogPane().getStyleClass().add("dialog-pane");
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -150,7 +152,7 @@ public class TokenShopController {
         alert.setHeaderText("About AI Tokens");
         alert.setContentText("AI Tokens are used to access premium features and run more complex models within the AI Playground. Each token allows for a certain amount of computational time or access to specific functionalities. The more tokens you have, the more you can explore!");
         alert.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.getDialogPane().getStyleClass().add("dialog-pane");
@@ -167,7 +169,7 @@ public class TokenShopController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.getDialogPane().getStyleClass().add("dialog-pane");

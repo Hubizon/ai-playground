@@ -51,8 +51,8 @@ public class Dataset {
                 throw new IOException("Input or output shape could not be determined from the file header.");
             }
 
-            int inputLen = inputShape.get(0);
-            int outputLen = outputShape.get(0);
+            int inputLen = inputShape.getFirst();
+            int outputLen = outputShape.getFirst();
 
             String line;
             while ((line = br.readLine()) != null) {
@@ -83,8 +83,8 @@ public class Dataset {
             }
 
             // === Compute normalization stats ===
-            double[] mean = new double[inputShape.get(0)];
-            double[] std = new double[inputShape.get(0)];
+            double[] mean = new double[inputShape.getFirst()];
+            double[] std = new double[inputShape.getFirst()];
 
             for (double[] input : rawInputs) {
                 for (int i = 0; i < input.length; i++) {
@@ -108,13 +108,13 @@ public class Dataset {
             // === Normalize and create tensors ===
             ArrayList<Pair<Tensor, Tensor>> allData = new ArrayList<>();
             for (int idx = 0; idx < rawInputs.size(); idx++) {
-                double[] normalized = new double[inputShape.get(0)];
+                double[] normalized = new double[inputShape.getFirst()];
                 for (int i = 0; i < normalized.length; i++) {
                     normalized[i] = (rawInputs.get(idx)[i] - mean[i]) / std[i];
                 }
 
                 Tensor inputTensor = new Tensor(new double[][]{normalized}, 1, normalized.length);
-                Tensor outputTensor = new Tensor(new double[][]{rawOutputs.get(idx)}, 1, outputShape.get(0));
+                Tensor outputTensor = new Tensor(new double[][]{rawOutputs.get(idx)}, 1, outputShape.getFirst());
                 allData.add(new Pair<>(inputTensor, outputTensor));
             }
 

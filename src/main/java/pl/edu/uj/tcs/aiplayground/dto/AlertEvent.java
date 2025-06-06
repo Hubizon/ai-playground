@@ -5,6 +5,7 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Region;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public record AlertEvent(
@@ -26,7 +27,7 @@ public record AlertEvent(
             alert.setHeaderText(null);
             alert.setContentText(message);
             alert.getDialogPane().getStylesheets().add(
-                    getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
             );
             alert.getDialogPane().getStyleClass().add("dialog-pane");
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);

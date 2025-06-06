@@ -23,6 +23,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
@@ -36,40 +38,25 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class MainViewController {
-    public enum LeaderboardRegion {
-        COUNTRY("Country"),
-        GLOBAL("Global");
-
-        private final String displayName;
-
-        LeaderboardRegion(String displayName) {
-            this.displayName = displayName;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
-        }
-    }
-
+    private static final Logger logger = LoggerFactory.getLogger(MainViewController.class);
     private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
-
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
     public LineChart<Number, Number> accuracyChart;
     @FXML
-    private NumberAxis accY;
-
-    @FXML
     public Label statusField;
+    @FXML
+    private NumberAxis accY;
     @FXML
     private TabPane leftTabPane;
     private Stage stage;
@@ -198,8 +185,7 @@ public class MainViewController {
                         if (m.type() == DataLoaderType.TEST) {
                             newLossDataTest.add(new XYChart.Data<>(m.iter(), m.loss()));
                             newAccuracyDataTest.add(new XYChart.Data<>(m.iter(), m.accuracy()));
-                        }
-                        else if (m.type() == DataLoaderType.TRAIN) {
+                        } else if (m.type() == DataLoaderType.TRAIN) {
                             newLossDataTrain.add(new XYChart.Data<>(m.iter(), m.loss()));
                             newAccuracyDataTrain.add(new XYChart.Data<>(m.iter(), m.accuracy()));
                         }
@@ -214,7 +200,7 @@ public class MainViewController {
             }
 
             boolean finalShouldClear = shouldClear;
-            TrainingMetricDto finalLastTestMetric = lastTestMetric ;
+            TrainingMetricDto finalLastTestMetric = lastTestMetric;
             TrainingMetricDto finalLastTrainMetric = lastTrainMetric;
 
             Platform.runLater(() -> {
@@ -246,9 +232,9 @@ public class MainViewController {
 
                 if (finalLastTestMetric != null && finalLastTrainMetric != null) {
                     epochField.setText(String.valueOf(finalLastTestMetric.epoch()));
-                    testAccuracyField.setText(String.format("%.2f",  finalLastTestMetric.accuracy()) + "%");
+                    testAccuracyField.setText(String.format("%.2f", finalLastTestMetric.accuracy()) + "%");
                     testLossField.setText(String.format("%.3f", finalLastTestMetric.loss()));
-                    trainAccuracyField.setText(String.format("%.2f",  finalLastTrainMetric.accuracy()) + "%");
+                    trainAccuracyField.setText(String.format("%.2f", finalLastTrainMetric.accuracy()) + "%");
                     trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
 
                 } else {
@@ -550,7 +536,7 @@ public class MainViewController {
             stage.setTitle("Leaderboard - " + region + " - " + datasetType);
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to load leaderboard, error={}", e.getMessage(), e);
             alertMessage("Failed to load leaderboard: " + e.getMessage(), false);
         }
     }
@@ -570,7 +556,7 @@ public class MainViewController {
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to load scene, error={}", e.getMessage(), e);
         }
     }
 
@@ -594,7 +580,7 @@ public class MainViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     @FXML
@@ -613,7 +599,7 @@ public class MainViewController {
         dialog.setHeaderText(null);
 
         dialog.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
 
@@ -621,9 +607,7 @@ public class MainViewController {
         textField.getStyleClass().add("text-field");
 
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(modelName -> {
-            mainViewModel.createNewModel(userViewModel.getUser(), modelName);
-        });
+        result.ifPresent(modelName -> mainViewModel.createNewModel(userViewModel.getUser(), modelName));
     }
 
     @FXML
@@ -632,7 +616,7 @@ public class MainViewController {
             Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/TokenShopView.fxml"));
             Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm());
             TokenShopController controller = loader.getController();
             controller.initialize(factory);
             controller.setStage(stage);
@@ -641,11 +625,9 @@ public class MainViewController {
             stage.setScene(scene);
             stage.show();
 
-            stage.setOnCloseRequest(event -> {
-                mainViewModel.updateUserTokens();
-            });
+            stage.setOnCloseRequest(event -> mainViewModel.updateUserTokens());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to load scene, error={}", e.getMessage(), e);
         }
     }
 
@@ -661,5 +643,21 @@ public class MainViewController {
                 }
             }
         });
+    }
+
+    public enum LeaderboardRegion {
+        COUNTRY("Country"),
+        GLOBAL("Global");
+
+        private final String displayName;
+
+        LeaderboardRegion(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
 }

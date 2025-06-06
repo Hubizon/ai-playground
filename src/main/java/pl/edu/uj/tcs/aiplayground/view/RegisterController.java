@@ -2,8 +2,6 @@ package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
@@ -13,8 +11,8 @@ import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class RegisterController {
     private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
@@ -23,6 +21,8 @@ public class RegisterController {
     public TextField lastNameField;
     public TextField emailField;
     public TextField visiblePasswordField;
+    @FXML
+    public DatePicker birthDatePicker;
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     @FXML
@@ -31,9 +31,6 @@ public class RegisterController {
     private Button showPasswordButton;
     @FXML
     private ComboBox<String> countryComboBox;
-    @FXML
-    public DatePicker birthDatePicker;
-
     private Stage stage;
 
     private boolean passwordVisible;
@@ -57,14 +54,12 @@ public class RegisterController {
         birthDatePicker.setValue(LocalDate.now().minusYears(20));
         birthDatePicker.setEditable(false);
 
-        userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> {
-            newValue.display();
-        });
+        userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> newValue.display());
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     @FXML

@@ -17,6 +17,7 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class LoginViewController {
     private static final Logger logger = LoggerFactory.getLogger(LoginViewController.class);
@@ -36,7 +37,7 @@ public class LoginViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     public void initialize(ViewModelFactory factory) {
@@ -74,7 +75,7 @@ public class LoginViewController {
     private void openMainWindow() {
         try {
             Stage mainStage = new Stage();
-            mainStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+            mainStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
             Scene scene = new Scene(loader.load());
 

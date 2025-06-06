@@ -10,6 +10,8 @@ import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
+import java.util.Objects;
+
 public class UserInfoController {
     @FXML
     private PasswordField passwordField;
@@ -67,7 +69,7 @@ public class UserInfoController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     @FXML
@@ -126,7 +128,7 @@ public class UserInfoController {
             alert.setHeaderText(null);
             alert.setContentText(userViewModel.statusMessageProperty().getValue());
             alert.getDialogPane().getStylesheets().add(
-                    getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
             );
             alert.getDialogPane().getStyleClass().add("dialog-pane");
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
