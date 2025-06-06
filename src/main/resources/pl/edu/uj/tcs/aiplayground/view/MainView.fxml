@@ -112,22 +112,20 @@
         </Tab>
 
         <Tab text="Admin Tab" fx:id="adminTab">
-            <content>
-                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
-                    <Label text="Admin Panel" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-                    <TableView fx:id="usersTableView" style="-fx-background-color: #3C3C3C;">
-                        <columns>
-                            <TableColumn text="Users" prefWidth="150" />
-                        </columns>
-                    </TableView>
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="Role:" style="-fx-text-fill: white;"/>
-                        <ComboBox fx:id="rolesComboBox" promptText="Select role" prefWidth="150"/>
-                        <Button fx:id="assignRoleButton" text="Assign Role" style="-fx-background-color: #1E90FF; -fx-text-fill: white;"/>
-                    </HBox>
-                    <Label fx:id="currentRoleLabel" style="-fx-text-fill: white;"/>
-                </VBox>
-            </content>
+            <VBox styleClass="metrics-panel">
+                <Label text="Admin Panel" styleClass="label" style="-fx-font-size: 16;"/>
+                <TableView fx:id="usersTableView" prefHeight="300" styleClass="table-view">
+                    <columns>
+                        <TableColumn text="Users" prefWidth="200" styleClass="table-column"/>
+                    </columns>
+                </TableView>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="rolesComboBox" promptText="Select role" prefWidth="140" styleClass="combo-box"/>
+                    <Button fx:id="assignRoleButton" text="Assign" styleClass="button"
+                            style="-fx-background-color: #1E90FF;"/>
+                </HBox>
+                <Label fx:id="currentRoleLabel" styleClass="label"/>
+            </VBox>
         </Tab>
     </TabPane>
 
@@ -207,7 +205,8 @@
                     <NumberAxis fx:id="accX" autoRanging="true" label="Epochs" styleClass="axis-label"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis fx:id="accY" lowerBound="0" upperBound="110" autoRanging="true" label="Accuracy %" styleClass="axis-label"/>
+                    <NumberAxis fx:id="accY" lowerBound="0" upperBound="110" autoRanging="true" label="Accuracy %"
+                                styleClass="axis-label"/>
                 </yAxis>
             </LineChart>
         </VBox>

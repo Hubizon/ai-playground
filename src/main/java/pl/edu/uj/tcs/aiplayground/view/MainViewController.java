@@ -681,6 +681,7 @@ public class MainViewController {
         TableColumn<String, String> userColumn = new TableColumn<>("Users");
         userColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
         userColumn.setPrefWidth(150);
+        userColumn.setStyle("-fx-alignment: CENTER_LEFT;");
 
         usersTableView.getColumns().setAll(userColumn);
         usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
@@ -699,7 +700,11 @@ public class MainViewController {
         rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
         rolesComboBox.valueProperty().bindBidirectional(userViewModel.chosenRoleProperty());
 
-        currentRoleLabel.textProperty().bind(Bindings.concat("Current role: ").concat(userViewModel.chosenUserRoleProperty()));
+        currentRoleLabel.textProperty().bind(
+                Bindings.when(userViewModel.chosenUserRoleProperty().isNotNull())
+                        .then(Bindings.concat("Current role: ").concat(userViewModel.chosenUserRoleProperty()))
+                        .otherwise("Select user to assign new role")
+        );
 
         assignRoleButton.setOnAction(event -> {
             if (userViewModel.chosenUserProperty().get() != null &&
