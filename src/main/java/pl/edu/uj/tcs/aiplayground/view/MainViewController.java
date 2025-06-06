@@ -680,7 +680,7 @@ public class MainViewController {
 
         TableColumn<String, String> userColumn = new TableColumn<>("Users");
         userColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        userColumn.setPrefWidth(150);
+        userColumn.setPrefWidth(210);
         userColumn.setStyle("-fx-alignment: CENTER_LEFT;");
 
         usersTableView.getColumns().setAll(userColumn);
