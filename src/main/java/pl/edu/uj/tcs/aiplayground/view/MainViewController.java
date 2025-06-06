@@ -329,9 +329,7 @@ public class MainViewController {
         });
 
         mainViewModel.alertEventProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && !newValue.message().isEmpty()) {
-                alertMessage(newValue.message(), newValue.isInfo());
-            }
+            newValue.display();
         });
 
         prevVersionButton.disableProperty().bind(
@@ -693,12 +691,7 @@ public class MainViewController {
         );
 
         assignRoleButton.setOnAction(event -> {
-            if (userViewModel.chosenUserProperty().get() != null &&
-                    userViewModel.chosenRoleProperty().get() != null) {
-                userViewModel.setRoleForUser();
-            } else {
-                alertMessage("Please select both a user and a role", false);
-            }
+            userViewModel.setRoleForUser();
         });
 
         userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
@@ -706,6 +699,10 @@ public class MainViewController {
                 usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
                 rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
             }
+        });
+
+        userViewModel.adminAlertEventProperty().addListener((observable, oldValue, newValue) -> {
+            newValue.display();
         });
     }
 

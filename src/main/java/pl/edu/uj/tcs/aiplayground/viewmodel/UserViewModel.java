@@ -21,6 +21,7 @@ public class UserViewModel {
 
     private final BooleanProperty isAdmin = new SimpleBooleanProperty(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
+    private final ObjectProperty<AlertEvent> adminAlertEvent = new SimpleObjectProperty<>();
     private final ObjectProperty<AlertEvent> registerAlertEvent = new SimpleObjectProperty<>();
 
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
@@ -61,6 +62,10 @@ public class UserViewModel {
 
     public StringProperty statusMessageProperty() {
         return statusMessage;
+    }
+
+    public ObjectProperty<AlertEvent> adminAlertEventProperty() {
+        return adminAlertEvent;
     }
 
     public ObjectProperty<AlertEvent> registerAlertEventProperty() {
@@ -173,6 +178,10 @@ public class UserViewModel {
     public void setRoleForUser() {
         if (!isAdmin.get())
             return;
+        if (chosenUserRole.get() == null || chosenRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("Select both a user and a role", false));
+            return;
+        }
 
         try {
             userService.setRoleForUser(chosenUser.get(), chosenRole.get());
@@ -182,6 +191,27 @@ public class UserViewModel {
             logger.error("Failed to set role for user={}, role={}, error={}",
                     chosenUser, chosenRole, e.getMessage(), e);
             statusMessage.set("Internal Error");
+        }
+    }
+
+    public void deleteUser() {
+        if (!isAdmin.get())
+            return;
+        if (chosenUserRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("You must choose a user", false));
+            return;
+        }
+
+        try {
+            userService.deleteUser(chosenUser.get());
+            chosenUserRole.set(null);
+            setupUser(user.get());
+        } catch (UserModificationException e) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent(e.getMessage(), false));
+        } catch (DatabaseException e) {
+            logger.error("Failed to delete user={}, role={}, error={}",
+                    chosenUser, chosenRole, e.getMessage(), e);
+            adminAlertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
         }
     }
 }

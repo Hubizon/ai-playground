@@ -186,4 +186,14 @@ public class UserRepository implements IUserRepository {
                     """, role, username);
         });
     }
+
+    @Override
+    public void deleteUser(UUID userId) {
+        dsl.query("""
+                        DELETE FROM users
+                        WHERE id = ?;
+                        """,
+                userId
+        ).execute();
+    }
 }

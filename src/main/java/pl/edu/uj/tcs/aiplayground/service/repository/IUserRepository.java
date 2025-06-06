@@ -36,4 +36,6 @@ public interface IUserRepository {
     String getUserRole(StringProperty chosenUser);
 
     void setRoleForUser(String username, String role);
+
+    void deleteUser(UUID userId);
 }

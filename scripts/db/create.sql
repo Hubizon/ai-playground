@@ -108,7 +108,7 @@ CREATE TABLE roles
 
 CREATE TABLE user_roles
 (
-    user_id     UUID    NOT NULL REFERENCES users (id),
+    user_id     UUID    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     role_id     INT     NOT NULL REFERENCES roles (id),
     assigned_at TIMESTAMPTZ DEFAULT now(),
     is_active   BOOLEAN NOT NULL,
@@ -118,53 +118,18 @@ CREATE TABLE user_roles
 CREATE TABLE models
 (
     id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID         NOT NULL REFERENCES users (id),
+    user_id UUID         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     name    VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE model_versions
 (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    model_id       UUID  NOT NULL REFERENCES models (id),
+    model_id       UUID  NOT NULL REFERENCES models (id) ON DELETE CASCADE,
     version_number INT   NOT NULL   DEFAULT 1,
     architecture   JSONB NOT NULL,
     created_at     TIMESTAMPTZ      DEFAULT now()
 );
-
-CREATE OR REPLACE FUNCTION check_sequential_model_version()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    max_version INT;
-BEGIN
-    SELECT MAX(version_number)
-    INTO max_version
-    FROM model_versions
-    WHERE model_id = NEW.model_id;
-    IF max_version IS NULL THEN
-        IF NEW.version_number <> 1 THEN
-            RAISE EXCEPTION 'The first model version must be 1. Provided: %', NEW.version_number;
-        END IF;
-    ELSE
-        IF NEW.version_number <> max_version + 1 THEN
-            RAISE EXCEPTION 'Model version number % for model % must be % (next after %), but % was provided',
-                NEW.version_number, NEW.model_id, max_version + 1, max_version, NEW.version_number;
-        END IF;
-    END IF;
-
-    IF NEW.version_number <= 0 THEN
-        RAISE EXCEPTION 'Model version number must be greater than 0.';
-    END IF;
-
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER enforce_sequential_model_version
-    BEFORE INSERT
-    ON model_versions
-    FOR EACH ROW
-EXECUTE FUNCTION check_sequential_model_version();
 
 CREATE TABLE datasets
 (
@@ -180,7 +145,7 @@ CREATE TABLE datasets
 CREATE TABLE trainings
 (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    model_version_id UUID                           NOT NULL REFERENCES model_versions (id),
+    model_version_id UUID                           NOT NULL REFERENCES model_versions (id) ON DELETE CASCADE,
     dataset_id       UUID                           NOT NULL REFERENCES datasets (id),
     learning_rate    REAL                           NOT NULL,
     optimizer        INT                            NOT NULL REFERENCES optimizers (id),
@@ -197,7 +162,7 @@ CREATE TABLE trainings
 CREATE TABLE training_metrics
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID                           NOT NULL REFERENCES trainings (id),
+    training_id UUID                           NOT NULL REFERENCES trainings (id) ON DELETE CASCADE,
     epoch       INT                            NOT NULL,
     iter        INT                            NOT NULL,
     loss        DOUBLE PRECISION               NOT NULL,
@@ -211,27 +176,27 @@ CREATE TABLE training_metrics
 CREATE TABLE token_history
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES users (id),
+    user_id     UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     amount      INT  NOT NULL,
     event_type  INT  NOT NULL REFERENCES events (id),
     description TEXT,
     timestamp   TIMESTAMPTZ      DEFAULT now(),
-    training_id UUID REFERENCES trainings,
-    model_id    UUID REFERENCES models
+    training_id UUID REFERENCES trainings ON DELETE CASCADE,
+    model_id    UUID REFERENCES models ON DELETE CASCADE
         CHECK (amount != 0)
 );
 
 CREATE TABLE public_results
 (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    training_id UUID NOT NULL REFERENCES trainings (id) UNIQUE,
+    training_id UUID NOT NULL REFERENCES trainings (id) ON DELETE CASCADE UNIQUE,
     shared_at   TIMESTAMPTZ      DEFAULT now()
 );
 
 CREATE TABLE custom_event_prices
 (
-    event_id INTEGER REFERENCES events,
-    role_id  INTEGER REFERENCES roles,
+    event_id INTEGER REFERENCES events ON DELETE CASCADE,
+    role_id  INTEGER REFERENCES roles ON DELETE CASCADE,
     price    INTEGER
 );
 
@@ -296,6 +261,52 @@ VALUES ('Basic User', 1000),
        ('Premium User', 5000),
        ('Administrator', 99999);
 
+WITH inserted_users AS (
+    INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
+                       birth_date) VALUES ('admin', 'admin', 'admin', 'admin@admin.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
+                                           '2000-01-01'),
+                                          ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
+                                           '1960-01-01'),
+                                          ('hubizon', 'Hubert', 'Jastrzebski', 'hubizon@mail.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
+                                           '2004-02-29'),
+                                          ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
+                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
+                                           '2000-01-01')
+        RETURNING id, username)
+INSERT
+INTO user_roles (user_id, role_id, is_active)
+VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
+        (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
+        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
+        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
+       ((SELECT id FROM inserted_users WHERE username = 'Igas'),
+        (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
+
+INSERT INTO datasets (name, description, category_id, price)
+VALUES ('IRIS',
+        'A classic dataset for classification, containing 3 classes of 50 instances each, where each class refers to a type of iris plant.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('MOONS',
+        'A synthetic dataset for binary classification, shaped like two interleaving half-circles.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('BLOBS',
+        'A synthetic dataset for clustering, consisting of isotropic Gaussian blobs.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('CIRCLES',
+        'A synthetic dataset for binary classification, shaped like two concentric circles.',
+        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
+       ('MNIST',
+        'A large database of handwritten digits commonly used for training image processing systems.',
+        (SELECT id FROM categories WHERE name = 'Image Recognition'), 10);
+
+UPDATE datasets
+SET path = 'datasets/' || name || '.csv';
+
 CREATE OR REPLACE FUNCTION insert_custom_event_price(
     event_name TEXT,
     role_name TEXT,
@@ -319,6 +330,63 @@ SELECT insert_custom_event_price('2nd Place Global', 'Premium User', 400);
 SELECT insert_custom_event_price('2nd Place Country', 'Premium User', 300);
 SELECT insert_custom_event_price('3nd Place Global', 'Premium User', 200);
 SELECT insert_custom_event_price('3nd Place Country', 'Premium User', 100);
+
+CREATE OR REPLACE FUNCTION check_sequential_model_version()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    max_version INT;
+BEGIN
+    SELECT MAX(version_number)
+    INTO max_version
+    FROM model_versions
+    WHERE model_id = NEW.model_id;
+    IF max_version IS NULL THEN
+        IF NEW.version_number <> 1 THEN
+            RAISE EXCEPTION 'The first model version must be 1. Provided: %', NEW.version_number;
+        END IF;
+    ELSE
+        IF NEW.version_number <> max_version + 1 THEN
+            RAISE EXCEPTION 'Model version number % for model % must be % (next after %), but % was provided',
+                NEW.version_number, NEW.model_id, max_version + 1, max_version, NEW.version_number;
+        END IF;
+    END IF;
+
+    IF NEW.version_number <= 0 THEN
+        RAISE EXCEPTION 'Model version number must be greater than 0.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER enforce_sequential_model_version
+    BEFORE INSERT
+    ON model_versions
+    FOR EACH ROW
+EXECUTE FUNCTION check_sequential_model_version();
+
+CREATE OR REPLACE FUNCTION prevent_admin_deletion()
+    RETURNS trigger AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM user_roles ur
+                 JOIN roles r ON ur.role_id = r.id
+        WHERE ur.user_id = OLD.id
+          AND ur.is_active = true
+          AND r.name = 'Administrator'
+    ) THEN
+        RAISE EXCEPTION 'Cannot delete a user with an active admin role.';
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_admin_user_deletion
+    BEFORE DELETE ON users
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_admin_deletion();
+
 
 CREATE OR REPLACE FUNCTION insert_token_history_on_new_role()
     RETURNS TRIGGER AS
@@ -403,52 +471,6 @@ CREATE TRIGGER trg_insert_token_on_new_role
     ON user_roles
     FOR EACH ROW
 EXECUTE FUNCTION insert_token_history_on_new_role();
-
-WITH inserted_users AS (
-    INSERT INTO users (username, first_name, last_name, email, password_hash, country_id,
-                       birth_date) VALUES ('admin', 'admin', 'admin', 'admin@admin.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 1,
-                                           '2000-01-01'),
-                                          ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
-                                           '1960-01-01'),
-                                          ('hubizon', 'Hubert', 'Jastrzebski', 'hubizon@mail.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
-                                           '2004-02-29'),
-                                          ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
-                                           '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
-                                           '2000-01-01')
-        RETURNING id, username)
-INSERT
-INTO user_roles (user_id, role_id, is_active)
-VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
-        (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'fimpro'),
-        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'hubizon'),
-        (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
-       ((SELECT id FROM inserted_users WHERE username = 'Igas'),
-        (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
-
-INSERT INTO datasets (name, description, category_id, price)
-VALUES ('IRIS',
-        'A classic dataset for classification, containing 3 classes of 50 instances each, where each class refers to a type of iris plant.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('MOONS',
-        'A synthetic dataset for binary classification, shaped like two interleaving half-circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('BLOBS',
-        'A synthetic dataset for clustering, consisting of isotropic Gaussian blobs.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('CIRCLES',
-        'A synthetic dataset for binary classification, shaped like two concentric circles.',
-        (SELECT id FROM categories WHERE name = 'Tabular Data'), 1),
-       ('MNIST',
-        'A large database of handwritten digits commonly used for training image processing systems.',
-        (SELECT id FROM categories WHERE name = 'Image Recognition'), 10);
-
-UPDATE datasets
-    SET path = 'datasets/' || name || '.csv';
 
 CREATE OR REPLACE FUNCTION next_model_version(version_number integer)
     returns integer
@@ -902,7 +924,7 @@ BEGIN
     ELSIF v_global_rank = 2 THEN
         v_event_id := (SELECT id FROM events WHERE name = '2nd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '2nd place globally with accuracy: ' ||     v_new_accuracy || '%';
+        v_description_global := '2nd place globally with accuracy: ' || v_new_accuracy || '%';
     ELSIF v_global_rank = 3 THEN
         v_event_id := (SELECT id FROM events WHERE name = '3rd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
