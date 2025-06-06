@@ -176,6 +176,7 @@ public class UserViewModel {
 
         try {
             userService.setRoleForUser(chosenUser.get(), chosenRole.get());
+            chosenUserRole.set(userService.getUserRole(chosenUser));
             setupUser(user.get());
         } catch (DatabaseException e) {
             logger.error("Failed to set role for user={}, role={}, error={}",
