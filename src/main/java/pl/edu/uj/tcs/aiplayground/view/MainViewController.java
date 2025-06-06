@@ -121,6 +121,8 @@ public class MainViewController {
     @FXML
     private Button assignRoleButton;
     @FXML
+    private Button deleteUserButton;
+    @FXML
     private Label currentRoleLabel;
 
     public void initialize(ViewModelFactory factory) {
@@ -692,6 +694,10 @@ public class MainViewController {
 
         assignRoleButton.setOnAction(event -> {
             userViewModel.setRoleForUser();
+        });
+
+        deleteUserButton.setOnAction(event -> {
+            userViewModel.deleteUser();
         });
 
         userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
