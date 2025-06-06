@@ -18,7 +18,6 @@ import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
 import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

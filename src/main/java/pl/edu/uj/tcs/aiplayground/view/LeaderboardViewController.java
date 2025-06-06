@@ -10,6 +10,7 @@ import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 public class LeaderboardViewController {
     private Stage stage;
@@ -54,7 +55,7 @@ public class LeaderboardViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     public void loadData(List<LeaderboardDto> data) {

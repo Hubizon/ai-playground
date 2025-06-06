@@ -13,6 +13,7 @@ import pl.edu.uj.tcs.aiplayground.exception.ModelModificationException;
 import pl.edu.uj.tcs.aiplayground.service.repository.IModelRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ModelService {
@@ -57,7 +58,7 @@ public class ModelService {
         } catch (DataAccessException e) {
             if (e.getCause() instanceof PSQLException ex) {
                 if ("P0001".equals(ex.getSQLState())) {
-                    throw new InsufficientTokensException(ex.getServerErrorMessage().getMessage());
+                    throw new InsufficientTokensException(Objects.requireNonNull(ex.getServerErrorMessage()).getMessage());
                 }
             }
             throw e;
