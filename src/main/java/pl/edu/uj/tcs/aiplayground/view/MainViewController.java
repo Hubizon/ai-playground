@@ -329,9 +329,7 @@ public class MainViewController {
         });
 
         mainViewModel.alertEventProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && !newValue.message().isEmpty()) {
-                alertMessage(newValue.message(), newValue.isInfo());
-            }
+            newValue.display();
         });
 
         prevVersionButton.disableProperty().bind(
@@ -703,6 +701,10 @@ public class MainViewController {
                 usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
                 rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
             }
+        });
+
+        userViewModel.adminAlertEventProperty().addListener((observable, oldValue, newValue) -> {
+            newValue.display();
         });
     }
 
