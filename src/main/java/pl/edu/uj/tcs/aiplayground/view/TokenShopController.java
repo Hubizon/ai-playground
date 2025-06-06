@@ -5,6 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -126,6 +127,7 @@ public class TokenShopController {
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
         alert.getDialogPane().getStyleClass().add("dialog-pane");
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -150,6 +152,7 @@ public class TokenShopController {
         alert.getDialogPane().getStylesheets().add(
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.getDialogPane().getStyleClass().add("dialog-pane");
         alert.showAndWait();
     }
@@ -166,6 +169,7 @@ public class TokenShopController {
         alert.getDialogPane().getStylesheets().add(
                 getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
         );
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.getDialogPane().getStyleClass().add("dialog-pane");
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         alert.getButtonTypes().setAll(okButton);
