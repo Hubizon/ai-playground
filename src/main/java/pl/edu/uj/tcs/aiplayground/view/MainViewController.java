@@ -36,9 +36,8 @@ import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainViewController {
     public enum LeaderboardRegion {
@@ -61,6 +60,7 @@ public class MainViewController {
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
+
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
@@ -159,30 +159,25 @@ public class MainViewController {
 
         lossChart.setCreateSymbols(false);
         lossChart.setAnimated(false);
-        lossChart.setLegendVisible(true);
+        lossChart.setLegendVisible(false);
         accuracyChart.setCreateSymbols(false);
         accuracyChart.setAnimated(false);
-        accuracyChart.setLegendVisible(true);
+        accuracyChart.setLegendVisible(false);
         accY.setAutoRanging(false);
 
-        lossSeriesTest.setName("Test loss");
-        accuracySeriesTest.setName("Test accuracy");
-        lossSeriesTrain.setName("Train loss");
-        accuracySeriesTrain.setName("Train accuracy");
+        styleSeries(lossSeriesTrain, "#1E90FF");
+        styleSeries(accuracySeriesTrain, "#1E90FF");
+        styleSeries(lossSeriesTest, "#FF8C00");
+        styleSeries(accuracySeriesTest, "#FF8C00");
 
-        lossChart.getData().add(lossSeriesTest);
-        accuracyChart.getData().add(accuracySeriesTest);
         lossChart.getData().add(lossSeriesTrain);
         accuracyChart.getData().add(accuracySeriesTrain);
+        lossChart.getData().add(lossSeriesTest);
+        accuracyChart.getData().add(accuracySeriesTest);
 
-        epochField.setText("-");
-        trainAccuracyField.setText("-");
-        trainLossField.setText("-");
-        testAccuracyField.setText("-");
-        testLossField.setText("-");
+        resetTrainingFields();
 
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
-            // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
             List<XYChart.Data<Number, Number>> newLossDataTest = new ArrayList<>();
             List<XYChart.Data<Number, Number>> newAccuracyDataTest = new ArrayList<>();
             List<XYChart.Data<Number, Number>> newLossDataTrain = new ArrayList<>();
@@ -239,15 +234,15 @@ public class MainViewController {
                     lossChart.layout();
                     accuracyChart.layout();
 
-                    lossChart.getData().add(lossSeriesTest);
-                    accuracyChart.getData().add(accuracySeriesTest);
                     lossChart.getData().add(lossSeriesTrain);
                     accuracyChart.getData().add(accuracySeriesTrain);
+                    lossChart.getData().add(lossSeriesTest);
+                    accuracyChart.getData().add(accuracySeriesTest);
                 } else {
-                    lossSeriesTest.getData().addAll(newLossDataTest);
-                    accuracySeriesTest.getData().addAll(newAccuracyDataTest);
                     lossSeriesTrain.getData().addAll(newLossDataTrain);
                     accuracySeriesTrain.getData().addAll(newAccuracyDataTrain);
+                    lossSeriesTest.getData().addAll(newLossDataTest);
+                    accuracySeriesTest.getData().addAll(newAccuracyDataTest);
                 }
 
                 if (finalLastTestMetric != null && finalLastTrainMetric != null) {
@@ -258,11 +253,7 @@ public class MainViewController {
                     trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
 
                 } else {
-                    epochField.setText("-");
-                    testAccuracyField.setText("-");
-                    testLossField.setText("-");
-                    trainAccuracyField.setText("-");
-                    trainLossField.setText("-");
+                    resetTrainingFields();
                 }
             });
         });
@@ -405,9 +396,7 @@ public class MainViewController {
 
                 checkBox.setSelected((Boolean) paramValue);
 
-                checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                    updateLayerParams(barContainer, paramName, newVal);
-                });
+                checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> updateLayerParams(barContainer, paramName, newVal));
 
                 barContainer.getChildren().addAll(paramLabel, checkBox);
             } else if (paramType == BigDecimal.class) {
@@ -449,18 +438,32 @@ public class MainViewController {
 
         barsContainer.getChildren().add(barContainer);
 
-        Platform.runLater(() -> {
-            new Timeline(new KeyFrame(Duration.millis(100), e -> {
-                Parent parent = barsContainer.getParent();
-                while (parent != null && !(parent instanceof ScrollPane)) {
-                    parent = parent.getParent();
-                }
-                if (parent != null) {
-                    ScrollPane scrollPane = (ScrollPane) parent;
-                    scrollPane.setVvalue(scrollPane.getVmax());
-                }
-            })).play();
+        Platform.runLater(() -> new Timeline(new KeyFrame(Duration.millis(100), e -> {
+            Parent parent = barsContainer.getParent();
+            while (parent != null && !(parent instanceof ScrollPane)) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
+                ScrollPane scrollPane = (ScrollPane) parent;
+                scrollPane.setVvalue(scrollPane.getVmax());
+            }
+        })).play());
+    }
+
+    private void styleSeries(XYChart.Series<Number, Number> series, String color) {
+        series.nodeProperty().addListener((obs, oldNode, newNode) -> {
+            if (newNode != null) {
+                newNode.setStyle(String.format("-fx-stroke: %s;", color));
+            }
         });
+    }
+
+    private void resetTrainingFields() {
+        epochField.setText("-");
+        testAccuracyField.setText("-");
+        testLossField.setText("-");
+        trainAccuracyField.setText("-");
+        trainLossField.setText("-");
     }
 
     private void alertMessage(String message, Boolean isInfo) {
@@ -473,7 +476,7 @@ public class MainViewController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         alert.getDialogPane().getStyleClass().add("dialog-pane");
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
