@@ -194,11 +194,11 @@
         </VBox>
         <HBox alignment="CENTER" spacing="10">
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="─ " style="-fx-text-fill: orange; -fx-font-size: 15px;"/> <!-- "▀  ◼  ▄" -->
-                <Label text="Training" style="-fx-text-fill: white; -fx-font-size: 10px;"/>
+                <Label text="─ " style="-fx-text-fill: #1E90FF; -fx-font-size: 15px;"/>
+                <Label text="Train" style="-fx-text-fill: white; -fx-font-size: 10px;"/>
             </HBox>
             <HBox spacing="5" alignment="CENTER_LEFT">
-                <Label text="─ " style="-fx-text-fill: red; -fx-font-size: 15px;"/>
+                <Label text="─ " style="-fx-text-fill: #FF8C00; -fx-font-size: 15px;"/>
                 <Label text="Test" style="-fx-text-fill: white; -fx-font-size: 10px;"/>
             </HBox>
         </HBox>
