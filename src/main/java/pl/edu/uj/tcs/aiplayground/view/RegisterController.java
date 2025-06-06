@@ -4,10 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -34,6 +31,8 @@ public class RegisterController {
     private Button showPasswordButton;
     @FXML
     private ComboBox<String> countryComboBox;
+    @FXML
+    private Label statusLabel;
 
     private Stage stage;
 
@@ -55,6 +54,10 @@ public class RegisterController {
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
         showPasswordButton.setText("Show Password");
+
+        userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> {
+            newValue.display();
+        });
     }
 
     public void setStage(Stage stage) {

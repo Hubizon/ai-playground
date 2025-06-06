@@ -5,6 +5,8 @@ import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.aiplayground.exception.UserModificationException;
 
+import java.time.LocalDate;
+
 public class UserValidation {
     private static final String USERNAME_REGEX = "^[A-Za-z0-9_.]{3,50}$";
     private static final String FIRST_NAME_REGEX = "^[A-Za-z\\- ]{1,100}$";
@@ -35,7 +37,7 @@ public class UserValidation {
         if (!registerForm.password().matches(PASSWORD_REGEX))
             throw new UserModificationException("Invalid password");
 
-        if (registerForm.birthDate() == null)
+        if (registerForm.birthDate() == null || registerForm.birthDate().isAfter(LocalDate.now().minusYears(1)))
             throw new UserModificationException("Invalid birth date");
 
         if (registerForm.country() == null)
@@ -52,7 +54,7 @@ public class UserValidation {
         if (!updateUserForm.password().matches(PASSWORD_REGEX))
             throw new UserModificationException("Invalid password");
 
-        if (updateUserForm.birthDate() == null)
+        if (updateUserForm.birthDate() == null || updateUserForm.birthDate().isAfter(LocalDate.now().minusYears(1)))
             throw new UserModificationException("Invalid birth date");
 
         if (updateUserForm.country() == null)

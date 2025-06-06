@@ -318,7 +318,7 @@ DECLARE
     existing_roles INT;
     granted_tokens INT;
     role_tokens    INT;
-    event_id       INT := 13;
+    event_id       INT := 10;
 BEGIN
     SELECT initial_tokens
     INTO role_tokens
