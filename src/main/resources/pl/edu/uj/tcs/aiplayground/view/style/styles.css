@@ -523,3 +523,8 @@
     -fx-border-color: transparent;
     -fx-text-fill: white;
 }
+
+.axis-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+}
