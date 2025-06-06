@@ -688,12 +688,7 @@ public class MainViewController {
         );
 
         assignRoleButton.setOnAction(event -> {
-            if (userViewModel.chosenUserProperty().get() != null &&
-                    userViewModel.chosenRoleProperty().get() != null) {
-                userViewModel.setRoleForUser();
-            } else {
-                alertMessage("Please select both a user and a role", false);
-            }
+            userViewModel.setRoleForUser();
         });
 
         userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {

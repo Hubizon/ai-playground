@@ -178,6 +178,10 @@ public class UserViewModel {
     public void setRoleForUser() {
         if (!isAdmin.get())
             return;
+        if (chosenUserRole.get() == null || chosenRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("Select both a user and a role", false));
+            return;
+        }
 
         try {
             userService.setRoleForUser(chosenUser.get(), chosenRole.get());
@@ -193,6 +197,10 @@ public class UserViewModel {
     public void deleteUser() {
         if (!isAdmin.get())
             return;
+        if (chosenUserRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("You must choose a user", false));
+            return;
+        }
 
         try {
             userService.deleteUser(chosenUser.get());
