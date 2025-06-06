@@ -18,15 +18,27 @@ DROP TABLE IF EXISTS countries CASCADE;
 DROP TABLE IF EXISTS currencies CASCADE;
 DROP TABLE IF EXISTS custom_event_prices CASCADE;
 DROP FUNCTION IF EXISTS check_sequential_model_version CASCADE;
-DROP TRIGGER IF EXISTS enforce_sequential_model_version ON model_versions CASCADE;
 DROP FUNCTION IF EXISTS calculate_training_cost CASCADE;
 DROP FUNCTION IF EXISTS calculate_event_price CASCADE;
+DROP FUNCTION IF EXISTS next_model_version(integer) CASCADE;
+DROP FUNCTION IF EXISTS give_basic_role() CASCADE;
+DROP FUNCTION IF EXISTS get_user_token_balance(uuid) CASCADE;
+DROP FUNCTION IF EXISTS check_user_tokens_before_model_creation() CASCADE;
+DROP FUNCTION IF EXISTS update_token_history_afetr_model_creation() CASCADE;
+DROP FUNCTION IF EXISTS check_user_tokens_before_training() CASCADE;
+DROP FUNCTION IF EXISTS update_token_history_after_training() CASCADE;
+DROP FUNCTION IF EXISTS update_token_history_after_public_results() CASCADE;
+DROP FUNCTION IF EXISTS update_token_history_after_model_creation() CASCADE;
+DROP FUNCTION IF EXISTS ordinal(integer) CASCADE;
+DROP FUNCTION IF EXISTS insert_custom_event_price(text, text, numeric) CASCADE;
+DROP FUNCTION IF EXISTS insert_token_history_on_new_role() CASCADE;
+DROP FUNCTION IF EXISTS one_active_role() CASCADE;
 
 CREATE TABLE currencies
 (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(100) NOT NULL,
-    conversion_rate double precision --ile potrzebujemy, żeby kupić jednego dolara
+    conversion_rate double precision
 );
 
 CREATE TABLE countries
@@ -161,8 +173,8 @@ CREATE TABLE datasets
     description TEXT,
     category_id INT                 NOT NULL REFERENCES categories (id),
     created_at  TIMESTAMPTZ      DEFAULT now(),
-    price       double precision DEFAULT 1
-
+    price       double precision DEFAULT 1,
+    path        TEXT
 );
 
 CREATE TABLE trainings
@@ -269,7 +281,7 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('1st Place Country', 250, TRUE, FALSE),
        ('Model Creation', -50, FALSE, TRUE),
        ('Model Training', -10, TRUE, FALSE),
-       ('BoughtTokens', 0, FALSE, FALSE),
+       ('Bought Tokens', 0, FALSE, FALSE),
        ('New Role Tokens', 0, FALSE, FALSE);
 
 INSERT INTO statuses (name, description)
@@ -289,14 +301,13 @@ CREATE OR REPLACE FUNCTION insert_custom_event_price(
     role_name TEXT,
     price NUMERIC
 )
-    RETURNS VOID AS $$
+    RETURNS VOID AS
+$$
 BEGIN
     INSERT INTO custom_event_prices (event_id, role_id, price)
-    VALUES (
-               (SELECT id FROM events WHERE name = event_name),
-               (SELECT id FROM roles WHERE name = role_name),
-               price
-           );
+    VALUES ((SELECT id FROM events WHERE name = event_name),
+            (SELECT id FROM roles WHERE name = role_name),
+            price);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -313,13 +324,18 @@ CREATE OR REPLACE FUNCTION insert_token_history_on_new_role()
     RETURNS TRIGGER AS
 $$
 DECLARE
-    existing_count INT;
-    parallel_tokens INT;
-    existing_roles INT;
-    granted_tokens INT;
-    role_tokens    INT;
-    event_id       INT := 10;
+    existing_count    INT;
+    parallel_tokens   INT;
+    existing_roles    INT;
+    granted_tokens    INT;
+    role_tokens       INT;
+    new_role_event_id INT;
 BEGIN
+    SELECT id
+    INTO new_role_event_id
+    FROM events
+    WHERE name = 'New Role Tokens';
+
     SELECT initial_tokens
     INTO role_tokens
     FROM roles
@@ -338,17 +354,20 @@ BEGIN
 
     SELECT COUNT(*)
     INTO existing_roles
-    FROM user_roles u LEFT JOIN roles r2 on u.role_id = r2.id
+    FROM user_roles u
+             LEFT JOIN roles r2 on u.role_id = r2.id
     WHERE u.user_id = NEW.user_id
       AND u.assigned_at < NEW.assigned_at;
-    IF existing_roles =0 THEN
+
+    IF existing_roles = 0 THEN
         INSERT INTO token_history (user_id, amount, event_type, description)
         VALUES (NEW.user_id,
-                    role_tokens,
-                    event_id,
-                    'Granted initial tokens for new role');
+                role_tokens,
+                new_role_event_id,
+                'Granted initial tokens for new role');
         RETURN NEW;
-    end if;
+    END IF;
+
     SELECT COUNT(*)
     INTO existing_count
     FROM user_roles
@@ -359,17 +378,18 @@ BEGIN
     IF existing_count = 0 THEN
         SELECT MAX(initial_tokens)
         INTO granted_tokens
-        FROM user_roles LEFT JOIN roles r on r.id = user_roles.role_id
+        FROM user_roles
+                 LEFT JOIN roles r on r.id = user_roles.role_id
         WHERE user_id = NEW.user_id
           AND assigned_at < NEW.assigned_at
-          AND role_id!=NEW.role_id;
+          AND role_id != NEW.role_id;
 
 
-        IF role_tokens -granted_tokens > 0 THEN
+        IF role_tokens - granted_tokens > 0 THEN
             INSERT INTO token_history (user_id, amount, event_type, description)
             VALUES (NEW.user_id,
-                    role_tokens -granted_tokens,
-                    event_id,
+                    role_tokens - granted_tokens,
+                    new_role_event_id,
                     'Granted initial tokens for new role');
         END IF;
     END IF;
@@ -392,14 +412,15 @@ WITH inserted_users AS (
                                           ('fimpro', 'Filip', 'Manijak', 'filip@example.com',
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 2,
                                            '1960-01-01'),
-                                          ('hubizon', 'Hubert', 'Jastrzębski', 'hubizon@mail.com',
+                                          ('hubizon', 'Hubert', 'Jastrzebski', 'hubizon@mail.com',
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 3,
                                            '2004-02-29'),
                                           ('Igas', 'Ignacy', 'Wojtulewicz', 'ignacy@domena.com',
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
                                            '2000-01-01')
         RETURNING id, username)
-INSERT INTO user_roles (user_id, role_id, is_active)
+INSERT
+INTO user_roles (user_id, role_id, is_active)
 VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
         (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'admin'),
@@ -428,10 +449,8 @@ VALUES ('IRIS',
         'A large database of handwritten digits commonly used for training image processing systems.',
         (SELECT id FROM categories WHERE name = 'Image Recognition'), 10);
 
-ALTER TABLE datasets
-    ADD COLUMN path TEXT;
 UPDATE datasets
-SET path = 'datasets/' || name || '.csv';
+    SET path = 'datasets/' || name || '.csv';
 
 CREATE OR REPLACE FUNCTION next_model_version(version_number integer)
     returns integer
@@ -520,7 +539,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 CREATE OR REPLACE FUNCTION calculate_event_price(
     p_user_id UUID,
     p_event_id INTEGER
@@ -530,7 +548,6 @@ DECLARE
     v_role_id     INTEGER;
     v_final_price INTEGER;
 BEGIN
-
     SELECT ur.role_id
     INTO v_role_id
     FROM user_roles ur
@@ -587,7 +604,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 CREATE OR REPLACE FUNCTION update_token_history_after_model_creation()
     RETURNS TRIGGER AS
 $$
@@ -631,8 +647,10 @@ DECLARE
     event_price       INTEGER;
     model_user_id     UUID;
 BEGIN
-    SELECT id INTO training_event_id FROM events WHERE name = 'Model Training';
-
+    SELECT id
+    INTO training_event_id
+    FROM events
+    WHERE name = 'Model Training';
 
     SELECT m.user_id
     INTO model_user_id
@@ -748,21 +766,6 @@ SELECT RANK() OVER (ORDER BY accuracy DESC, loss ASC) AS position,
        loss
 FROM best_per_user_dataset;
 
-CREATE OR REPLACE FUNCTION ordinal(n int)
-    RETURNS text AS
-$$
-BEGIN
-    RETURN n || CASE
-                    WHEN (n % 100) BETWEEN 11 AND 13 THEN 'th'
-                    WHEN (n % 10) = 1 THEN 'st'
-                    WHEN (n % 10) = 2 THEN 'nd'
-                    WHEN (n % 10) = 3 THEN 'rd'
-                    ELSE 'th'
-        END;
-END;
-$$ LANGUAGE plpgsql;
-
-
 CREATE OR REPLACE VIEW best_results AS
 SELECT DISTINCT ON (th.user_id, d.id,
     CASE
@@ -786,6 +789,20 @@ WHERE e.name IN (
     )
 ORDER BY th.user_id, d.id, scope, th.amount DESC;
 
+
+CREATE OR REPLACE FUNCTION ordinal(n int)
+    RETURNS text AS
+$$
+BEGIN
+    RETURN n || CASE
+                    WHEN (n % 100) BETWEEN 11 AND 13 THEN 'th'
+                    WHEN (n % 10) = 1 THEN 'st'
+                    WHEN (n % 10) = 2 THEN 'nd'
+                    WHEN (n % 10) = 3 THEN 'rd'
+                    ELSE 'th'
+        END;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION update_token_history_after_public_results()
     RETURNS TRIGGER AS
@@ -887,7 +904,7 @@ BEGIN
     ELSIF v_global_rank = 2 THEN
         v_event_id := (SELECT id FROM events WHERE name = '2nd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '2nd place globally with accuracy: ' || v_new_accuracy || '%';
+        v_description_global := '2nd place globally with accuracy: ' ||     v_new_accuracy || '%';
     ELSIF v_global_rank = 3 THEN
         v_event_id := (SELECT id FROM events WHERE name = '3rd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);

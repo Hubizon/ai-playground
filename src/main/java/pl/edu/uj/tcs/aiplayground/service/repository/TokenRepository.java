@@ -25,7 +25,7 @@ public class TokenRepository implements ITokenRepository {
                         """,
                 user.userId(),
                 amount,
-                "BoughtTokens",
+                "Bought Tokens",
                 amount
         ).execute();
     }
