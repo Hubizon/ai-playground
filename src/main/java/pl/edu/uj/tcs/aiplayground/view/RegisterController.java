@@ -57,6 +57,7 @@ public class RegisterController {
         visiblePasswordField.setVisible(false);
         showPasswordButton.setText("Show Password");
         birthDatePicker.setValue(LocalDate.now().minusYears(20));
+        birthDatePicker.setEditable(false);
 
         userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> {
             newValue.display();
