@@ -145,19 +145,23 @@ public class MainViewController {
         accuracyChart.setAnimated(false);
         accuracyChart.setLegendVisible(true);
         accY.setAutoRanging(false);
+
         lossSeriesTest.setName("Test loss");
-        lossChart.getData().add(lossSeriesTest);
         accuracySeriesTest.setName("Test accuracy");
-        accuracyChart.getData().add(accuracySeriesTest);
         lossSeriesTrain.setName("Train loss");
-        lossChart.getData().add(lossSeriesTrain);
         accuracySeriesTrain.setName("Train accuracy");
+
+        lossChart.getData().add(lossSeriesTest);
+        accuracyChart.getData().add(accuracySeriesTest);
+        lossChart.getData().add(lossSeriesTrain);
         accuracyChart.getData().add(accuracySeriesTrain);
+
         epochField.setText("-");
         trainAccuracyField.setText("-");
         trainLossField.setText("-");
         testAccuracyField.setText("-");
         testLossField.setText("-");
+
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
             // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
             List<XYChart.Data<Number, Number>> newLossDataTest = new ArrayList<>();
@@ -197,8 +201,8 @@ public class MainViewController {
             }
 
             boolean finalShouldClear = shouldClear;
-            TrainingMetricDto finalLastTestMetric = lastTrainMetric;
-            TrainingMetricDto finalLastTrainMetric = lastTestMetric;
+            TrainingMetricDto finalLastTestMetric = lastTestMetric ;
+            TrainingMetricDto finalLastTrainMetric = lastTrainMetric;
 
             Platform.runLater(() -> {
                 if (finalShouldClear) {
@@ -207,12 +211,15 @@ public class MainViewController {
                     accuracySeriesTest.getData().clear();
                     lossSeriesTrain.getData().clear();
                     accuracySeriesTrain.getData().clear();
+
                     lossChart.getData().remove(lossSeriesTest);
                     accuracyChart.getData().remove(accuracySeriesTest);
                     lossChart.getData().remove(lossSeriesTrain);
                     accuracyChart.getData().remove(accuracySeriesTrain);
+
                     lossChart.layout();
                     accuracyChart.layout();
+
                     lossChart.getData().add(lossSeriesTest);
                     accuracyChart.getData().add(accuracySeriesTest);
                     lossChart.getData().add(lossSeriesTrain);
@@ -439,6 +446,7 @@ public class MainViewController {
             alert = new Alert(Alert.AlertType.INFORMATION);
         else
             alert = new Alert(AlertType.WARNING);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(

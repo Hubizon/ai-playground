@@ -268,10 +268,7 @@ VALUES ('3rd Place Global', 100, TRUE, FALSE),
        ('1st Place Global', 500, TRUE, FALSE),
        ('1st Place Country', 250, TRUE, FALSE),
        ('Model Creation', -50, FALSE, TRUE),
-       ('Saving New Model Version', -20, FALSE, TRUE),
        ('Model Training', -10, TRUE, FALSE),
-       ('Model Stopping', -5, TRUE, FALSE),
-       ('Application Login', -1, FALSE, FALSE),
        ('BoughtTokens', 0, FALSE, FALSE),
        ('New Role Tokens', 0, FALSE, FALSE);
 
@@ -287,12 +284,37 @@ VALUES ('Basic User', 1000),
        ('Premium User', 5000),
        ('Administrator', 99999);
 
+CREATE OR REPLACE FUNCTION insert_custom_event_price(
+    event_name TEXT,
+    role_name TEXT,
+    price NUMERIC
+)
+    RETURNS VOID AS $$
+BEGIN
+    INSERT INTO custom_event_prices (event_id, role_id, price)
+    VALUES (
+               (SELECT id FROM events WHERE name = event_name),
+               (SELECT id FROM roles WHERE name = role_name),
+               price
+           );
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT insert_custom_event_price('Model Training', 'Administrator', 0);
+SELECT insert_custom_event_price('Model Training', 'Premium User', -5);
+SELECT insert_custom_event_price('1st Place Global', 'Premium User', 1500);
+SELECT insert_custom_event_price('1st Place Country', 'Premium User', 700);
+SELECT insert_custom_event_price('2nd Place Global', 'Premium User', 400);
+SELECT insert_custom_event_price('2nd Place Country', 'Premium User', 300);
+SELECT insert_custom_event_price('3nd Place Global', 'Premium User', 200);
+SELECT insert_custom_event_price('3nd Place Country', 'Premium User', 100);
+
 CREATE OR REPLACE FUNCTION insert_token_history_on_new_role()
     RETURNS TRIGGER AS
 $$
 DECLARE
     existing_count INT;
-    paralel_tokens INT;
+    parallel_tokens INT;
     existing_roles INT;
     granted_tokens INT;
     role_tokens    INT;
@@ -304,13 +326,13 @@ BEGIN
     WHERE id = NEW.role_id;
 
     SELECT MAX(r2.initial_tokens)
-    INTO paralel_tokens
+    INTO parallel_tokens
     FROM user_roles u
              JOIN roles r2 ON u.role_id = r2.id
     WHERE u.user_id = NEW.user_id
       AND u.assigned_at = NEW.assigned_at;
 
-    IF role_tokens < paralel_tokens THEN
+    IF role_tokens < parallel_tokens THEN
         RETURN NEW;
     END IF;
 
@@ -356,7 +378,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 CREATE TRIGGER trg_insert_token_on_new_role
     AFTER INSERT
     ON user_roles
@@ -378,8 +399,7 @@ WITH inserted_users AS (
                                            '$2a$10$34z1aIuXDSogxnsZS090DOaA3Sgs5q.03RA4tEUP5GbVHgmiJyDRi', 4,
                                            '2000-01-01')
         RETURNING id, username)
-INSERT
-INTO user_roles (user_id, role_id, is_active)
+INSERT INTO user_roles (user_id, role_id, is_active)
 VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
         (SELECT id FROM roles WHERE name = 'Administrator'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'admin'),
@@ -390,14 +410,6 @@ VALUES ((SELECT id FROM inserted_users WHERE username = 'admin'),
         (SELECT id FROM roles WHERE name = 'Premium User'), TRUE),
        ((SELECT id FROM inserted_users WHERE username = 'Igas'),
         (SELECT id FROM roles WHERE name = 'Basic User'), TRUE);
-
-INSERT INTO custom_event_prices (event_id, role_id, price)
-VALUES ((SELECT id FROM events WHERE name = 'Application Login'),
-        (SELECT id FROM roles WHERE name = 'Administrator'),
-        0),
-       ((SELECT id FROM events WHERE name = 'Model Training'),
-        (SELECT id FROM roles WHERE name = 'Premium User'),
-        -5);
 
 INSERT INTO datasets (name, description, category_id, price)
 VALUES ('IRIS',
@@ -434,7 +446,8 @@ $$;
 CREATE OR REPLACE FUNCTION give_basic_role() RETURNS trigger AS
 $$
 BEGIN
-    INSERT INTO user_roles VALUES (NEW.id, (SELECT id FROM roles WHERE name = 'Basic User'), now(), True);
+    INSERT INTO user_roles
+    VALUES (NEW.id, (SELECT id FROM roles WHERE name = 'Basic User'), now(), True);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -444,6 +457,24 @@ CREATE OR REPLACE TRIGGER give_basic_role
     ON users
     FOR EACH ROW
 EXECUTE PROCEDURE give_basic_role();
+
+CREATE OR REPLACE FUNCTION one_active_role() RETURNS trigger AS
+$$
+BEGIN
+    UPDATE user_roles
+    SET is_active = FALSE
+    WHERE user_id = NEW.user_id
+      AND (role_id != NEW.role_id OR assigned_at != NEW.assigned_at)
+      AND is_active = TRUE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER one_active_role
+    AFTER INSERT
+    ON user_roles
+    FOR EACH ROW
+EXECUTE PROCEDURE one_active_role();
 
 CREATE OR REPLACE FUNCTION calculate_training_cost(rec RECORD)
     RETURNS INTEGER AS
@@ -465,8 +496,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
---COMMIT;
-
 CREATE OR REPLACE FUNCTION get_user_token_balance(user_id_param UUID)
     RETURNS INTEGER AS
 $$
@@ -481,7 +510,7 @@ BEGIN
 
     current_balance := token_changes;
 
---should never occur
+    --should never occur
     IF current_balance < 0 THEN
         current_balance := 0;
     END IF;
@@ -690,10 +719,7 @@ CREATE OR REPLACE TRIGGER update_token_history_after_starting_model_training
 EXECUTE FUNCTION update_token_history_after_training();
 
 CREATE OR REPLACE VIEW leaderboards AS
-WITH last_test_metrics AS (SELECT DISTINCT ON (training_id) training_id,
-                                                            epoch,
-                                                            accuracy,
-                                                            loss
+WITH last_test_metrics AS (SELECT DISTINCT ON (training_id) training_id, epoch, accuracy, loss
                            FROM training_metrics
                            WHERE type = 'TEST'
                            ORDER BY training_id, epoch DESC),
@@ -702,6 +728,7 @@ WITH last_test_metrics AS (SELECT DISTINCT ON (training_id) training_id,
                                                                c.name AS country,
                                                                d.id   AS dataset_id,
                                                                d.name AS dataset,
+                                                               m.name AS model_name,
                                                                ltm.accuracy,
                                                                ltm.loss
                                FROM public_results pr
@@ -856,15 +883,15 @@ BEGIN
     IF v_global_rank = 1 THEN
         v_event_id := (SELECT id FROM events WHERE name = '1st Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '1st place globally with accuracy: ' || v_new_accuracy;
+        v_description_global := '1st place globally with accuracy: ' || v_new_accuracy || '%';
     ELSIF v_global_rank = 2 THEN
         v_event_id := (SELECT id FROM events WHERE name = '2nd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '2nd place globally with accuracy: ' || v_new_accuracy;
+        v_description_global := '2nd place globally with accuracy: ' || v_new_accuracy || '%';
     ELSIF v_global_rank = 3 THEN
         v_event_id := (SELECT id FROM events WHERE name = '3rd Place Global');
         v_reward_global := calculate_event_price(v_user_id, v_event_id);
-        v_description_global := '3rd place globally with accuracy: ' || v_new_accuracy;
+        v_description_global := '3rd place globally with accuracy: ' || v_new_accuracy || '%';
     END IF;
 
     v_reward_global := GREATEST(0, v_reward_global - v_old_best_reward_global);
@@ -911,9 +938,5 @@ CREATE OR REPLACE TRIGGER trigger_update_token_history_after_public_results
     ON public_results
     FOR EACH ROW
 EXECUTE FUNCTION update_token_history_after_public_results();
-
-
-
-
 
 COMMIT;
