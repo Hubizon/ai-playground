@@ -33,6 +33,8 @@ public class RegisterController {
     private ComboBox<String> countryComboBox;
     @FXML
     private Label statusLabel;
+    @FXML
+    public DatePicker birthDatePicker;
 
     private Stage stage;
 
@@ -54,6 +56,7 @@ public class RegisterController {
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
         showPasswordButton.setText("Show Password");
+        birthDatePicker.setValue(LocalDate.now().minusYears(20));
 
         userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> {
             newValue.display();
@@ -112,6 +115,11 @@ public class RegisterController {
     private void onRegisterClicked() {
         String password = passwordVisible ? visiblePasswordField.getText() : passwordField.getText();
 
+        LocalDate birthDate = birthDatePicker.getValue();
+        if (birthDate == null) {
+            birthDate = LocalDate.of(2000, 1, 1);
+        }
+
         RegisterForm form = new RegisterForm(
                 usernameField.getText(),
                 firstNameField.getText(),
@@ -119,7 +127,7 @@ public class RegisterController {
                 emailField.getText(),
                 password,
                 countryComboBox.getValue(),
-                LocalDate.of(2000, 1, 1));
+                birthDate);
         boolean isRegistered = userViewModel.register(form);
 
         if (isRegistered) {
