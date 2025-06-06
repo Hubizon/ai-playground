@@ -50,18 +50,6 @@
                 </HBox>
             </VBox>
         </Tab>
-        <Tab text="My models">
-            <content>
-                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
-                    <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-                    <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
-                    <ListView fx:id="modelsListView"
-                              styleClass="custom-list-view"
-                              style="-fx-background-color: #3C3C3C; -fx-text-fill: white;"
-                              prefHeight="350"/>
-                </VBox>
-            </content>
-        </Tab>
 
         <Tab text="Model">
             <content>
@@ -70,6 +58,24 @@
                     <VBox fx:id="layerButtonsContainer" spacing="5">
                     </VBox>
                     <Button text="Clear" onAction="#onClearBarClicked"/>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="My models">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="User info" onAction="#onUserInfoClicked"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
+                    </HBox>
+                    <ListView fx:id="modelsListView"
+                              styleClass="custom-list-view"
+                              style="-fx-background-color: #3C3C3C; -fx-text-fill: white;"
+                              prefHeight="500"/>
                 </VBox>
             </content>
         </Tab>
@@ -94,13 +100,10 @@
             </content>
         </Tab>
 
-        <Tab text="User Actions">
+        <Tab text="Tokens">
             <content>
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="User Actions" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="User info" onAction="#onUserInfoClicked"/>
-                    </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Label text="Tokens:" style="-fx-text-fill: white;"/>
                         <Label fx:id="tokenField"

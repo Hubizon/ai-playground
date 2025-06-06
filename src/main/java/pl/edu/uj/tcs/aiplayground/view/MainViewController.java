@@ -144,12 +144,12 @@ public class MainViewController {
         });
 
 
-        leftTabPane.getSelectionModel().select(1); // "My models" tab
+        leftTabPane.getSelectionModel().select(2); // "My models" tab
 
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText()) && !"Admin Tab".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"Tokens".equals(tab.getText()) && !"Admin Tab".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
@@ -618,7 +618,10 @@ public class MainViewController {
         textField.getStyleClass().add("text-field");
 
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(modelName -> mainViewModel.createNewModel(userViewModel.getUser(), modelName));
+        result.ifPresent(modelName -> {
+            mainViewModel.createNewModel(userViewModel.getUser(), modelName);
+            modelsListView.getSelectionModel().select(modelName);
+        });
     }
 
     @FXML
