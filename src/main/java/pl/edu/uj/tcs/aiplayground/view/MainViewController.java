@@ -64,6 +64,7 @@ public class MainViewController {
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     private MainViewModel mainViewModel;
+    private String lastSelectedModel = null;
     @FXML
     private VBox barsContainer;
     @FXML
@@ -650,12 +651,20 @@ public class MainViewController {
         modelsListView.getStyleClass().add("custom-list-view");
 
         modelsListView.setOnMouseClicked(event -> {
+            String clickedModel = modelsListView.getSelectionModel().getSelectedItem();
+
             if (event.getClickCount() >= 2) {
-                String selectedModel = modelsListView.getSelectionModel().getSelectedItem();
-                if (selectedModel != null) {
-                    mainViewModel.setModel(userViewModel.getUser(), selectedModel);
+                if (clickedModel != null) {
+                    mainViewModel.setModel(userViewModel.getUser(), clickedModel);
+                    lastSelectedModel = clickedModel;
+                }
+            } else {
+                modelsListView.getSelectionModel().clearSelection();
+                if (lastSelectedModel != null) {
+                    modelsListView.getSelectionModel().select(lastSelectedModel);
                 }
             }
+
         });
     }
 
