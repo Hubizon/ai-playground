@@ -128,6 +128,8 @@
                             style="-fx-background-color: #1E90FF;"/>
                 </HBox>
                 <Label fx:id="currentRoleLabel" styleClass="label"/>
+                <Button fx:id="deleteUserButton" text="Delete User" styleClass="button"
+                        style="-fx-background-color: #FF5555;"/>
             </VBox>
         </Tab>
     </TabPane>
