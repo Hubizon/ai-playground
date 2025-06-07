@@ -164,6 +164,8 @@ public class UserViewModel {
     public boolean updateUser(UpdateUserForm updateUserForm) {
         try {
             userService.updateUser(user.get().userId(), updateUserForm);
+            user.set(userService.getUser(user.get().userId()));
+            setupUser(user.get());
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
             return false;
