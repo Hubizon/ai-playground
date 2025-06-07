@@ -69,7 +69,9 @@ public class Tensor {
         ArrayList<Tensor> addends = new ArrayList<Tensor>();
         addends.add(a);
         addends.add(b);
-        graph.addNode(result, addends, "+");
+        if (graph != null) {
+            graph.addNode(result, addends, "+");
+        }
         return result;
     }
 
@@ -87,7 +89,9 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        graph.addNode(result, factors, "*");
+        if (graph != null) {
+            graph.addNode(result, factors, "*");
+        }
         return result;
     }
 
@@ -107,7 +111,9 @@ public class Tensor {
         ArrayList<Tensor> factors = new ArrayList<>();
         factors.add(a);
         factors.add(b);
-        graph.addNode(result, factors, "matMul");
+        if (graph != null) {
+            graph.addNode(result, factors, "matMul");
+        }
         return result;
     }
 
@@ -120,7 +126,26 @@ public class Tensor {
             }
 
         }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "relu");
+        }
+        return result;
+    }
+
+    public static Tensor leakyRelu(Tensor a, ComputationalGraph graph, double alpha) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                if (a.data[i][j] <= 0) {
+                    result.data[i][j] = alpha * a.data[i][j];
+                } else {
+                    result.data[i][j] = a.data[i][j];
+                }
+            }
+        }
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "leakyRelu: alpha=" + alpha);
+        }
         return result;
     }
 
@@ -131,7 +156,39 @@ public class Tensor {
                 result.data[i][j] = 1 / (1 + Math.exp(-a.data[i][j]));
             }
         }
-        graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), "sigmoid");
+        }
+        return result;
+    }
+
+    public static Tensor Softmax(Tensor input, ComputationalGraph graph) {
+        Tensor result = Tensor.zeros(input.rows, input.cols);
+
+        for (int i = 0; i < input.cols; i++) {
+            double max = Double.NEGATIVE_INFINITY;
+
+            for (int j = 0; j < input.rows; j++) {
+                if (input.data[j][i] > max) {
+                    max = input.data[j][i];
+                }
+            }
+
+            double sum = 0.0;
+            for (int j = 0; j < input.rows; j++) {
+                result.data[j][i] = Math.exp(input.data[j][i] - max);
+                sum += result.data[j][i];
+            }
+
+            for (int j = 0; j < input.rows; j++) {
+                result.data[j][i] /= sum;
+            }
+        }
+
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(input)), "softmax");
+        }
+
         return result;
     }
 
@@ -152,7 +209,9 @@ public class Tensor {
         Tensor result = new Tensor(sum, 1, cols);
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
-        graph.addNode(result, comps, "sumRows");
+        if (graph != null) {
+            graph.addNode(result, comps, "sumRows");
+        }
         return result;
     }
 
@@ -166,7 +225,9 @@ public class Tensor {
         Tensor result = new Tensor(sum, rows, 1);
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
-        graph.addNode(result, comps, "sumCols");
+        if (graph != null) {
+            graph.addNode(result, comps, "sumCols");
+        }
         return result;
     }
 

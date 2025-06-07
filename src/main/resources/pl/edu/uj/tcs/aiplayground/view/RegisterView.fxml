@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
-      fx:controller="pl.edu.uj.tcs.aiplayground.controller.RegisterController"
+      fx:controller="pl.edu.uj.tcs.aiplayground.view.RegisterController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
       styleClass="metrics-panel" spacing="10">
 
@@ -30,19 +30,20 @@
         <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
         <HBox spacing="5" GridPane.rowIndex="4" GridPane.columnIndex="1">
             <PasswordField fx:id="passwordField"/>
-            <Button text="Show Password" onAction="#handleShowPassword"/>
+            <TextField fx:id="visiblePasswordField" managed="false" visible="false"/>
+            <Button fx:id="showPasswordButton" text="Show Password" prefWidth="110" onAction="#handleShowPassword"/>
         </HBox>
 
-        <Label text="Country:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <ComboBox GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <Label text="Birth Date:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <DatePicker GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-        <Label text="Birth Date:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <DatePicker GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
+        <Label text="Country:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="countryComboBox" GridPane.rowIndex="6" promptText="" prefWidth="150" GridPane.columnIndex="1">
+        </ComboBox>
     </GridPane>
 
     <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10;">
         <Button text="Register" style="-fx-font-weight: bold;" onAction="#onRegisterClicked"/>
-        <Button text="Cancel"/>
+        <Button text="Cancel" style="-fx-font-weight: bold;" onAction="#onCancelClick"/>
     </HBox>
 </VBox>

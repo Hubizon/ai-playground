@@ -1,66 +1,95 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
+import javafx.util.Pair;
+import org.jooq.JSONB;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import pl.edu.uj.tcs.aiplayground.core.evalMetric.Accuracy;
 import pl.edu.uj.tcs.aiplayground.core.layers.Layer;
-import pl.edu.uj.tcs.aiplayground.core.layers.LinearLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.ReluLayer;
-import pl.edu.uj.tcs.aiplayground.core.layers.SigmoidLayer;
+import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
+import pl.edu.uj.tcs.aiplayground.core.optim.Optimizer;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
+import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerParams;
+import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
+import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class NeuralNet {
 
-    public ArrayList<Layer> layers = new ArrayList<>();
+    public List<Layer> layers = new ArrayList<>();
 
-    public static NeuralNet load(String filePath) {
-        NeuralNet neuralNet = new NeuralNet();
-        try {
-            File file = new File(filePath);
-            Scanner scanner = new Scanner(file);
-            StringBuilder jsonContent = new StringBuilder();
-            while (scanner.hasNextLine()) {
-                jsonContent.append(scanner.nextLine());
-            }
-            scanner.close();
+    public NeuralNet() {
+    }
 
-            JSONObject jsonObject = new JSONObject(jsonContent.toString());
-            JSONArray layersArray = jsonObject.getJSONArray("layers");
+    public NeuralNet(List<LayerConfig> configs) {
+        this.layers = configs.stream()
+                .map(LayerConfig::toLayer)
+                .toList();
+    }
 
-            for (int i = 0; i < layersArray.length(); i++) {
-                JSONObject layerWrapper = layersArray.getJSONObject(i);
-                String layerJsonString = layerWrapper.getString("layer");
-                JSONObject layerJson = new JSONObject(layerJsonString);
-                String type = layerJson.getString("type");
+    public NeuralNet(JSONB architecture) {
+        String jsonString = architecture.data();
+        JSONObject jsonObject = new JSONObject(jsonString);
+        JSONArray layersArray = jsonObject.getJSONArray("layers");
 
-                switch (type) {
-                    case "LinearLayer":
-                        int inputSize = layerJson.getInt("inputSize");
-                        int outputSize = layerJson.getInt("outputSize");
-                        boolean useBias = layerJson.getBoolean("useBias");
-                        LinearLayer linearLayer = new LinearLayer(inputSize, outputSize, useBias);
-                        neuralNet.layers.add(linearLayer);
-                        break;
-                    case "ReluLayer":
-                        neuralNet.layers.add(new ReluLayer());
-                        break;
-                    case "SigmoidLayer":
-                        neuralNet.layers.add(new SigmoidLayer());
-                        break;
-                    default:
-                        System.err.println("Unknown layer type: " + type);
-                        break;
-                }
-            }
+        this.layers = new ArrayList<>();
 
-        } catch (IOException e) {
-            System.err.println("Error loading model: " + e.getMessage());
+        for (int i = 0; i < layersArray.length(); i++) {
+            JSONObject layerJson = layersArray.getJSONObject(i);
+
+            String typeStr = layerJson.getString("type");
+            JSONObject paramsJson = layerJson.optJSONObject("params");
+
+            LayerType type = Arrays.stream(LayerType.values())
+                    .filter(t -> t.toString().equalsIgnoreCase(typeStr))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown layer type: " + typeStr));
+
+            LayerParams params = type.getParams().loadFromJson(paramsJson);
+            Layer layer = new LayerConfig(type, params).toLayer();
+            layers.add(layer);
         }
-        return neuralNet;
+    }
+
+    public static Optional<LayerType> getLayerTypeFor(Layer layer) {
+        return Arrays.stream(LayerType.values())
+                .filter(t -> t.createLayer(t.getParams()).getClass().equals(layer.getClass()))
+                .findFirst();
+    }
+
+    public JSONB toJson() {
+        JSONArray layersArray = new JSONArray();
+
+        for (Layer layer : layers) {
+            LayerConfig config = layer.toConfig();
+
+            JSONObject layerJson = new JSONObject();
+            layerJson.put("type", config.type().toString());
+
+            JSONObject paramsJson = config.params().toJson();
+            layerJson.put("params", paramsJson);
+
+
+            layersArray.put(layerJson);
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("layers", layersArray);
+
+        return JSONB.jsonb(jsonObject.toString());
     }
 
     public ArrayList<Tensor> getParams() {
@@ -79,23 +108,74 @@ public class NeuralNet {
         return forwardTensor;
     }
 
-    public void save(String outputPath) {
-        JSONObject json = new JSONObject();
-        JSONArray layersArray = new JSONArray();
-
-        for (Layer layer : layers) {
-            JSONObject layerJson = new JSONObject();
-            layerJson.put("layer", layer.toJson());
-            layersArray.put(layerJson);
-        }
-
-        json.put("layers", layersArray);
-
-        try (FileWriter file = new FileWriter(outputPath)) {
-            file.write(json.toString(4)); // Pretty print with 4 spaces
-        } catch (IOException e) {
-            System.err.println("Error saving model: " + e.getMessage());
-        }
+    public List<LayerConfig> toConfigList() {
+        return layers.stream()
+                .map(Layer::toConfig)
+                .toList();
     }
 
+    public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
+
+        final int batchSize = dto.batchSize();
+        final int numThreads = Runtime.getRuntime().availableProcessors();
+        System.out.println("Using " + numThreads + " threads");
+
+        Dataset dataset = dto.dataset().create();
+        LossFunc lossFn = dto.lossFunction().create();
+        Optimizer optimizer = dto.optimizer().create(getParams(), dto.learningRate());
+
+        ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+        Instant t0 = Instant.now();
+        double lossValue, lossItem, accuracy;
+        try {
+            for (int epoch = 0; epoch < dto.maxEpochs(); epoch++) {
+                if (isCancelled.get()) break;
+
+                double epochLoss = 0;
+                int processed = 0;
+                Dataset.DataLoader loader = dataset.getDataLoader("train", batchSize);
+
+                while (loader.hasNext()) {
+                    List<Pair<Tensor, Tensor>> batch = loader.next();
+                    optimizer.zeroGradient();
+                    List<Future<Double>> futures = new ArrayList<>(batch.size());
+                    for (Pair<Tensor, Tensor> dp : batch) {
+                        futures.add(exec.submit(() -> {
+                            ComputationalGraph g = new ComputationalGraph();
+                            Tensor x = dp.getKey().transpose();
+                            Tensor y = dp.getValue().transpose();
+                            Tensor pred = forward(x, g);
+                            double l = lossFn.loss(pred, y);
+                            g.propagate();
+                            return l;
+                        }));
+                    }
+                    double batchLoss = 0;
+                    for (Future<Double> f : futures) {
+                        batchLoss += f.get();
+                    }
+                    epochLoss += batchLoss;
+                    for (Tensor p : getParams()) {
+                        for (int i = 0; i < p.rows; i++)
+                            for (int j = 0; j < p.cols; j++)
+                                p.gradient[i][j] /= batchSize;
+                    }
+                    epochLoss += batchLoss;
+                    optimizer.optimize();
+                    processed += batchSize;
+                }
+
+                Accuracy acc = new Accuracy();
+                accuracy = acc.eval(dataset, this);
+                if (isCancelled.get())
+                    break;
+                TrainingMetricDto metric = new TrainingMetricDto(epoch, epochLoss, accuracy);
+                callback.accept(metric);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new TrainingException(e);
+        } finally {
+            exec.shutdown();
+        }
+    }
 }

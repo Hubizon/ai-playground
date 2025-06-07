@@ -9,6 +9,7 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.run/
 *.iws
 *.iml
 *.ipr
@@ -39,3 +40,4 @@ build/
 .DS_Store
 
 lib/
+src/main/resources/datasets/MNIST.csv

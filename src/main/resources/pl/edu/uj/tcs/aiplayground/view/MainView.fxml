@@ -1,91 +1,148 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.lang.*?>
 <HBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171"
-      fx:controller="pl.edu.uj.tcs.aiplayground.controller.MainViewController"
+      fx:controller="pl.edu.uj.tcs.aiplayground.view.MainViewController"
       stylesheets="@/pl/edu/uj/tcs/aiplayground/view/style/styles.css"
-      prefWidth="1000" prefHeight="600">
+      prefWidth="1100" prefHeight="600">
 
-    <!-- Left side - Settings panel -->
-    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="Leaderboards" onAction="#onLeaderboardsClicked"/>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button text="User info" onAction="#onUserInfoClicked"/>
-        </HBox>
-        <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="datasetComboBox" promptText="Dataset">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Moons"/>
-                        <String fx:value="Iris"/>
-                        <String fx:value="MNIST"/>
-                        <String fx:value="CIFAR-10"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="optimizerComboBox" promptText="Optimizer">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Opt 1"/>
-                        <String fx:value="Opt 2"/>
-                        <String fx:value="Opt 3"/>
-                        <String fx:value="Opt 4"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="lossComboBox" promptText="Loss">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Loss 1"/>
-                        <String fx:value="Loss 2"/>
-                        <String fx:value="Loss 3"/>
-                        <String fx:value="Loss 4"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Epochs:" style="-fx-text-fill: white;"/>
-            <TextField fx:id="maxEpochField" text="10"
-                       style="-fx-pref-width: 100; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
-        </HBox>
-    </VBox>
+    <!-- Left side - Tab panel -->
+    <TabPane fx:id="leftTabPane" prefWidth="230" tabClosingPolicy="UNAVAILABLE" side="LEFT">
+
+        <Tab text="Training">
+            <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                <Label text="Training settings" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                <HBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+                    <Button fx:id="runButton" text="Run" onAction="#onRunBarClicked"/>
+                    <Button fx:id="cancelButton" text="Cancel" onAction="#onCancelBarClicked"/>
+                </HBox>
+                <Label text="Dataset" style="-fx-font-size: 12; -fx-text-fill: white;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="datasetComboBox" promptText="Choose Dataset" prefWidth="150">
+                    </ComboBox>
+                </HBox>
+                <Label text="Optimizer" style="-fx-font-size: 12; -fx-text-fill: white;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="optimizerComboBox" promptText="Choose Optimizer" prefWidth="150">
+                    </ComboBox>
+                </HBox>
+                <Label text="Loss" style="-fx-font-size: 12; -fx-text-fill: white;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="lossComboBox" promptText="Choose Loss" prefWidth="150">
+                    </ComboBox>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Learning rate:" style="-fx-text-fill: white;"/>
+                    <TextField fx:id="learningRateField" text="0.01"
+                               style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Batch:" style="-fx-text-fill: white;"/>
+                    <TextField fx:id="batchField" text="8"
+                               style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Epochs:" style="-fx-text-fill: white;"/>
+                    <TextField fx:id="maxEpochField" text="10"
+                               style="-fx-pref-width: 50; -fx-control-inner-background: #444; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+        </Tab>
+        <Tab text="My models">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
+                    <ListView fx:id="modelsListView"
+                              styleClass="custom-list-view"
+                              style="-fx-background-color: #3C3C3C; -fx-text-fill: white;"
+                              prefHeight="350"/>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="Model">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Layers" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <VBox fx:id="layerButtonsContainer" spacing="5">
+                    </VBox>
+                    <Button text="Clear" onAction="#onClearBarClicked"/>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="Leaderboards">
+            <content>
+
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="Leaderboards" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="leaderbors_select_region_combobox" promptText="Region">
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="leaderboards_select_dataset_combobox" promptText="Dataset">
+                        </ComboBox>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="Show Leaderboards" onAction="#onShowLeaderboardsClicked"/>
+                    </HBox>
+                </VBox>
+            </content>
+        </Tab>
+
+        <Tab text="User Actions">
+            <content>
+                <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
+                    <Label text="User Actions" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="User info" onAction="#onUserInfoClicked"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Tokens:" style="-fx-text-fill: white;"/>
+                        <Label fx:id="tokenField"
+                               style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Button text="Buy Tokens" onAction="#onBuyTokensClicked" styleClass="action-button"/>
+                </VBox>
+            </content>
+        </Tab>
+    </TabPane>
 
     <!-- Center - bar container -->
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-        <!--<Region prefHeight="60"/>-->
+        <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
+            <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER" spacing="5">
+                    <Label fx:id="modelNameField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
+                    <Label fx:id="modelVersionField" style="-fx-font-size: 20; -fx-text-fill: white;"/>
+                    <HBox spacing="5" style="-fx-padding: 0 0 0 40;">
+                        <Button fx:id="prevVersionButton" text="←" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                        <Button fx:id="nextVersionButton" text="→" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                    </HBox>
+                </HBox>
+            </HBox>
+        </VBox>
         <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
             <HBox spacing="10" alignment="CENTER">
-                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-                    <Button text="Run" onAction="#onRunBarClicked"/>
-                    <Button text="Pause" onAction="#onPauseBarClicked"/>
-                    <Button text="Reset" onAction="#onResetBarClicked"/>
-                </VBox>
-                <VBox spacing="10" style="-fx-padding: 10;" alignment="TOP_CENTER">
-                    <Button text="Add linear layer" onAction="#onAddLinearBarClicked"/>
-                    <Button text="Add sigmoid layer" onAction="#onAddSigmoidBarClicked"/>
-                    <Button text="Add relu layer" onAction="#onAddReluBarClicked"/>
-                </VBox>
             </HBox>
-            <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;">
-            </VBox>
+            <ScrollPane fitToWidth="true" style="-fx-background-color: #3C3C3C;">
+                <VBox fx:id="barsContainer" spacing="5" style="-fx-background-color: #3C3C3C; -fx-padding: 10;"/>
+            </ScrollPane>
         </VBox>
     </VBox>
 
     <!-- Right side - training outcome panel -->
-    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="200">
+    <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;" prefWidth="230">
         <Label text="Training Metrics" style="-fx-font-size: 16; -fx-text-fill: white;"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Loss:" style="-fx-text-fill: white;"/>
+            <Label fx:id="lossField" text="0"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Label text="Accuracy:" style="-fx-text-fill: white;"/>
             <Label fx:id="accuracyField" text="0"
@@ -96,26 +153,37 @@
             <Label fx:id="epochField" text="0"
                    style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Status:" style="-fx-text-fill: white;"/>
+            <Label fx:id="statusField" text="Idle"
+                   style="-fx-pref-width: 100; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button fx:id="shareButton" text="Share" onAction="#onShareButtonClicked"/>
+        </HBox>
+
 
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="lossChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+            <LineChart fx:id="lossChart" title="Loss vs Epoch"
+                       style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Loss plot" side="BOTTOM"/>
+                    <NumberAxis autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
+                    <NumberAxis autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>
         <VBox style="-fx-padding: 10 0 0 0;">
-            <LineChart fx:id="accuracyChart" title="" style="-fx-background-color: #2C2C2C; -fx-text-fill: white;"
+            <LineChart fx:id="accuracyChart" title="Accuracy vs Epoch"
+                       style="-fx-background-color: #2C2C2C; -fx-font-size: 10px; -fx-text-fill: white;"
                        prefHeight="200" prefWidth="180">
                 <xAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="Accuracy plot" side="BOTTOM"/>
+                    <NumberAxis autoRanging="true"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis lowerBound="0" upperBound="50" label="" side="LEFT"/>
+                    <NumberAxis lowerBound="0" upperBound="1" autoRanging="true"/>
                 </yAxis>
             </LineChart>
         </VBox>
