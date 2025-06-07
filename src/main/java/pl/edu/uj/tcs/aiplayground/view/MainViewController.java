@@ -545,7 +545,10 @@ public class MainViewController {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 600, 400));
-            stage.setTitle("Leaderboard - " + region + " - " + datasetType);
+            if (region == LeaderboardRegion.COUNTRY)
+                stage.setTitle("Leaderboard - " + userViewModel.getUser().countryName() + " - " + datasetType);
+            else
+                stage.setTitle("Leaderboard - " + region + " - " + datasetType);
             stage.show();
         } catch (Exception e) {
             logger.error("Failed to load leaderboard, error={}", e.getMessage(), e);

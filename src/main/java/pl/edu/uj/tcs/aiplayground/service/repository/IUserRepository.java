@@ -1,6 +1,7 @@
 package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import javafx.beans.property.StringProperty;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
@@ -38,4 +39,6 @@ public interface IUserRepository {
     void setRoleForUser(String username, String role);
 
     void deleteUser(UUID userId);
+
+    UserDto getUser(UUID userId);
 }
