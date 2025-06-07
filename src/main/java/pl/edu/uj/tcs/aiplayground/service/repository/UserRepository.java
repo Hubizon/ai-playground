@@ -3,6 +3,7 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 import javafx.beans.property.StringProperty;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
+import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.UpdateUserForm;
 import pl.edu.uj.tcs.jooq.tables.records.UsersRecord;
@@ -195,5 +196,18 @@ public class UserRepository implements IUserRepository {
                         """,
                 userId
         ).execute();
+    }
+
+    @Override
+    public UserDto getUser(UUID userId) {
+        return dsl.fetchOne("""
+                        SELECT users.id AS userId, username, first_name AS firstName, last_name AS lastName,
+                               email, countries.name AS countryName, birth_date AS birthDate
+                            FROM users
+                            JOIN countries ON countries.id = users.country_id
+                            WHERE users.id = ?;
+                        """,
+                userId
+        ).into(UserDto.class);
     }
 }

@@ -168,4 +168,12 @@ public class UserService {
             }
         }
     }
+
+    public UserDto getUser(UUID userId) throws DatabaseException {
+        try {
+            return userRepository.getUser(userId);
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
 }
