@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class ComputationalGraph {
 
-    ArrayList<CompGraphNode> nodes = new ArrayList<CompGraphNode>();
+    ArrayList<CompGraphNode> nodes = new ArrayList<>();
 
     public void addNode(Tensor result, ArrayList<Tensor> components, TensorOperator operation, ArrayList<Object> params) {
         nodes.add(new CompGraphNode(result, components, operation,params));

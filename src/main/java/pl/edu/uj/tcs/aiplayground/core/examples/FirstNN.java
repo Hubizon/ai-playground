@@ -15,7 +15,6 @@ public class FirstNN {
         Random rand = new Random();
 
         int numPoints = 100000;
-        double r1 = 0.5;
 
 
         for (int i = 0; i < numPoints; i++) {
@@ -53,7 +52,7 @@ public class FirstNN {
             X.add(input);
             Y.add(output);
         }
-        Tensor L1, L2, B1, B2, c = new Tensor(0), d, e, f, g, h;
+        Tensor L1, L2, B1, B2, c , d, e, f, g;
 
         ComputationalGraph graph = new ComputationalGraph();
         L1 = Tensor.randomMatrix(4, 2, -1, 1);
@@ -71,7 +70,7 @@ public class FirstNN {
             optimizer.zeroGradient();
 
 
-            if (0 == 0) {
+
                 int sum = 0;
                 System.out.println("EVAL MODE: " + epoch);
                 for (int i = 0; i < numPoints; i++) {
@@ -86,7 +85,7 @@ public class FirstNN {
                     }
                 }
                 System.out.println(((double) sum) / numPoints);
-            }
+
 
             optimizer.zeroGradient();
             for (int i = 0; i < numPoints; i++) {

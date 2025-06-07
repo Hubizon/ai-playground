@@ -21,7 +21,6 @@ import pl.edu.uj.tcs.aiplayground.exception.TrainingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,12 +63,6 @@ public class NeuralNet {
             Layer layer = new LayerConfig(type, params).toLayer();
             layers.add(layer);
         }
-    }
-
-    public static Optional<LayerType> getLayerTypeFor(Layer layer) {
-        return Arrays.stream(LayerType.values())
-                .filter(t -> t.createLayer(t.getParams()).getClass().equals(layer.getClass()))
-                .findFirst();
     }
 
     public JSONB toJson() {
@@ -138,7 +131,7 @@ public class NeuralNet {
             correct = 1;
         }
         g.propagate();
-        return new Pair<Double, Integer>(l, correct);
+        return new Pair<>(l, correct);
     }
 
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
@@ -152,6 +145,7 @@ public class NeuralNet {
         for (Layer layer : layers) {
             if (layer.getClass() == LinearLayer.class) {
                 LinearLayer linearLayer = (LinearLayer) layer;
+                assert dataset != null;
                 if (dataset.inputShape.getFirst() != linearLayer.inputSize && lastLayer == null) {
                     throw new TrainingException("Wrong input size: " + linearLayer.inputSize + " for dataset with input size: " + dataset.inputShape.getFirst());
                 }
