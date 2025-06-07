@@ -45,9 +45,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class MainViewController {
-    private final int maxEpochValue = 10000;
-    private final double maxLearningRateValue = 0.2;
-    private final int maxBatchSizeValue = 1000;
+    private final int maxEpochValue = 100000;
+    private final double maxLearningRateValue = 1.1;
+    private final int maxBatchSizeValue = 100000;
     private static final Logger logger = LoggerFactory.getLogger(MainViewController.class);
     private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
@@ -415,8 +415,18 @@ public class MainViewController {
 
                 intField.textProperty().addListener((obs, oldVal, newVal) -> {
                     if (newVal.matches("\\d*")) {
-                        updateLayerParams(barContainer, paramName,
-                                newVal.isEmpty() ? 0 : Integer.parseInt(newVal));
+                        try {
+                            int value = newVal.isEmpty() ? 0 : Integer.parseInt(newVal);
+                            if (value >= 0 && value <= 100000) {
+                                updateLayerParams(barContainer, paramName, value);
+                            } else {
+                                intField.setText(oldVal);
+                            }
+                        } catch (NumberFormatException e) {
+                            intField.setText(oldVal);
+                        }
+                    } else {
+                        intField.setText(oldVal);
                     }
                 });
 
@@ -438,13 +448,26 @@ public class MainViewController {
                 doubleField.setText(String.valueOf(paramValue));
 
                 doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.matches("-?\\d*(\\.\\d+)?")) {
+                    if (newVal.matches("-?\\d*\\.?\\d{0,4}")) {
                         try {
-                            BigDecimal value = new BigDecimal(newVal);
-                            updateLayerParams(barContainer, paramName, value);
-                        } catch (Exception e) {
-                            System.out.println("Invalid model parameters");
+                            if (newVal.equals("0.") || newVal.equals(".")) {
+                                doubleField.setText(newVal);
+                                updateLayerParams(barContainer, paramName, BigDecimal.ZERO);
+                                return;
+                            }
+
+                            BigDecimal value = new BigDecimal(newVal.isEmpty() ? "0" : newVal);
+                            if (value.compareTo(BigDecimal.ZERO) >= 0 &&
+                                    value.compareTo(BigDecimal.ONE) <= 0) {
+                                updateLayerParams(barContainer, paramName, value);
+                            } else {
+                                doubleField.setText(oldVal);
+                            }
+                        } catch (NumberFormatException e) {
+                            doubleField.setText(oldVal);
                         }
+                    } else {
+                        doubleField.setText(oldVal);
                     }
                 });
 
