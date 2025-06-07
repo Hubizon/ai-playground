@@ -45,6 +45,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class MainViewController {
+    private final int maxEpochValue = 10000;
+    private final double maxLearningRateValue = 0.2;
+    private final int maxBatchSizeValue = 1000;
     private static final Logger logger = LoggerFactory.getLogger(MainViewController.class);
     private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
@@ -280,21 +283,52 @@ public class MainViewController {
         Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
 
         maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*")) {
+            if (change.getControlNewText().isEmpty()) {
                 return change;
+            }
+            if (change.getControlNewText().matches("0|[1-9]\\d*")) {
+                try {
+                    int value = Integer.parseInt(change.getControlNewText());
+                    if (value <= maxEpochValue && value > 0) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
             return null;
         }));
 
-        learningRateField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*(\\.\\d*)?")) {
-                learningRateField.setText(oldValue);
+        learningRateField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().isEmpty()) {
+                return change;
             }
-        });
+            if (change.getControlNewText().matches("\\d*(\\.\\d*)?")) {
+                try {
+                    double value = Double.parseDouble(change.getControlNewText());
+                    if (value <= maxEpochValue) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        }));
 
         batchField.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*")) {
+            if (change.getControlNewText().isEmpty()) {
                 return change;
+            }
+            if (change.getControlNewText().matches("0|[1-9]\\d*")) {
+                try {
+                    int value = Integer.parseInt(change.getControlNewText());
+                    if (value <= maxBatchSizeValue && value > 0) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
             return null;
         }));
@@ -485,6 +519,11 @@ public class MainViewController {
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
         try {
+            double learningRateV = Double.parseDouble(learningRateField.getText());
+            if (learningRateV > maxLearningRateValue) {
+                alertMessage("Maximum learning rate is " + maxLearningRateValue, false);
+                return;
+            }
             mainViewModel.train(new TrainingForm(
                     Integer.parseInt(maxEpochField.getText()),
                     Integer.parseInt(batchField.getText()),
