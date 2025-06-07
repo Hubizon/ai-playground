@@ -2,7 +2,7 @@
 
 **AI-Playground** is a desktop app for experimenting with simple neural networks. It features a built-in token system, leaderboard tracking, and an intuitive JavaFX interface — perfect for learning, testing, or just having fun with AI.
 
-> This project was developed as part of the **Object-Oriented Programming** and **Data Engineering** courses.
+> This project was developed as part of the **Object-Oriented Programming** and **Data Engineering** courses at the Jagiellonian University.
 
 ![App Screenshot](images/mainview.png)
 
@@ -19,7 +19,10 @@
 - 👥 **User Management**:
   - Register new users
   - Manage accounts via an admin panel
-
+- 💰 **Token System**:
+  - Every action like training a model or creating a new one consumes tokens
+  - Users can **buy tokens** or **earn them** by reaching high positions on the leaderboards
+    
 ---
 
 ## 🧱 Architecture
