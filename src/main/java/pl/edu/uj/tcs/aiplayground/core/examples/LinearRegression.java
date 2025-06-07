@@ -18,7 +18,7 @@ public class LinearRegression {
                 Y.add(new Tensor((double) ((-20) * i + 11 * j + 2137) / 1000));
             }
         }
-        Tensor a, b, c = new Tensor(0), d = new Tensor(0);
+        Tensor a, b, c = new Tensor(0), d;
 
         ComputationalGraph graph = new ComputationalGraph();
         a = Tensor.randomMatrix(1, 2, -1, 1);

@@ -68,11 +68,11 @@ public class Tensor {
             }
 
         }
-        ArrayList<Tensor> addends = new ArrayList<Tensor>();
+        ArrayList<Tensor> addends = new ArrayList<>();
         addends.add(a);
         addends.add(b);
         if (graph != null) {
-            graph.addNode(result, addends, TensorOperator.ADD, new ArrayList<Object>());
+            graph.addNode(result, addends, TensorOperator.ADD, new ArrayList<>());
         }
         return result;
     }
@@ -92,7 +92,7 @@ public class Tensor {
         factors.add(a);
         factors.add(b);
         if (graph != null) {
-            graph.addNode(result, factors, TensorOperator.MULTIPLY, new ArrayList<Object>());
+            graph.addNode(result, factors, TensorOperator.MULTIPLY, new ArrayList<>());
         }
         return result;
     }
@@ -114,7 +114,7 @@ public class Tensor {
         factors.add(a);
         factors.add(b);
         if (graph != null) {
-            graph.addNode(result, factors, TensorOperator.MATMUL, new ArrayList<Object>());
+            graph.addNode(result, factors, TensorOperator.MATMUL, new ArrayList<>());
         }
         return result;
     }
@@ -129,7 +129,7 @@ public class Tensor {
 
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.RELU, new ArrayList<Object>());
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.RELU, new ArrayList<>());
         }
         return result;
     }
@@ -146,7 +146,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.LEAKYRELU, new ArrayList<Object>(List.of(alpha)));
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.LEAKYRELU, new ArrayList<>(List.of(alpha)));
         }
         return result;
     }
@@ -159,7 +159,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.SIGMOID, new ArrayList<Object>());
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.SIGMOID, new ArrayList<>());
         }
         return result;
     }
@@ -188,7 +188,7 @@ public class Tensor {
         }
 
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(input)), TensorOperator.SOFTMAX, new ArrayList<Object>());
+            graph.addNode(result, new ArrayList<>(List.of(input)), TensorOperator.SOFTMAX, new ArrayList<>());
         }
 
         return result;
@@ -212,7 +212,7 @@ public class Tensor {
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
         if (graph != null) {
-            graph.addNode(result, comps, TensorOperator.SUMROWS, new ArrayList<Object>());
+            graph.addNode(result, comps, TensorOperator.SUMROWS, new ArrayList<>());
         }
         return result;
     }
@@ -228,7 +228,7 @@ public class Tensor {
         ArrayList<Tensor> comps = new ArrayList<>();
         comps.add(this);
         if (graph != null) {
-            graph.addNode(result, comps, TensorOperator.SUMCOLS, new ArrayList<Object>());
+            graph.addNode(result, comps, TensorOperator.SUMCOLS, new ArrayList<>());
         }
         return result;
     }
@@ -259,7 +259,7 @@ public class Tensor {
         if (graph != null) {
             ArrayList<Tensor> comps = new ArrayList<>();
             comps.add(x);
-            graph.addNode(newMatrix,comps, TensorOperator.DROPOUT,new ArrayList<Object>());
+            graph.addNode(newMatrix,comps, TensorOperator.DROPOUT,new ArrayList<>());
         }
         return newMatrix;
     }
@@ -272,7 +272,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.TANH, new ArrayList<Object>());
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.TANH, new ArrayList<>());
         }
         return result;
     }
@@ -286,7 +286,7 @@ public class Tensor {
             }
         }
         if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.GELU, new ArrayList<Object>());
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.GELU, new ArrayList<>());
         }
         return result;
     }

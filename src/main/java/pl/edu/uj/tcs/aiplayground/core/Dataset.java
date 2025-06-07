@@ -10,8 +10,6 @@ import java.util.*;
 
 public class Dataset {
 
-    private final Map<String, Integer> labelMap;
-    private final int nextLabel = 0;
     public ArrayList<Integer> inputShape;
     public ArrayList<Integer> outputShape;
     public int size;
@@ -23,7 +21,6 @@ public class Dataset {
         testData = new ArrayList<>();
         inputShape = new ArrayList<>();
         outputShape = new ArrayList<>();
-        labelMap = new HashMap<>();
         float trainTestSplit = 0.8f;
         ArrayList<double[]> rawInputs = new ArrayList<>();
         ArrayList<double[]> rawOutputs = new ArrayList<>();
@@ -147,7 +144,6 @@ public class Dataset {
 
     public class DataLoader implements Iterator<ArrayList<Pair<Tensor, Tensor>>> {
         int cursor = 0;
-        int lastRet = -1;
         int batchSize;
         ArrayList<Pair<Tensor, Tensor>> data;
         DataLoaderType type;
