@@ -67,7 +67,7 @@
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="My models" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Button text="User info" onAction="#onUserInfoClicked"/>
+                        <Button text="User info" onAction="#onUserInfoClicked"/>
                     </HBox>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Button text="Create new model" onAction="#onCreateNewModelClicked"/>
@@ -82,7 +82,6 @@
 
         <Tab text="Leaderboards">
             <content>
-
                 <VBox style="-fx-padding: 20; -fx-spacing: 15; -fx-background-color: #3C3C3C;">
                     <Label text="Leaderboards" style="-fx-font-size: 16; -fx-text-fill: white;"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">

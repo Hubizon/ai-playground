@@ -159,8 +159,7 @@ public class UserService {
 
         if (isAdmin) {
             throw new UserModificationException("Cannot delete admin user");
-        }
-        else {
+        } else {
             try {
                 userRepository.deleteUser(userId);
             } catch (Exception e) {

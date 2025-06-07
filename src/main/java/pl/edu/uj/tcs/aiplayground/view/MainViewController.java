@@ -45,10 +45,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class MainViewController {
-    private final int maxEpochValue = 100000;
-    private final double maxLearningRateValue = 1.1;
-    private final int maxBatchSizeValue = 100000;
     private static final Logger logger = LoggerFactory.getLogger(MainViewController.class);
+    private final int maxEpochValue = 10000;
+    private final double maxLearningRateValue = 5;
+    private final int maxBatchSizeValue = 10000;
     private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
     private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();

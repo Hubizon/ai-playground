@@ -125,6 +125,7 @@
 .date-picker:disabled .arrow {
     -fx-background-color: transparent;
 }
+
 .date-picker .month-year-pane {
     -fx-background-color: #3C3C3C;
 }

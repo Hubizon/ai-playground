@@ -5,10 +5,8 @@ import pl.edu.uj.tcs.aiplayground.dto.architecture.EmptyParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LinearParams;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
 import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

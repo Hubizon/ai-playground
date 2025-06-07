@@ -9,8 +9,6 @@ import pl.edu.uj.tcs.aiplayground.core.loss.LossFunc;
 import java.util.ArrayList;
 
 public class Accuracy {
-    public record AccAndLoss(double accuracy, double loss) {
-    }
     public static AccAndLoss eval(NeuralNet neuralNet, Dataset.DataLoader dataLoader, LossFunc lossFunc) {
         int correct = 0;
         int all = 0;
@@ -41,6 +39,9 @@ public class Accuracy {
                 loss += lossFunc.loss(output, pair.getValue().transpose());
             }
         }
-        return new AccAndLoss((double) correct / (double) all *100,loss/all);
+        return new AccAndLoss((double) correct / (double) all * 100, loss / all);
+    }
+
+    public record AccAndLoss(double accuracy, double loss) {
     }
 }

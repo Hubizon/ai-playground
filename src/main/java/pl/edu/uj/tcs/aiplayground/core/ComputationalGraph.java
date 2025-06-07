@@ -7,7 +7,7 @@ public class ComputationalGraph {
     ArrayList<CompGraphNode> nodes = new ArrayList<>();
 
     public void addNode(Tensor result, ArrayList<Tensor> components, TensorOperator operation, ArrayList<Object> params) {
-        nodes.add(new CompGraphNode(result, components, operation,params));
+        nodes.add(new CompGraphNode(result, components, operation, params));
     }
 
     public void propagate() {
