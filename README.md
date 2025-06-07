@@ -1,4 +1,45 @@
+# AI-Playground
 
+**AI-Playground** is a desktop app for experimenting with simple neural networks. It features a built-in token system, leaderboard tracking, and an intuitive JavaFX interface — perfect for learning, testing, or just having fun with AI.
+
+> This project was developed as part of the **Object-Oriented Programming** and **Data Engineering** courses.
+
+![App Screenshot](images/mainview.png)
+
+---
+
+## 🚀 Key Features
+
+- 🧠 **Build Neural Nets** from modular layers like `Linear`, `ReLU`, `GELU`, `Dropout`, and more  
+- 🏋️‍♂️ **Train Networks** using:
+  - 5 built-in datasets
+  - 5 different optimizers
+  - Appropriate loss functions for each use case
+- 🏆 **Global & National Leaderboards** – see how your models rank!
+- 👥 **User Management**:
+  - Register new users
+  - Manage accounts via an admin panel
+
+---
+
+## 🧱 Architecture
+
+The app follows the **MVVM (Model-View-ViewModel)** design pattern:
+
+- **Model**: Core neural network logic and data structures (custom implementation in Java)
+- **View**: JavaFX-based UI
+- **ViewModel**: Connects UI to business logic, enabling clean separation of concerns
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: JavaFX (Desktop UI)
+- **Core Logic & ViewModels**: Java
+- **Neural Networks**: Implemented from scratch (no external ML libraries)
+- **Database**: PostgreSQL
+
+---
 
 ## Core Packet
 
