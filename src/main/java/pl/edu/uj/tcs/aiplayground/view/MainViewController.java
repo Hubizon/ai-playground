@@ -306,7 +306,7 @@ public class MainViewController {
             if (change.getControlNewText().matches("\\d*(\\.\\d*)?")) {
                 try {
                     double value = Double.parseDouble(change.getControlNewText());
-                    if (value <= maxEpochValue) {
+                    if (value <= maxLearningRateValue) {
                         return change;
                     }
                 } catch (NumberFormatException e) {
