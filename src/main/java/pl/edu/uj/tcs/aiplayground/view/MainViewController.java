@@ -300,12 +300,14 @@ public class MainViewController {
         }));
 
         learningRateField.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().isEmpty()) {
+            String newText = change.getControlNewText();
+            if (newText.isEmpty()) {
                 return change;
             }
-            if (change.getControlNewText().matches("\\d*(\\.\\d*)?")) {
+
+            if (newText.matches("\\d*([.,]\\d*)?")) {
                 try {
-                    double value = Double.parseDouble(change.getControlNewText());
+                    double value = Double.parseDouble(newText.replace(',', '.'));
                     if (value <= maxLearningRateValue) {
                         return change;
                     }
@@ -448,15 +450,17 @@ public class MainViewController {
                 doubleField.setText(String.valueOf(paramValue));
 
                 doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.matches("-?\\d*\\.?\\d{0,4}")) {
+                    if (newVal.matches("-?\\d*[.,]?\\d{0,4}")) {
                         try {
-                            if (newVal.equals("0.") || newVal.equals(".")) {
+                            String normalizedVal = newVal.replace(',', '.');
+
+                            if (normalizedVal.equals("0.") || normalizedVal.equals(".")) {
                                 doubleField.setText(newVal);
                                 updateLayerParams(barContainer, paramName, BigDecimal.ZERO);
                                 return;
                             }
 
-                            BigDecimal value = new BigDecimal(newVal.isEmpty() ? "0" : newVal);
+                            BigDecimal value = new BigDecimal(normalizedVal.isEmpty() ? "0" : normalizedVal);
                             if (value.compareTo(BigDecimal.ZERO) >= 0 &&
                                     value.compareTo(BigDecimal.ONE) <= 0) {
                                 updateLayerParams(barContainer, paramName, value);
@@ -542,7 +546,7 @@ public class MainViewController {
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
         try {
-            double learningRateV = Double.parseDouble(learningRateField.getText());
+            double learningRateV = Double.parseDouble(learningRateField.getText().replace(',', '.'));
             if (learningRateV > maxLearningRateValue) {
                 alertMessage("Maximum learning rate is " + maxLearningRateValue, false);
                 return;
@@ -550,7 +554,7 @@ public class MainViewController {
             mainViewModel.train(new TrainingForm(
                     Integer.parseInt(maxEpochField.getText()),
                     Integer.parseInt(batchField.getText()),
-                    Double.parseDouble(learningRateField.getText()),
+                    learningRateV,
                     datasetComboBox.getValue(),
                     optimizerComboBox.getValue(),
                     lossComboBox.getValue())
