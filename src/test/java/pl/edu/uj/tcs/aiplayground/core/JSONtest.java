@@ -5,7 +5,7 @@ import pl.edu.uj.tcs.aiplayground.dto.architecture.EmptyParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LinearParams;
-import pl.edu.uj.tcs.aiplayground.exception.DatabaseException;
+import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JSONtest {
     @Test
-    void basicTest() throws DatabaseException {
+    void basicTest() throws InvalidHyperparametersException {
         List<LayerConfig> architecture = List.of(
                 new LayerConfig(LayerType.LINEAR, new LinearParams(4, 16, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
@@ -33,7 +33,7 @@ public class JSONtest {
                 new LayerConfig(LayerType.SOFTMAX, new EmptyParams())
         );
 
-        NeuralNet nn3 = new NeuralNet(architecture);
+        NeuralNet nn3 = new NeuralNet(architecture2);
         NeuralNet nn4 = new NeuralNet(nn3.toJson());
         assertEquals(nn3.toJson(), nn4.toJson());
     }

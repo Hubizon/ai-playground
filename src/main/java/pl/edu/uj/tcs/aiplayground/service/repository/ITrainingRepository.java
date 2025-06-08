@@ -21,5 +21,5 @@ public interface ITrainingRepository {
 
     String getDatasetPathByName(String dbName);
 
-    String shareTraining(UUID trainingId, Double accuracy, Double loss) throws SQLException;
+    String shareTraining(UUID trainingId) throws SQLException;
 }

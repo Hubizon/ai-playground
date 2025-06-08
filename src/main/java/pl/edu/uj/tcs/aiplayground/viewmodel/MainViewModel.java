@@ -29,6 +29,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MainViewModel {
     private static final Properties config = new Properties();
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
+
+    static {
+        try (InputStream input = MainViewModel.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                config.load(input);
+            } else {
+                throw new FileNotFoundException("config.properties not found");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load config", e);
+        }
+    }
+
     private final ModelService modelService;
     private final UserService userService;
     private final TrainingService trainingService;
@@ -62,18 +75,6 @@ public class MainViewModel {
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
 
-    static {
-        try (InputStream input = MainViewModel.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input != null) {
-                config.load(input);
-            } else {
-                throw new FileNotFoundException("config.properties not found");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load config", e);
-        }
-    }
-
     public MainViewModel(ModelService modelService, UserService userService, TrainingService trainingService) {
         this.modelService = modelService;
         this.userService = userService;
@@ -81,9 +82,17 @@ public class MainViewModel {
     }
 
     private void setupModel() {
-        layers.clear();
         if (model != null) {
-            NeuralNet neuralNet = new NeuralNet(model.architecture());
+            NeuralNet neuralNet;
+            try {
+                neuralNet = new NeuralNet(model.architecture());
+            } catch (InvalidHyperparametersException e) {
+                logger.error("Failed to convert model parameters model={}, error={}", model, e.getMessage(), e);
+                alertEvent.set(AlertEvent.createAlertEvent("Invalid model parameters", false));
+                return;
+            }
+
+            layers.clear();
             layers.addAll(neuralNet.toConfigList());
             modelName.set(model.modelName());
             modelVersion.set(model.versionNumber());
@@ -487,6 +496,7 @@ public class MainViewModel {
                 Platform.runLater(() -> {
                     updateIsRecentTrainingAvailable();
                     updateIsTrainingInProgress(false);
+                    updateUserTokens();
                 });
             }
         }).start();

@@ -1,16 +1,16 @@
 package pl.edu.uj.tcs.aiplayground.core;
 
 import javafx.util.Pair;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
 public class Dataset {
 
-    private final Map<String, Integer> labelMap;
-    private final int nextLabel = 0;
     public ArrayList<Integer> inputShape;
     public ArrayList<Integer> outputShape;
     public int size;
@@ -22,14 +22,12 @@ public class Dataset {
         testData = new ArrayList<>();
         inputShape = new ArrayList<>();
         outputShape = new ArrayList<>();
-        labelMap = new HashMap<>();
         float trainTestSplit = 0.8f;
         ArrayList<double[]> rawInputs = new ArrayList<>();
         ArrayList<double[]> rawOutputs = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(filename))))) {
+                new FileReader("src/main/resources/" + filename))) {
             String inLine = br.readLine();
             if (inLine == null || !inLine.startsWith("IN: ")) {
                 throw new IOException("Invalid file format: Missing or malformed IN: line.");
@@ -50,8 +48,8 @@ public class Dataset {
                 throw new IOException("Input or output shape could not be determined from the file header.");
             }
 
-            int inputLen = inputShape.get(0);
-            int outputLen = outputShape.get(0);
+            int inputLen = inputShape.getFirst();
+            int outputLen = outputShape.getFirst();
 
             String line;
             while ((line = br.readLine()) != null) {
@@ -82,8 +80,8 @@ public class Dataset {
             }
 
             // === Compute normalization stats ===
-            double[] mean = new double[inputShape.get(0)];
-            double[] std = new double[inputShape.get(0)];
+            double[] mean = new double[inputShape.getFirst()];
+            double[] std = new double[inputShape.getFirst()];
 
             for (double[] input : rawInputs) {
                 for (int i = 0; i < input.length; i++) {
@@ -107,13 +105,13 @@ public class Dataset {
             // === Normalize and create tensors ===
             ArrayList<Pair<Tensor, Tensor>> allData = new ArrayList<>();
             for (int idx = 0; idx < rawInputs.size(); idx++) {
-                double[] normalized = new double[inputShape.get(0)];
+                double[] normalized = new double[inputShape.getFirst()];
                 for (int i = 0; i < normalized.length; i++) {
                     normalized[i] = (rawInputs.get(idx)[i] - mean[i]) / std[i];
                 }
 
                 Tensor inputTensor = new Tensor(new double[][]{normalized}, 1, normalized.length);
-                Tensor outputTensor = new Tensor(new double[][]{rawOutputs.get(idx)}, 1, outputShape.get(0));
+                Tensor outputTensor = new Tensor(new double[][]{rawOutputs.get(idx)}, 1, outputShape.getFirst());
                 allData.add(new Pair<>(inputTensor, outputTensor));
             }
 
@@ -138,25 +136,24 @@ public class Dataset {
         Collections.shuffle(trainData);
     }
 
-    public DataLoader getDataLoader(String type, int batchSize) {
-        if (type.equals("train")) shuffle();
+    public DataLoader getDataLoader(DataLoaderType type, int batchSize) {
+        if (type.equals(DataLoaderType.TRAIN)) shuffle();
         return new DataLoader(type, batchSize);
     }
 
 
     public class DataLoader implements Iterator<ArrayList<Pair<Tensor, Tensor>>> {
         int cursor = 0;
-        int lastRet = -1;
         int batchSize;
         ArrayList<Pair<Tensor, Tensor>> data;
-        String type;
+        DataLoaderType type;
 
-        public DataLoader(String type, int batchSize) {
+        public DataLoader(DataLoaderType type, int batchSize) {
             this.type = type;
             this.batchSize = batchSize;
-            if (type.equals("train"))
+            if (type.equals(DataLoaderType.TRAIN))
                 data = trainData;
-            else
+            else if (type.equals(DataLoaderType.TEST))
                 data = testData;
         }
 

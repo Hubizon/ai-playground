@@ -2,6 +2,7 @@ package pl.edu.uj.tcs.aiplayground.service.repository;
 
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.ModelDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingDto;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -200,7 +201,7 @@ public class ModelRepository implements IModelRepository {
     @Override
     public List<TrainingMetricDto> getMetricsForModel(UUID modelVersionId) {
         List<Record> records = dsl.fetch("""
-                            SELECT m.epoch, m.loss, m.accuracy
+                            SELECT m.epoch,m.iter, m.loss, m.accuracy, m.type
                             FROM training_metrics m
                             JOIN trainings t ON m.training_id = t.id
                             WHERE t.model_version_id = ?
@@ -215,8 +216,10 @@ public class ModelRepository implements IModelRepository {
         return records.stream()
                 .map(r -> new TrainingMetricDto(
                         r.get("epoch", Integer.class),
+                        r.get("iter", Integer.class),
                         r.get("loss", Double.class),
-                        r.get("accuracy", Double.class)
+                        r.get("accuracy", Double.class),
+                        DataLoaderType.valueOf(r.get("type", String.class))
                 ))
                 .collect(Collectors.toList());
     }

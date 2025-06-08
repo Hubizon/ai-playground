@@ -20,40 +20,30 @@ public class TokenRepository implements ITokenRepository {
                             VALUES (?,
                                     ?,
                                     (SELECT id FROM events WHERE name = ?),
-                                    'to pole chb trzeba usunąć',
+                                    'Bought ' || ? || ' tokens',
                                     now())
                         """,
                 user.userId(),
                 amount,
-                "BoughtTokens"
+                "Bought Tokens",
+                amount
         ).execute();
     }
 
     @Override
     public int getUserTokens(UserDto user) {
-        int changed_tokens = dsl.fetchOne("""
-                        SELECT SUM(amount)
-                            FROM token_history
-                            WHERE user_id = ?;
+        return dsl.fetchOne("""
+                        SELECT get_user_token_balance(?);
                         """,
                 user.userId()
         ).into(Integer.class);
-        int start_tokens = dsl.fetchOne("""
-                        SELECT SUM(r.initial_tokens) 
-                        FROM user_roles ur LEFT JOIN roles r ON ur.role_id = r.id
-                        WHERE ur.user_id = ?;
-                        """,
-                user.userId()
-        ).into(Integer.class);
-        return changed_tokens + start_tokens;
     }
 
     @Override
     public List<CurrencyDto> getCurrencyList() {
         return dsl.fetch("""
-                    SELECT name,conversion_rate FROM currencies;
+                    SELECT name, conversion_rate FROM currencies;
                 """
         ).into(CurrencyDto.class);
     }
-
 }

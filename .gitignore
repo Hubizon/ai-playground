@@ -41,3 +41,4 @@ build/
 
 lib/
 src/main/resources/datasets/MNIST.csv
+javafx-sdk-17.0.15/

@@ -126,6 +126,24 @@
     -fx-background-color: transparent;
 }
 
+.date-picker .month-year-pane {
+    -fx-background-color: #3C3C3C;
+}
+
+.date-picker .month-year-pane .label {
+    -fx-text-fill: white;
+}
+
+.date-picker .month-year-pane .left-arrow-button,
+.date-picker .month-year-pane .right-arrow-button {
+    -fx-background-color: #3C3C3C;
+}
+
+.date-picker .month-year-pane .left-arrow-button .arrow,
+.date-picker .month-year-pane .right-arrow-button .arrow {
+    -fx-background-color: white;
+}
+
 .number-field {
     -fx-background-color: #444444;
     -fx-text-fill: white;
@@ -506,3 +524,79 @@
     -fx-border-color: transparent;
     -fx-text-fill: white;
 }
+
+.axis-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+}
+
+.table-view {
+    -fx-background-color: #3C3C3C;
+    -fx-table-cell-border-color: transparent;
+    -fx-selection-bar: #555;
+    -fx-selection-bar-non-focused: #444;
+}
+
+.table-view .column-header {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-padding: 5px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-padding: 5px;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #3C3C3C;
+    -fx-text-fill: white;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #353535;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #555;
+    -fx-text-fill: white;
+}
+
+.table-view .scroll-bar:horizontal,
+.table-view .scroll-bar:vertical {
+    -fx-background-color: #3C3C3C;
+}
+
+.table-view .scroll-bar .thumb {
+    -fx-background-color: #555;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.table-view .scroll-bar .increment-button,
+.table-view .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.table-view .scroll-bar .increment-arrow,
+.table-view .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.table-view .filler {
+    -fx-background-color: #3C3C3C;
+}
+
+.table-view .corner {
+    -fx-background-color: #3C3C3C;
+}
+

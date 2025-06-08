@@ -15,11 +15,8 @@ public class FirstNN {
         Random rand = new Random();
 
         int numPoints = 100000;
-        double r1 = 0.5;
-
 
         for (int i = 0; i < numPoints; i++) {
-
             double centerX = 0.5;
             double centerY = 0.5;
             double radiusBlob = 0.2;
@@ -53,7 +50,7 @@ public class FirstNN {
             X.add(input);
             Y.add(output);
         }
-        Tensor L1, L2, B1, B2, c = new Tensor(0), d, e, f, g, h;
+        Tensor L1, L2, B1, B2, c, d, e, f, g;
 
         ComputationalGraph graph = new ComputationalGraph();
         L1 = Tensor.randomMatrix(4, 2, -1, 1);
@@ -70,23 +67,20 @@ public class FirstNN {
         for (int epoch = 0; epoch < 10000; epoch++) {
             optimizer.zeroGradient();
 
+            int sum = 0;
+            System.out.println("EVAL MODE: " + epoch);
+            for (int i = 0; i < numPoints; i++) {
+                d = Tensor.matMul(L1, X.get(i), graph);
+                f = Tensor.add(d, B1, graph);
+                e = Tensor.Sigmoid(f, graph);
+                g = Tensor.matMul(L2, e, graph);
+                c = Tensor.add(g, B2, graph);
 
-            if (0 == 0) {
-                int sum = 0;
-                System.out.println("EVAL MODE: " + epoch);
-                for (int i = 0; i < numPoints; i++) {
-                    d = Tensor.matMul(L1, X.get(i), graph);
-                    f = Tensor.add(d, B1, graph);
-                    e = Tensor.Sigmoid(f, graph);
-                    g = Tensor.matMul(L2, e, graph);
-                    c = Tensor.add(g, B2, graph);
-
-                    if (c.data[0][0] * Y.get(i).data[0][0] > 0) {
-                        sum++;
-                    }
+                if (c.data[0][0] * Y.get(i).data[0][0] > 0) {
+                    sum++;
                 }
-                System.out.println(((double) sum) / numPoints);
             }
+            System.out.println(((double) sum) / numPoints);
 
             optimizer.zeroGradient();
             for (int i = 0; i < numPoints; i++) {
@@ -104,9 +98,6 @@ public class FirstNN {
                     optimizer.zeroGradient();
                 }
             }
-
-
         }
-
     }
 }

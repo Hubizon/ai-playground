@@ -1,7 +1,10 @@
 package pl.edu.uj.tcs.aiplayground.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -9,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
@@ -18,8 +22,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
-import org.jooq.impl.QOM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.edu.uj.tcs.aiplayground.dto.DataLoaderType;
 import pl.edu.uj.tcs.aiplayground.dto.LeaderboardDto;
 import pl.edu.uj.tcs.aiplayground.dto.StatusType;
 import pl.edu.uj.tcs.aiplayground.dto.TrainingMetricDto;
@@ -34,27 +41,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class MainViewController {
-    public enum LeaderboardRegion {
-        COUNTRY("Country"),
-        GLOBAL("Global");
-
-        private final String displayName;
-
-        LeaderboardRegion(String displayName) {
-            this.displayName = displayName;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
-        }
-    }
-
-    private final XYChart.Series<Number, Number> lossSeries = new XYChart.Series<>();
-    private final XYChart.Series<Number, Number> accuracySeries = new XYChart.Series<>();
+    private static final Logger logger = LoggerFactory.getLogger(MainViewController.class);
+    private final int maxEpochValue = 10000;
+    private final double maxLearningRateValue = 5;
+    private final int maxBatchSizeValue = 10000;
+    private final XYChart.Series<Number, Number> lossSeriesTest = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeriesTest = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> lossSeriesTrain = new XYChart.Series<>();
+    private final XYChart.Series<Number, Number> accuracySeriesTrain = new XYChart.Series<>();
     @FXML
     public LineChart<Number, Number> lossChart;
     @FXML
@@ -62,19 +60,26 @@ public class MainViewController {
     @FXML
     public Label statusField;
     @FXML
+    private NumberAxis accY;
+    @FXML
     private TabPane leftTabPane;
     private Stage stage;
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     private MainViewModel mainViewModel;
+    private String lastSelectedModel = null;
     @FXML
     private VBox barsContainer;
     @FXML
     private Label tokenField;
     @FXML
-    private Label accuracyField;
+    private Label trainAccuracyField;
     @FXML
-    private Label lossField;
+    private Label trainLossField;
+    @FXML
+    private Label testAccuracyField;
+    @FXML
+    private Label testLossField;
     @FXML
     private Label epochField;
     @FXML
@@ -111,6 +116,18 @@ public class MainViewController {
     private Button shareButton;
     @FXML
     private ListView<String> modelsListView;
+    @FXML
+    private Tab adminTab;
+    @FXML
+    private TableView<String> usersTableView;
+    @FXML
+    private ComboBox<String> rolesComboBox;
+    @FXML
+    private Button assignRoleButton;
+    @FXML
+    private Button deleteUserButton;
+    @FXML
+    private Label currentRoleLabel;
 
     public void initialize(ViewModelFactory factory) {
         this.factory = factory;
@@ -118,29 +135,56 @@ public class MainViewController {
         this.mainViewModel = factory.getMainViewModel();
         this.mainViewModel.setUser(userViewModel.getUser());
 
-        leftTabPane.getSelectionModel().select(1); // "My models" tab
+
+        if (!userViewModel.isAdminProperty().get()) {
+            leftTabPane.getTabs().remove(adminTab);
+        } else {
+            initializeAdminTab();
+        }
+        userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal && !leftTabPane.getTabs().contains(adminTab)) {
+                leftTabPane.getTabs().add(leftTabPane.getTabs().size(), adminTab);
+            } else if (!newVal) {
+                leftTabPane.getTabs().remove(adminTab);
+            }
+        });
+
+
+        leftTabPane.getSelectionModel().select(2); // "My models" tab
 
         initializeModelsList();
 
         for (Tab tab : leftTabPane.getTabs()) {
-            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"User Actions".equals(tab.getText())) {
+            if (!"My models".equals(tab.getText()) && !"Leaderboards".equals(tab.getText()) && !"Tokens".equals(tab.getText()) && !"Admin Tab".equals(tab.getText())) {
                 tab.disableProperty().bind(mainViewModel.isModelLoadedProperty().not());
             }
         }
 
         lossChart.setCreateSymbols(false);
         lossChart.setAnimated(false);
+        lossChart.setLegendVisible(false);
         accuracyChart.setCreateSymbols(false);
         accuracyChart.setAnimated(false);
-        lossChart.getData().add(lossSeries);
-        accuracyChart.getData().add(accuracySeries);
-        epochField.setText("-");
-        accuracyField.setText("-");
-        lossField.setText("-");
+        accuracyChart.setLegendVisible(false);
+        accY.setAutoRanging(false);
+
+        styleSeries(lossSeriesTrain, "#1E90FF");
+        styleSeries(accuracySeriesTrain, "#1E90FF");
+        styleSeries(lossSeriesTest, "#FF8C00");
+        styleSeries(accuracySeriesTest, "#FF8C00");
+
+        lossChart.getData().add(lossSeriesTrain);
+        accuracyChart.getData().add(accuracySeriesTrain);
+        lossChart.getData().add(lossSeriesTest);
+        accuracyChart.getData().add(accuracySeriesTest);
+
+        resetTrainingFields();
+
         mainViewModel.liveMetricsProperty().addListener((ListChangeListener<TrainingMetricDto>) change -> {
-            // Some optimizations were needed because the JavaFX charts are really slow and behave weirdly
-            List<XYChart.Data<Number, Number>> newLossData = new ArrayList<>();
-            List<XYChart.Data<Number, Number>> newAccuracyData = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newLossDataTest = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newAccuracyDataTest = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newLossDataTrain = new ArrayList<>();
+            List<XYChart.Data<Number, Number>> newAccuracyDataTrain = new ArrayList<>();
             boolean shouldClear = false;
 
             while (change.next()) {
@@ -148,49 +192,70 @@ public class MainViewController {
                     shouldClear = true;
                 } else if (change.wasAdded()) {
                     if (shouldClear) {
-                        newLossData.clear();
-                        newAccuracyData.clear();
+                        newLossDataTest.clear();
+                        newAccuracyDataTest.clear();
+                        newLossDataTrain.clear();
+                        newAccuracyDataTrain.clear();
                         shouldClear = false;
                     }
                     for (TrainingMetricDto m : change.getAddedSubList()) {
-                        newLossData.add(new XYChart.Data<>(m.epoch(), m.loss()));
-                        newAccuracyData.add(new XYChart.Data<>(m.epoch(), m.accuracy()));
+                        if (m.type() == DataLoaderType.TEST) {
+                            newLossDataTest.add(new XYChart.Data<>(m.iter(), m.loss()));
+                            newAccuracyDataTest.add(new XYChart.Data<>(m.iter(), m.accuracy()));
+                        } else if (m.type() == DataLoaderType.TRAIN) {
+                            newLossDataTrain.add(new XYChart.Data<>(m.iter(), m.loss()));
+                            newAccuracyDataTrain.add(new XYChart.Data<>(m.iter(), m.accuracy()));
+                        }
                     }
                 }
             }
 
-            TrainingMetricDto lastMetric = null;
+            TrainingMetricDto lastTestMetric = null, lastTrainMetric = null;
             if (!mainViewModel.liveMetricsProperty().isEmpty()) {
-                lastMetric = mainViewModel.liveMetricsProperty().getLast();
+                lastTestMetric = TrainingMetricDto.lastMetric(mainViewModel.liveMetricsProperty(), DataLoaderType.TEST);
+                lastTrainMetric = TrainingMetricDto.lastMetric(mainViewModel.liveMetricsProperty(), DataLoaderType.TRAIN);
             }
 
             boolean finalShouldClear = shouldClear;
-            TrainingMetricDto finalLastMetric = lastMetric;
+            TrainingMetricDto finalLastTestMetric = lastTestMetric;
+            TrainingMetricDto finalLastTrainMetric = lastTrainMetric;
 
             Platform.runLater(() -> {
                 if (finalShouldClear) {
                     // The charts refuse to update when cleared unless reset
-                    lossSeries.getData().clear();
-                    accuracySeries.getData().clear();
-                    lossChart.getData().remove(lossSeries);
-                    accuracyChart.getData().remove(accuracySeries);
+                    lossSeriesTest.getData().clear();
+                    accuracySeriesTest.getData().clear();
+                    lossSeriesTrain.getData().clear();
+                    accuracySeriesTrain.getData().clear();
+
+                    lossChart.getData().remove(lossSeriesTest);
+                    accuracyChart.getData().remove(accuracySeriesTest);
+                    lossChart.getData().remove(lossSeriesTrain);
+                    accuracyChart.getData().remove(accuracySeriesTrain);
+
                     lossChart.layout();
                     accuracyChart.layout();
-                    lossChart.getData().add(lossSeries);
-                    accuracyChart.getData().add(accuracySeries);
+
+                    lossChart.getData().add(lossSeriesTrain);
+                    accuracyChart.getData().add(accuracySeriesTrain);
+                    lossChart.getData().add(lossSeriesTest);
+                    accuracyChart.getData().add(accuracySeriesTest);
                 } else {
-                    lossSeries.getData().addAll(newLossData);
-                    accuracySeries.getData().addAll(newAccuracyData);
+                    lossSeriesTrain.getData().addAll(newLossDataTrain);
+                    accuracySeriesTrain.getData().addAll(newAccuracyDataTrain);
+                    lossSeriesTest.getData().addAll(newLossDataTest);
+                    accuracySeriesTest.getData().addAll(newAccuracyDataTest);
                 }
 
-                if (finalLastMetric != null) {
-                    epochField.setText(String.valueOf(finalLastMetric.epoch()));
-                    accuracyField.setText(String.format("%.3f", finalLastMetric.accuracy()));
-                    lossField.setText(String.format("%.3f", finalLastMetric.loss()));
+                if (finalLastTestMetric != null && finalLastTrainMetric != null) {
+                    epochField.setText(String.valueOf(finalLastTestMetric.epoch()));
+                    testAccuracyField.setText(String.format("%.2f", finalLastTestMetric.accuracy()) + "%");
+                    testLossField.setText(String.format("%.3f", finalLastTestMetric.loss()));
+                    trainAccuracyField.setText(String.format("%.2f", finalLastTrainMetric.accuracy()) + "%");
+                    trainLossField.setText(String.format("%.3f", finalLastTrainMetric.loss()));
+
                 } else {
-                    epochField.setText("-");
-                    accuracyField.setText("-");
-                    lossField.setText("-");
+                    resetTrainingFields();
                 }
             });
         });
@@ -218,21 +283,54 @@ public class MainViewController {
         Bindings.bindBidirectional(maxEpochField.textProperty(), mainViewModel.maxEpochsProperty(), new NumberStringConverter("#"));
 
         maxEpochField.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*")) {
+            if (change.getControlNewText().isEmpty()) {
                 return change;
+            }
+            if (change.getControlNewText().matches("0|[1-9]\\d*")) {
+                try {
+                    int value = Integer.parseInt(change.getControlNewText());
+                    if (value <= maxEpochValue && value > 0) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
             return null;
         }));
 
-        learningRateField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*(\\.\\d*)?")) {
-                learningRateField.setText(oldValue);
+        learningRateField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.isEmpty()) {
+                return change;
             }
-        });
+
+            if (newText.matches("\\d*([.,]\\d*)?")) {
+                try {
+                    double value = Double.parseDouble(newText.replace(',', '.'));
+                    if (value <= maxLearningRateValue) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        }));
 
         batchField.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*")) {
+            if (change.getControlNewText().isEmpty()) {
                 return change;
+            }
+            if (change.getControlNewText().matches("0|[1-9]\\d*")) {
+                try {
+                    int value = Integer.parseInt(change.getControlNewText());
+                    if (value <= maxBatchSizeValue && value > 0) {
+                        return change;
+                    }
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
             return null;
         }));
@@ -270,9 +368,7 @@ public class MainViewController {
         });
 
         mainViewModel.alertEventProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && !newValue.message().isEmpty()) {
-                alertMessage(newValue.message(), newValue.isInfo());
-            }
+            newValue.display();
         });
 
         prevVersionButton.disableProperty().bind(
@@ -321,8 +417,18 @@ public class MainViewController {
 
                 intField.textProperty().addListener((obs, oldVal, newVal) -> {
                     if (newVal.matches("\\d*")) {
-                        updateLayerParams(barContainer, paramName,
-                                newVal.isEmpty() ? 0 : Integer.parseInt(newVal));
+                        try {
+                            int value = newVal.isEmpty() ? 0 : Integer.parseInt(newVal);
+                            if (value >= 0 && value <= 100000) {
+                                updateLayerParams(barContainer, paramName, value);
+                            } else {
+                                intField.setText(oldVal);
+                            }
+                        } catch (NumberFormatException e) {
+                            intField.setText(oldVal);
+                        }
+                    } else {
+                        intField.setText(oldVal);
                     }
                 });
 
@@ -333,9 +439,7 @@ public class MainViewController {
 
                 checkBox.setSelected((Boolean) paramValue);
 
-                checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                    updateLayerParams(barContainer, paramName, newVal);
-                });
+                checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> updateLayerParams(barContainer, paramName, newVal));
 
                 barContainer.getChildren().addAll(paramLabel, checkBox);
             } else if (paramType == BigDecimal.class) {
@@ -346,9 +450,28 @@ public class MainViewController {
                 doubleField.setText(String.valueOf(paramValue));
 
                 doubleField.textProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.matches("-?\\d*(\\.\\d+)?")) {
-                        updateLayerParams(barContainer, paramName,
-                                newVal.isEmpty() ? 0 : new BigDecimal(newVal));
+                    if (newVal.matches("-?\\d*[.,]?\\d{0,4}")) {
+                        try {
+                            String normalizedVal = newVal.replace(',', '.');
+
+                            if (normalizedVal.equals("0.") || normalizedVal.equals(".")) {
+                                doubleField.setText(newVal);
+                                updateLayerParams(barContainer, paramName, BigDecimal.ZERO);
+                                return;
+                            }
+
+                            BigDecimal value = new BigDecimal(normalizedVal.isEmpty() ? "0" : normalizedVal);
+                            if (value.compareTo(BigDecimal.ZERO) >= 0 &&
+                                    value.compareTo(BigDecimal.ONE) <= 0) {
+                                updateLayerParams(barContainer, paramName, value);
+                            } else {
+                                doubleField.setText(oldVal);
+                            }
+                        } catch (NumberFormatException e) {
+                            doubleField.setText(oldVal);
+                        }
+                    } else {
+                        doubleField.setText(oldVal);
                     }
                 });
 
@@ -373,14 +496,32 @@ public class MainViewController {
 
         barsContainer.getChildren().add(barContainer);
 
-        // scrolling to the bottom of layer
-        Parent parent = barsContainer.getParent();
-        while (parent != null && !(parent instanceof ScrollPane)) {
-            parent = parent.getParent();
-        }
-        if (parent != null) {
-            ((ScrollPane) parent).setVvalue(1.0);
-        }
+        Platform.runLater(() -> new Timeline(new KeyFrame(Duration.millis(100), e -> {
+            Parent parent = barsContainer.getParent();
+            while (parent != null && !(parent instanceof ScrollPane)) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
+                ScrollPane scrollPane = (ScrollPane) parent;
+                scrollPane.setVvalue(scrollPane.getVmax());
+            }
+        })).play());
+    }
+
+    private void styleSeries(XYChart.Series<Number, Number> series, String color) {
+        series.nodeProperty().addListener((obs, oldNode, newNode) -> {
+            if (newNode != null) {
+                newNode.setStyle(String.format("-fx-stroke: %s;", color));
+            }
+        });
+    }
+
+    private void resetTrainingFields() {
+        epochField.setText("-");
+        testAccuracyField.setText("-");
+        testLossField.setText("-");
+        trainAccuracyField.setText("-");
+        trainLossField.setText("-");
     }
 
     private void alertMessage(String message, Boolean isInfo) {
@@ -389,10 +530,11 @@ public class MainViewController {
             alert = new Alert(Alert.AlertType.INFORMATION);
         else
             alert = new Alert(AlertType.WARNING);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         alert.getDialogPane().getStyleClass().add("dialog-pane");
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
@@ -403,14 +545,23 @@ public class MainViewController {
     @FXML
     private void onRunBarClicked() {
         System.out.println("Run button clicked - training started");
-        mainViewModel.train(new TrainingForm(
-                Integer.parseInt(maxEpochField.getText()),
-                Integer.parseInt(batchField.getText()),
-                Double.parseDouble(learningRateField.getText()),
-                datasetComboBox.getValue(),
-                optimizerComboBox.getValue(),
-                lossComboBox.getValue())
-        );
+        try {
+            double learningRateV = Double.parseDouble(learningRateField.getText().replace(',', '.'));
+            if (learningRateV > maxLearningRateValue) {
+                alertMessage("Maximum learning rate is " + maxLearningRateValue, false);
+                return;
+            }
+            mainViewModel.train(new TrainingForm(
+                    Integer.parseInt(maxEpochField.getText()),
+                    Integer.parseInt(batchField.getText()),
+                    learningRateV,
+                    datasetComboBox.getValue(),
+                    optimizerComboBox.getValue(),
+                    lossComboBox.getValue())
+            );
+        } catch (Exception e) {
+            alertMessage("Invalid hyperparameters", false);
+        }
     }
 
     @FXML
@@ -460,10 +611,13 @@ public class MainViewController {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 600, 400));
-            stage.setTitle("Leaderboard - " + region + " - " + datasetType);
+            if (region == LeaderboardRegion.COUNTRY)
+                stage.setTitle("Leaderboard - " + userViewModel.getUser().countryName() + " - " + datasetType);
+            else
+                stage.setTitle("Leaderboard - " + region + " - " + datasetType);
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to load leaderboard, error={}", e.getMessage(), e);
             alertMessage("Failed to load leaderboard: " + e.getMessage(), false);
         }
     }
@@ -483,7 +637,7 @@ public class MainViewController {
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to load scene, error={}", e.getMessage(), e);
         }
     }
 
@@ -505,29 +659,9 @@ public class MainViewController {
         mainViewModel.layersProperty().clear();
     }
 
-    public int getAccuracy() {
-        return Integer.parseInt(accuracyField.getText());
-    }
-
-    public void setAccuracy(int accuracy) {
-        accuracyField.setText(String.valueOf(accuracy));
-    }
-
-    public void setTokens(int tokens) {
-        tokenField.setText(String.valueOf(tokens));
-    }
-
-    public int getLossPercentage() {
-        return Integer.parseInt(lossField.getText());
-    }
-
-    public void setLossPercentage(int lossPercentage) {
-        lossField.setText(String.valueOf(lossPercentage));
-    }
-
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     @FXML
@@ -546,7 +680,7 @@ public class MainViewController {
         dialog.setHeaderText(null);
 
         dialog.getDialogPane().getStylesheets().add(
-                getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm()
         );
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
 
@@ -556,6 +690,7 @@ public class MainViewController {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(modelName -> {
             mainViewModel.createNewModel(userViewModel.getUser(), modelName);
+            modelsListView.getSelectionModel().select(modelName);
         });
     }
 
@@ -565,7 +700,7 @@ public class MainViewController {
             Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/TokenShopView.fxml"));
             Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css").toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/style/styles.css")).toExternalForm());
             TokenShopController controller = loader.getController();
             controller.initialize(factory);
             controller.setStage(stage);
@@ -574,9 +709,7 @@ public class MainViewController {
             stage.setScene(scene);
             stage.show();
 
-            stage.setOnCloseRequest(event -> {
-                mainViewModel.updateUserTokens();
-            });
+            stage.setOnCloseRequest(event -> mainViewModel.updateUserTokens());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -587,12 +720,90 @@ public class MainViewController {
         modelsListView.getStyleClass().add("custom-list-view");
 
         modelsListView.setOnMouseClicked(event -> {
+            String clickedModel = modelsListView.getSelectionModel().getSelectedItem();
+
             if (event.getClickCount() >= 2) {
-                String selectedModel = modelsListView.getSelectionModel().getSelectedItem();
-                if (selectedModel != null) {
-                    mainViewModel.setModel(userViewModel.getUser(), selectedModel);
+                if (clickedModel != null) {
+                    mainViewModel.setModel(userViewModel.getUser(), clickedModel);
+                    lastSelectedModel = clickedModel;
+                }
+            } else {
+                modelsListView.getSelectionModel().clearSelection();
+                if (lastSelectedModel != null) {
+                    modelsListView.getSelectionModel().select(lastSelectedModel);
                 }
             }
+
         });
+    }
+
+    private void initializeAdminTab() {
+        if (!userViewModel.isAdminProperty().get()) {
+            return;
+        }
+
+        TableColumn<String, String> userColumn = new TableColumn<>("Users");
+        userColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+        userColumn.setPrefWidth(210);
+        userColumn.setStyle("-fx-alignment: CENTER_LEFT;");
+
+        usersTableView.getColumns().setAll(userColumn);
+        usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+
+        usersTableView.setRowFactory(tv -> {
+            TableRow<String> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 1) {
+                    String selectedUser = row.getItem();
+                    userViewModel.chosenUserProperty().set(selectedUser);
+                }
+            });
+            return row;
+        });
+
+        rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
+        rolesComboBox.valueProperty().bindBidirectional(userViewModel.chosenRoleProperty());
+
+        currentRoleLabel.textProperty().bind(
+                Bindings.when(userViewModel.chosenUserRoleProperty().isNotNull())
+                        .then(Bindings.concat("Current role: ").concat(userViewModel.chosenUserRoleProperty()))
+                        .otherwise("Select user to assign new role")
+        );
+
+        assignRoleButton.setOnAction(event -> {
+            userViewModel.setRoleForUser();
+        });
+
+        deleteUserButton.setOnAction(event -> {
+            userViewModel.deleteUser();
+            usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+        });
+
+        userViewModel.isAdminProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                usersTableView.setItems(FXCollections.observableArrayList(userViewModel.getUsernames()));
+                rolesComboBox.setItems(FXCollections.observableArrayList(userViewModel.getRoles()));
+            }
+        });
+
+        userViewModel.adminAlertEventProperty().addListener((observable, oldValue, newValue) -> {
+            newValue.display();
+        });
+    }
+
+    public enum LeaderboardRegion {
+        COUNTRY("Country"),
+        GLOBAL("Global");
+
+        private final String displayName;
+
+        LeaderboardRegion(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
 }

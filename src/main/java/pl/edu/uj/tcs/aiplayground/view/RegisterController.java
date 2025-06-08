@@ -2,12 +2,7 @@ package pl.edu.uj.tcs.aiplayground.view;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -16,8 +11,8 @@ import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
 import pl.edu.uj.tcs.aiplayground.viewmodel.UserViewModel;
 import pl.edu.uj.tcs.aiplayground.viewmodel.ViewModelFactory;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class RegisterController {
     private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
@@ -26,6 +21,8 @@ public class RegisterController {
     public TextField lastNameField;
     public TextField emailField;
     public TextField visiblePasswordField;
+    @FXML
+    public DatePicker birthDatePicker;
     private ViewModelFactory factory;
     private UserViewModel userViewModel;
     @FXML
@@ -34,7 +31,6 @@ public class RegisterController {
     private Button showPasswordButton;
     @FXML
     private ComboBox<String> countryComboBox;
-
     private Stage stage;
 
     private boolean passwordVisible;
@@ -55,11 +51,15 @@ public class RegisterController {
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
         showPasswordButton.setText("Show Password");
+        birthDatePicker.setValue(LocalDate.now().minusYears(20));
+        birthDatePicker.setEditable(false);
+
+        userViewModel.registerAlertEventProperty().addListener((observable, oldValue, newValue) -> newValue.display());
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
     }
 
     @FXML
@@ -87,27 +87,14 @@ public class RegisterController {
         }
     }
 
-    private void openMainWindow() {
-        try {
-            Stage mainStage = new Stage();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/edu/uj/tcs/aiplayground/view/MainView.fxml"));
-            Scene scene = new Scene(loader.load());
-
-            MainViewController controller = loader.getController();
-            controller.initialize(factory);
-            controller.setStage(stage);
-
-            mainStage.setTitle("AI Playground");
-            mainStage.setScene(scene);
-            mainStage.show();
-        } catch (IOException e) {
-            logger.error("Problem with loading the scene, error={}", e.getMessage(), e);
-        }
-    }
-
     @FXML
     private void onRegisterClicked() {
         String password = passwordVisible ? visiblePasswordField.getText() : passwordField.getText();
+
+        LocalDate birthDate = birthDatePicker.getValue();
+        if (birthDate == null) {
+            birthDate = LocalDate.of(2000, 1, 1);
+        }
 
         RegisterForm form = new RegisterForm(
                 usernameField.getText(),
@@ -116,7 +103,7 @@ public class RegisterController {
                 emailField.getText(),
                 password,
                 countryComboBox.getValue(),
-                LocalDate.of(2000, 1, 1));
+                birthDate);
         boolean isRegistered = userViewModel.register(form);
 
         if (isRegistered) {

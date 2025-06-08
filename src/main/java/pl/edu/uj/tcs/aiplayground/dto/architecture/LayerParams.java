@@ -1,15 +1,17 @@
 package pl.edu.uj.tcs.aiplayground.dto.architecture;
 
 import org.json.JSONObject;
+import pl.edu.uj.tcs.aiplayground.exception.InvalidHyperparametersException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, LinearParams {
+public sealed interface LayerParams permits DropoutParams, EmptyParams, LeakyReLUParams, LinearParams {
     List<String> getParamNames();
 
     default List<Class<?>> getParamTypes() {
@@ -72,21 +74,23 @@ public sealed interface LayerParams permits EmptyParams, LeakyReLUParams, Linear
         return json;
     }
 
-    default LayerParams loadFromJson(JSONObject json) {
+    default LayerParams loadFromJson(JSONObject json) throws InvalidHyperparametersException {
         Class<?> rc = this.getClass();
         List<String> names = getParamNames();
+        Class<?>[] types = getParamTypes().toArray(new Class<?>[0]);
         int size = names.size();
         Object[] args = new Object[size];
         for (int i = 0; i < size; i++) {
             args[i] = json.get(names.get(i));
+            if (types[i] == BigDecimal.class && args[i] instanceof Integer)
+                args[i] = BigDecimal.valueOf((Integer) args[i]);
         }
 
         try {
-            Constructor<?> ctor = rc.getDeclaredConstructor(getParamTypes().toArray(new Class<?>[0]));
+            Constructor<?> ctor = rc.getDeclaredConstructor(types);
             return (LayerParams) ctor.newInstance(args);
-        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
-                 IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new InvalidHyperparametersException(e);
         }
     }
 }

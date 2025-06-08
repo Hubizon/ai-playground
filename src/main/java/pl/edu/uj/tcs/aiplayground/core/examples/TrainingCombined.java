@@ -21,6 +21,7 @@ public class TrainingCombined {
                 new LayerConfig(LayerType.LINEAR, new LinearParams(4, 12, true)),
                 new LayerConfig(LayerType.SIGMOID, new EmptyParams()),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(12, 12, true)),
+                new LayerConfig(LayerType.DROPOUT, new EmptyParams()),
                 new LayerConfig(LayerType.LEAKYRELU, new LeakyReLUParams(new BigDecimal("0.3"))),
                 new LayerConfig(LayerType.LINEAR, new LinearParams(12, 3, true))
         );

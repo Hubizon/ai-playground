@@ -35,7 +35,7 @@
         </HBox>
 
         <Label text="Birth Date:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <DatePicker GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <DatePicker fx:id="birthDatePicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
         <Label text="Country:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
         <ComboBox fx:id="countryComboBox" GridPane.rowIndex="6" promptText="" prefWidth="150" GridPane.columnIndex="1">

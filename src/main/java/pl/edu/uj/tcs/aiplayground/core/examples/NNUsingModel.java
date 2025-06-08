@@ -17,7 +17,6 @@ public class NNUsingModel {
         ArrayList<Tensor> Y = new ArrayList<>();
         Random rand = new Random();
         int numPoints = 100000;
-        double r1 = 0.5;
         for (int i = 0; i < numPoints; i++) {
 
             double centerX = 0.5;

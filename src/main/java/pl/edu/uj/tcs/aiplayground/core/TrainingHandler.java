@@ -85,7 +85,7 @@ public class TrainingHandler {
 
     public String shareTraining() {
         try {
-            return trainingService.shareTraining(trainingId, recentMetric.accuracy(), recentMetric.loss());
+            return trainingService.shareTraining(trainingId);
         } catch (DatabaseException e) {
             logger.error("Failed to share training for trainingId={}, error={}",
                     trainingId, e.getMessage(), e);

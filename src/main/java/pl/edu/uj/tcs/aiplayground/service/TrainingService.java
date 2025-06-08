@@ -10,6 +10,7 @@ import pl.edu.uj.tcs.aiplayground.exception.InsufficientTokensException;
 import pl.edu.uj.tcs.aiplayground.service.repository.ITrainingRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class TrainingService {
@@ -25,7 +26,7 @@ public class TrainingService {
         } catch (DataAccessException e) {
             if (e.getCause() instanceof PSQLException ex) {
                 if ("P0002".equals(ex.getSQLState())) {
-                    throw new InsufficientTokensException(ex.getServerErrorMessage().getMessage());
+                    throw new InsufficientTokensException(Objects.requireNonNull(ex.getServerErrorMessage()).getMessage());
                 }
             }
             throw e;
@@ -68,9 +69,9 @@ public class TrainingService {
         }
     }
 
-    public String shareTraining(UUID trainingId, Double accuracy, Double loss) throws DatabaseException {
+    public String shareTraining(UUID trainingId) throws DatabaseException {
         try {
-            return trainingRepository.shareTraining(trainingId, accuracy, loss);
+            return trainingRepository.shareTraining(trainingId);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }

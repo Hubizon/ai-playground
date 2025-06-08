@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.edu.uj.tcs.aiplayground.dto.AlertEvent;
 import pl.edu.uj.tcs.aiplayground.dto.UserDto;
 import pl.edu.uj.tcs.aiplayground.dto.form.LoginForm;
 import pl.edu.uj.tcs.aiplayground.dto.form.RegisterForm;
@@ -20,6 +21,8 @@ public class UserViewModel {
 
     private final BooleanProperty isAdmin = new SimpleBooleanProperty(false);
     private final StringProperty statusMessage = new SimpleStringProperty();
+    private final ObjectProperty<AlertEvent> adminAlertEvent = new SimpleObjectProperty<>();
+    private final ObjectProperty<AlertEvent> registerAlertEvent = new SimpleObjectProperty<>();
 
     private final ObjectProperty<UserDto> user = new SimpleObjectProperty<>(null);
     private final StringProperty chosenUser = new SimpleStringProperty();
@@ -36,17 +39,15 @@ public class UserViewModel {
             try {
                 isAdmin.set(userService.isUserAdmin(user.userId()));
                 if (isAdmin.get()) {
-                    chosenUser.addListener((observable, oldValue, newValue) -> {
-                        Platform.runLater(() -> {
-                            try {
-                                chosenUserRole.set(userService.getUserRole(chosenUser));
-                            } catch (DatabaseException e) {
-                                logger.error("Failed to get user role, chosenUser={}, error={}",
-                                        chosenUser, e.getMessage(), e);
-                                statusMessage.set("Internal Error");
-                            }
-                        });
-                    });
+                    chosenUser.addListener((observable, oldValue, newValue) -> Platform.runLater(() -> {
+                        try {
+                            chosenUserRole.set(userService.getUserRole(chosenUser));
+                        } catch (DatabaseException e) {
+                            logger.error("Failed to get user role, chosenUser={}, error={}",
+                                    chosenUser, e.getMessage(), e);
+                            statusMessage.set("Internal Error");
+                        }
+                    }));
                 }
             } catch (DatabaseException e) {
                 logger.error("Failed to get information about user, user={}, error={}", user, e.getMessage(), e);
@@ -61,6 +62,14 @@ public class UserViewModel {
 
     public StringProperty statusMessageProperty() {
         return statusMessage;
+    }
+
+    public ObjectProperty<AlertEvent> adminAlertEventProperty() {
+        return adminAlertEvent;
+    }
+
+    public ObjectProperty<AlertEvent> registerAlertEventProperty() {
+        return registerAlertEvent;
     }
 
     public ObjectProperty<UserDto> userProperty() {
@@ -138,11 +147,11 @@ public class UserViewModel {
             statusMessage.set("Registration Successful");
             return true;
         } catch (UserModificationException e) {
-            statusMessage.set(e.getMessage());
+            registerAlertEvent.set(AlertEvent.createAlertEvent(e.getMessage(), false));
             setupUser(null);
         } catch (DatabaseException e) {
             logger.error("Failed to register for registerForm={}, error={}", registerForm, e.getMessage(), e);
-            statusMessage.set("Internal Error");
+            registerAlertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
             setupUser(null);
         }
         return false;
@@ -155,6 +164,8 @@ public class UserViewModel {
     public boolean updateUser(UpdateUserForm updateUserForm) {
         try {
             userService.updateUser(user.get().userId(), updateUserForm);
+            user.set(userService.getUser(user.get().userId()));
+            setupUser(user.get());
         } catch (UserModificationException e) {
             statusMessage.set(e.getMessage());
             return false;
@@ -169,14 +180,40 @@ public class UserViewModel {
     public void setRoleForUser() {
         if (!isAdmin.get())
             return;
+        if (chosenUserRole.get() == null || chosenRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("Select both a user and a role", false));
+            return;
+        }
 
         try {
             userService.setRoleForUser(chosenUser.get(), chosenRole.get());
+            chosenUserRole.set(userService.getUserRole(chosenUser));
             setupUser(user.get());
         } catch (DatabaseException e) {
             logger.error("Failed to set role for user={}, role={}, error={}",
                     chosenUser, chosenRole, e.getMessage(), e);
             statusMessage.set("Internal Error");
+        }
+    }
+
+    public void deleteUser() {
+        if (!isAdmin.get())
+            return;
+        if (chosenUserRole.get() == null) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent("You must choose a user", false));
+            return;
+        }
+
+        try {
+            userService.deleteUser(chosenUser.get());
+            chosenUserRole.set(null);
+            setupUser(user.get());
+        } catch (UserModificationException e) {
+            adminAlertEvent.set(AlertEvent.createAlertEvent(e.getMessage(), false));
+        } catch (DatabaseException e) {
+            logger.error("Failed to delete user={}, role={}, error={}",
+                    chosenUser, chosenRole, e.getMessage(), e);
+            adminAlertEvent.set(AlertEvent.createAlertEvent("Internal Error", false));
         }
     }
 }
