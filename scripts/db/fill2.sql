@@ -121,10 +121,6 @@ f6225853-b2d9-40e1-b1fa-ad86828f55b8	CIRCLES	A synthetic dataset for binary clas
 -- Data for Name: existing_count; Type: TABLE DATA; Schema: public; Owner: aiplayground
 --
 
-COPY public.existing_count (count) FROM stdin;
-2
-\.
-
 
 --
 -- Data for Name: loss_functions; Type: TABLE DATA; Schema: public; Owner: aiplayground
