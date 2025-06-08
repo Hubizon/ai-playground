@@ -254,4 +254,20 @@ WHERE e.name IN (
                  '1st Place Country', '2nd Place Country', '3rd Place Country'
     )
 ORDER BY th.user_id, d.id, scope, th.amount DESC;
+
+CREATE OR REPLACE FUNCTION insert_custom_event_price(
+    event_name TEXT,
+    role_name TEXT,
+    price NUMERIC
+)
+    RETURNS VOID AS
+$$
+BEGIN
+    INSERT INTO custom_event_prices (event_id, role_id, price)
+    VALUES ((SELECT id FROM events WHERE name = event_name),
+            (SELECT id FROM roles WHERE name = role_name),
+            price);
+END;
+$$ LANGUAGE plpgsql;
+
 Commit;

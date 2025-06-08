@@ -6,7 +6,7 @@ sudo -u postgres psql -f ./db/init_pg.sql
 
 psql -U aiplayground -d aiplayground -f ./db/create.sql
 
-psql -U aiplayground -d aiplayground -f .\db\fill.sql
+psql -U aiplayground -d aiplayground -f .\db\fill2.sql
 
 psql -U aiplayground -d aiplayground -f .\db\triggers.sql
 

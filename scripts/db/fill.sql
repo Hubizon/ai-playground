@@ -224,21 +224,6 @@ INSERT INTO public.public_results (id, training_id, shared_at) VALUES ('f8764a4d
 INSERT INTO public.public_results (id, training_id, shared_at) VALUES ('fc334ff2-e461-4ba0-9ef4-428985caf83b', '0c3c92e8-8245-4cd5-a2d4-1e5d7d09e56f', '2025-06-06 23:00:58.591656 +00:00');
 INSERT INTO public.public_results (id, training_id, shared_at) VALUES ('1d3d92c5-519b-4376-bf90-6a6b5507edc9', 'd119ac60-79f9-4675-9971-544153d54bdf', '2025-06-06 23:03:24.446398 +00:00');
 
-CREATE OR REPLACE FUNCTION insert_custom_event_price(
-    event_name TEXT,
-    role_name TEXT,
-    price NUMERIC
-)
-    RETURNS VOID AS
-$$
-BEGIN
-INSERT INTO custom_event_prices (event_id, role_id, price)
-VALUES ((SELECT id FROM events WHERE name = event_name),
-        (SELECT id FROM roles WHERE name = role_name),
-        price);
-END;
-$$ LANGUAGE plpgsql;
-
 SELECT insert_custom_event_price('Model Training', 'Administrator', 0);
 SELECT insert_custom_event_price('Model Training', 'Premium User', -5);
 SELECT insert_custom_event_price('1st Place Global', 'Premium User', 1500);
