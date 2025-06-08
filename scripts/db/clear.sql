@@ -32,3 +32,4 @@ DROP FUNCTION IF EXISTS ordinal(integer) CASCADE;
 DROP FUNCTION IF EXISTS insert_custom_event_price(text, text, numeric) CASCADE;
 DROP FUNCTION IF EXISTS insert_token_history_on_new_role() CASCADE;
 DROP FUNCTION IF EXISTS one_active_role() CASCADE;
+DROP FUNCTION IF EXISTS prevent_admin_deletion() CASCADE;
