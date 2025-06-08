@@ -78,7 +78,7 @@ java --module-path ".\javafx-sdk-17.0.15\lib" --add-modules javafx.controls,java
 java --module-path "./javafx-sdk-17.0.15/lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics -jar ai-playground.jar
 ```
 
-    
+> **Note**: The MNIST dataset is *not included* in the repository and must be downloaded 
 ---
 
 # 🧱 Architecture
