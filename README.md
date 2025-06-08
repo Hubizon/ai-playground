@@ -22,6 +22,62 @@
 - 💰 **Token System**:
   - Every action like training a model or creating a new one consumes tokens
   - Users can **buy tokens** or **earn them** by reaching high positions on the leaderboards
+
+---
+
+# 🛠 Running the App
+
+### ✅ Requirements:
+- Java 21+
+- PostgreSQL installed and running
+
+### 🗄️ Database Initialization:
+Run the database setup script:
+
+#### On Windows:
+```powershell
+./scripts/init.ps1
+```
+
+#### On Linux/macOS:
+
+```bash
+bash scripts/init.sh
+```
+
+These scripts will create the schema and populate it using the SQL files in `scripts/db/`, including:
+
+```
+create.sql      -- Table definitions
+fill.sql        -- Default data (countries, roles, datasets, etc.)
+triggers.sql    -- Postgres triggers (optional)
+```
+
+> Make sure PostgreSQL is running and accessible before executing the script.
+
+### 🏃 Running the App
+
+You can run the app either:
+
+* From **IntelliJ** using the `javafx:run` plugin, or
+* From the **JAR file** via the command line.
+
+> ✅ **Windows**: The JavaFX SDK ZIP is already included and unpacks automatically.
+> 
+> 🐧 **Linux/macOS**: Download the appropriate JavaFX SDK from [here](https://gluonhq.com/products/javafx/) and extract it manually.
+
+**Windows**:
+
+```bash
+java --module-path ".\javafx-sdk-17.0.15\lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics -jar ai-playground.jar
+```
+
+**Linux** (adjust JavaFX path accordingly):
+
+```bash
+java --module-path "./javafx-sdk-17.0.15/lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics -jar ai-playground.jar
+```
+
     
 ---
 
@@ -126,55 +182,6 @@ Controllers:
 - Dynamically generate UI elements for neural network layers using `LayerType` enums.
 
 Thanks to `LayerConfig` and other DTOs, **no specific layer logic is hardcoded in the UI**. This makes the app modular and easily extensible with new types of layers or training configurations.
-
----
-
-# 🛠 Running the App
-
-### ✅ Requirements:
-- Java 17+
-- PostgreSQL installed and running
-- Internet access (for Gradle dependencies)
-
-### 🗄️ Database Initialization:
-Navigate to the `scripts/` folder and run the database setup script:
-
-#### On Windows:
-```powershell
-.\init_db.ps1
-````
-
-#### On Linux/macOS:
-
-```bash
-./init_db.sh
-```
-
-These scripts will create the schema and populate it using the SQL files in `scripts/db/`, including:
-
-```
-create.sql      -- Table definitions
-fill.sql        -- Default data (countries, roles, datasets, etc.)
-triggers.sql    -- Postgres triggers (optional)
-```
-
-> Make sure PostgreSQL is running and accessible before executing the script.
-
-### 🏃 Running the App:
-
-If running from source:
-
-```bash
-./gradlew run
-```
-
-If using a standalone `.jar` file:
-
-```bash
-java -jar ai-playground.jar
-```
-
-> Note: You must have Java installed to run the `.jar`.
 
 ---
 
