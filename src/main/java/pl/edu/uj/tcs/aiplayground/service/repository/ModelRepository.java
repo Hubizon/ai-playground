@@ -216,7 +216,7 @@ public class ModelRepository implements IModelRepository {
         return records.stream()
                 .map(r -> new TrainingMetricDto(
                         r.get("epoch", Integer.class),
-                        r.get("iter",Integer.class),
+                        r.get("iter", Integer.class),
                         r.get("loss", Double.class),
                         r.get("accuracy", Double.class),
                         DataLoaderType.valueOf(r.get("type", String.class))

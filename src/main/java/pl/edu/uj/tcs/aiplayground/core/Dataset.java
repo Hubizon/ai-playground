@@ -153,7 +153,7 @@ public class Dataset {
             this.batchSize = batchSize;
             if (type.equals(DataLoaderType.TRAIN))
                 data = trainData;
-            else if(type.equals(DataLoaderType.TEST))
+            else if (type.equals(DataLoaderType.TEST))
                 data = testData;
         }
 

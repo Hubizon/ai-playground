@@ -29,6 +29,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MainViewModel {
     private static final Properties config = new Properties();
     private static final Logger logger = LoggerFactory.getLogger(MainViewModel.class);
+
+    static {
+        try (InputStream input = MainViewModel.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                config.load(input);
+            } else {
+                throw new FileNotFoundException("config.properties not found");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load config", e);
+        }
+    }
+
     private final ModelService modelService;
     private final UserService userService;
     private final TrainingService trainingService;
@@ -61,18 +74,6 @@ public class MainViewModel {
     private UserDto user = null;
     private ModelDto model = null;
     private TrainingHandler trainingHandler = null;
-
-    static {
-        try (InputStream input = MainViewModel.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input != null) {
-                config.load(input);
-            } else {
-                throw new FileNotFoundException("config.properties not found");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load config", e);
-        }
-    }
 
     public MainViewModel(ModelService modelService, UserService userService, TrainingService trainingService) {
         this.modelService = modelService;
@@ -495,6 +496,7 @@ public class MainViewModel {
                 Platform.runLater(() -> {
                     updateIsRecentTrainingAvailable();
                     updateIsTrainingInProgress(false);
+                    updateUserTokens();
                 });
             }
         }).start();

@@ -5,12 +5,11 @@ import pl.edu.uj.tcs.aiplayground.core.Tensor;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.DropoutParams;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerConfig;
 import pl.edu.uj.tcs.aiplayground.dto.architecture.LayerType;
-import pl.edu.uj.tcs.aiplayground.dto.architecture.LeakyReLUParams;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class DropoutLayer implements  Layer{
+public class DropoutLayer implements Layer {
 
     private final BigDecimal amount;
 
@@ -24,7 +23,7 @@ public class DropoutLayer implements  Layer{
 
     @Override
     public Tensor forward(Tensor input, ComputationalGraph graph) {
-        return Tensor.dropout(input,amount.doubleValue(), graph);
+        return Tensor.dropout(input, amount.doubleValue(), graph);
     }
 
     @Override

@@ -21,7 +21,6 @@ public class Tensor {
     }
 
     public Tensor(double[][] data, int rows, int cols) {
-
         if (rows * cols != data.length * data[0].length) {
             throw new IllegalArgumentException(String.format("Data array length %d does not match shape %d, %d", data.length, rows, cols));
         }
@@ -194,6 +193,52 @@ public class Tensor {
         return result;
     }
 
+    public static Tensor dropout(Tensor x, double amount, ComputationalGraph graph) {
+        Tensor newMatrix = randomMatrix(x.rows, x.cols, 0, 1);
+        for (int i = 0; i < newMatrix.rows; i++) {
+            for (int j = 0; j < newMatrix.cols; j++) {
+                if (abs(newMatrix.data[i][j]) < amount) {
+                    newMatrix.data[i][j] = 0;
+                } else {
+                    newMatrix.data[i][j] = x.data[i][j];
+                }
+            }
+        }
+        if (graph != null) {
+            ArrayList<Tensor> comps = new ArrayList<>();
+            comps.add(x);
+            graph.addNode(newMatrix, comps, TensorOperator.DROPOUT, new ArrayList<>());
+        }
+        return newMatrix;
+    }
+
+    public static Tensor Tanh(Tensor a, ComputationalGraph graph) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                result.data[i][j] = Math.tanh(a.data[i][j]);
+            }
+        }
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.TANH, new ArrayList<>());
+        }
+        return result;
+    }
+
+    public static Tensor Gelu(Tensor a, ComputationalGraph graph) {
+        Tensor result = Tensor.zerosLike(a);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                double x = a.data[i][j];
+                result.data[i][j] = 0.5 * x * (1 + Math.tanh(Math.sqrt(2.0 / Math.PI) * (x + 0.044715 * Math.pow(x, 3))));
+            }
+        }
+        if (graph != null) {
+            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.GELU, new ArrayList<>());
+        }
+        return result;
+    }
+
     public void fill(double value) {
         for (int i = 0; i < rows; i++) {
             Arrays.fill(data[i], value);
@@ -234,7 +279,6 @@ public class Tensor {
     }
 
     public Tensor transpose() {
-
         double[][] transposedData = new double[cols][rows];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -242,53 +286,6 @@ public class Tensor {
             }
         }
         return new Tensor(transposedData, cols, rows);
-    }
-
-    public static Tensor dropout(Tensor x, double amount, ComputationalGraph graph){
-        Tensor newMatrix  = randomMatrix(x.rows, x.cols, 0,1);
-        for (int i = 0; i < newMatrix.rows; i++) {
-            for (int j = 0; j < newMatrix.cols; j++) {
-                if(abs(newMatrix.data[i][j]) < amount){
-                    newMatrix.data[i][j] = 0;
-                }
-                else {
-                    newMatrix.data[i][j] = x.data[i][j];
-                }
-            }
-        }
-        if (graph != null) {
-            ArrayList<Tensor> comps = new ArrayList<>();
-            comps.add(x);
-            graph.addNode(newMatrix,comps, TensorOperator.DROPOUT,new ArrayList<>());
-        }
-        return newMatrix;
-    }
-
-    public static Tensor Tanh(Tensor a, ComputationalGraph graph) {
-        Tensor result = Tensor.zerosLike(a);
-        for (int i = 0; i < a.rows; i++) {
-            for (int j = 0; j < a.cols; j++) {
-                result.data[i][j] = Math.tanh(a.data[i][j]);
-            }
-        }
-        if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.TANH, new ArrayList<>());
-        }
-        return result;
-    }
-
-    public static Tensor Gelu(Tensor a, ComputationalGraph graph) {
-        Tensor result = Tensor.zerosLike(a);
-        for (int i = 0; i < a.rows; i++) {
-            for (int j = 0; j < a.cols; j++) {
-                double x = a.data[i][j];
-                result.data[i][j] = 0.5 * x * (1 + Math.tanh(Math.sqrt(2.0 / Math.PI) * (x + 0.044715 * Math.pow(x, 3))));
-            }
-        }
-        if (graph != null) {
-            graph.addNode(result, new ArrayList<>(List.of(a)), TensorOperator.GELU, new ArrayList<>());
-        }
-        return result;
     }
 
 }

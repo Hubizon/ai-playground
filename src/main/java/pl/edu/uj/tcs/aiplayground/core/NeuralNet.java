@@ -41,7 +41,7 @@ public class NeuralNet {
                 .toList();
     }
 
-    public NeuralNet(JSONB architecture) throws InvalidHyperparametersException  {
+    public NeuralNet(JSONB architecture) throws InvalidHyperparametersException {
         String jsonString = architecture.data();
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray layersArray = jsonObject.getJSONArray("layers");
@@ -63,6 +63,31 @@ public class NeuralNet {
             Layer layer = new LayerConfig(type, params).toLayer();
             layers.add(layer);
         }
+    }
+
+    public static Pair<Double, Integer> SingleExampleTraining(Pair<Tensor, Tensor> dp, NeuralNet model, LossFunc lossFn) {
+        ComputationalGraph g = new ComputationalGraph();
+        Tensor x = dp.getKey().transpose();
+        Tensor y = dp.getValue().transpose();
+        Tensor pred = model.forward(x, g);
+        double l = lossFn.loss(pred, y);
+        double max = Double.NEGATIVE_INFINITY;
+        int maxIndex1 = -1, maxIndex2 = -1;
+        for (int i = 0; i < pred.rows; i++) {
+            for (int j = 0; j < pred.cols; j++) {
+                if (pred.data[i][j] > max) {
+                    max = pred.data[i][j];
+                    maxIndex1 = i;
+                    maxIndex2 = j;
+                }
+            }
+        }
+        int correct = 0;
+        if (dp.getValue().transpose().data[maxIndex1][maxIndex2] == 1) {
+            correct = 1;
+        }
+        g.propagate();
+        return new Pair<>(l, correct);
     }
 
     public JSONB toJson() {
@@ -109,31 +134,6 @@ public class NeuralNet {
                 .toList();
     }
 
-    public static Pair<Double, Integer> SingleExampleTraining(Pair<Tensor, Tensor> dp,NeuralNet model, LossFunc lossFn) {
-        ComputationalGraph g = new ComputationalGraph();
-        Tensor x = dp.getKey().transpose();
-        Tensor y = dp.getValue().transpose();
-        Tensor pred = model.forward(x, g);
-        double l = lossFn.loss(pred, y);
-        double max = Double.NEGATIVE_INFINITY;
-        int maxIndex1 = -1, maxIndex2 = -1;
-        for (int i = 0; i < pred.rows; i++) {
-            for (int j = 0; j < pred.cols; j++) {
-                if (pred.data[i][j] > max) {
-                    max = pred.data[i][j];
-                    maxIndex1 = i;
-                    maxIndex2 = j;
-                }
-            }
-        }
-        int correct = 0;
-        if (dp.getValue().transpose().data[maxIndex1][maxIndex2] == 1) {
-            correct = 1;
-        }
-        g.propagate();
-        return new Pair<>(l, correct);
-    }
-
     public void train(TrainingDto dto, AtomicBoolean isCancelled, Consumer<TrainingMetricDto> callback) throws TrainingException {
 
         final int batchSize = dto.batchSize();
@@ -178,14 +178,14 @@ public class NeuralNet {
                 while (loader.hasNext()) {
                     List<Pair<Tensor, Tensor>> batch = loader.next();
                     optimizer.zeroGradient();
-                    List<Future<Pair<Double,Integer>>> futures = new ArrayList<>(batch.size());
+                    List<Future<Pair<Double, Integer>>> futures = new ArrayList<>(batch.size());
                     for (Pair<Tensor, Tensor> dp : batch) {
                         futures.add(exec.submit(() -> {
                             return SingleExampleTraining(dp, this, lossFn);
                         }));
                     }
                     double batchLoss = 0;
-                    for (Future<Pair<Double,Integer>> f : futures) {
+                    for (Future<Pair<Double, Integer>> f : futures) {
                         batchLoss += f.get().getKey();
                         num_correct += f.get().getValue();
                     }
@@ -198,10 +198,10 @@ public class NeuralNet {
                     optimizer.optimize();
                     processed += batchSize;
 
-                    if (processed >= dataset.trainData.size()*dto.maxEpochs()/100) {
+                    if (processed >= dataset.trainData.size() * dto.maxEpochs() / 100) {
                         Accuracy.AccAndLoss acc_test = Accuracy.eval(this, dataset.getDataLoader(DataLoaderType.TEST, 1), lossFn);
                         callback.accept(new TrainingMetricDto(epoch, iter, acc_test.loss(), acc_test.accuracy(), DataLoaderType.TEST));
-                        callback.accept(new TrainingMetricDto(epoch, iter, lastLoss / processed, (double) num_correct *100/processed, DataLoaderType.TRAIN));
+                        callback.accept(new TrainingMetricDto(epoch, iter, lastLoss / processed, (double) num_correct * 100 / processed, DataLoaderType.TRAIN));
                         processed = 0;
                         lastLoss = 0;
                         num_correct = 0;
